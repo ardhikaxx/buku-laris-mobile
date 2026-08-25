@@ -107,9 +107,20 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(0xFFF3F4F6),
-        selectedColor: scheme.primaryContainer,
-        labelStyle: const TextStyle(fontSize: 13),
+        backgroundColor: const Color(0xFFE5E7EB),
+        selectedColor: AppColors.primary,
+        checkmarkColor: Colors.white,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        labelStyle: WidgetStateTextStyle.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontSize: 13,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? Colors.white : const Color(0xFF374151),
+          );
+        }),
+        iconTheme: const IconThemeData(color: Colors.white),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         side: BorderSide.none,
         showCheckmark: false,
