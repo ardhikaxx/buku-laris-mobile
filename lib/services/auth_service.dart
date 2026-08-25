@@ -13,7 +13,8 @@ class AuthService {
 
   String? get googleWebClientId {
     const fromDefine = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
-    return fromDefine.isEmpty ? null : fromDefine;
+    if (fromDefine.isNotEmpty) return fromDefine;
+    return '627019837892-ldcv7v96bjk63595lr5e541i2pjslejf.apps.googleusercontent.com';
   }
 
   Future<User?> registerWithEmail({
