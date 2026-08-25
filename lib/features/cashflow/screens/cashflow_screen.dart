@@ -90,10 +90,30 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                 }
 
                 final allItems = snapshot.data ?? [];
-                final totalIncome = allItems
+
+                final refundedSaleIds = <String>{};
+                for (final t in allItems) {
+                  if ((t.sourceType == 'REFUND' ||
+                          t.category.toLowerCase().contains('refund') ||
+                          t.category.toLowerCase().contains('batal')) &&
+                      t.sourceSaleId.isNotEmpty) {
+                    refundedSaleIds.add(t.sourceSaleId);
+                  }
+                }
+
+                // Active items for total calculations (exclude refunded transactions so they don't count in Uang Masuk / Keluar)
+                final activeItems = allItems.where((t) {
+                  if (t.sourceSaleId.isNotEmpty &&
+                      refundedSaleIds.contains(t.sourceSaleId)) {
+                    return false;
+                  }
+                  return true;
+                }).toList();
+
+                final totalIncome = activeItems
                     .where((t) => t.type == CashTransactionType.income)
                     .fold(0, (acc, t) => acc + t.amount);
-                final totalExpense = allItems
+                final totalExpense = activeItems
                     .where((t) => t.type == CashTransactionType.expense)
                     .fold(0, (acc, t) => acc + t.amount);
                 final netCash = totalIncome - totalExpense;
@@ -352,10 +372,16 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                               itemCount: filteredItems.length,
                               separatorBuilder: (_, _) =>
                                   const SizedBox(height: 8),
-                              itemBuilder: (context, index) => _CashTile(
-                                txnModel: filteredItems[index],
-                                canManage: canManage,
-                              ),
+                              itemBuilder: (context, index) {
+                                final txn = filteredItems[index];
+                                final isVoided = txn.sourceSaleId.isNotEmpty &&
+                                    refundedSaleIds.contains(txn.sourceSaleId);
+                                return _CashTile(
+                                  txnModel: txn,
+                                  canManage: canManage,
+                                  isRefundedOrVoided: isVoided,
+                                );
+                              },
                             ),
                     ),
                   ],
@@ -385,14 +411,19 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
 class _CashTile extends ConsumerWidget {
   final CashTransaction txnModel;
   final bool canManage;
+  final bool isRefundedOrVoided;
 
-  const _CashTile({required this.txnModel, required this.canManage});
+  const _CashTile({
+    required this.txnModel,
+    required this.canManage,
+    this.isRefundedOrVoided = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isIncome = txnModel.type == CashTransactionType.income;
     final isSaleLinked = txnModel.sourceSaleId.isNotEmpty;
-    final isRefund = txnModel.sourceType == 'REFUND' ||
+    final isRefundEntry = txnModel.sourceType == 'REFUND' ||
         txnModel.category.toLowerCase().contains('refund') ||
         txnModel.category.toLowerCase().contains('batal');
 
@@ -401,9 +432,11 @@ class _CashTile extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isRefund
-              ? AppColors.expense.withValues(alpha: 0.35)
-              : Colors.grey.shade200,
+          color: isRefundedOrVoided
+              ? Colors.grey.shade300
+              : (isIncome
+                  ? AppColors.income.withValues(alpha: 0.2)
+                  : AppColors.expense.withValues(alpha: 0.2)),
         ),
       ),
       child: ListTile(
@@ -416,16 +449,20 @@ class _CashTile extends ConsumerWidget {
         },
         leading: CircleAvatar(
           radius: 20,
-          backgroundColor: isIncome
-              ? AppColors.income.withValues(alpha: 0.12)
-              : AppColors.expense.withValues(alpha: 0.12),
+          backgroundColor: isRefundedOrVoided
+              ? Colors.grey.shade200
+              : (isIncome
+                  ? AppColors.income.withValues(alpha: 0.12)
+                  : AppColors.expense.withValues(alpha: 0.12)),
           child: Icon(
-            isIncome
-                ? Icons.south_west_rounded
-                : (isRefund
-                    ? Icons.replay_rounded
+            isRefundedOrVoided
+                ? (isRefundEntry ? Icons.replay_rounded : Icons.cancel_outlined)
+                : (isIncome
+                    ? Icons.south_west_rounded
                     : Icons.north_east_rounded),
-            color: isIncome ? AppColors.income : AppColors.expense,
+            color: isRefundedOrVoided
+                ? Colors.grey.shade600
+                : (isIncome ? AppColors.income : AppColors.expense),
             size: 20,
           ),
         ),
@@ -439,28 +476,33 @@ class _CashTile extends ConsumerWidget {
                       txnModel.category,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
+                        color: isRefundedOrVoided
+                            ? Colors.grey[600]
+                            : const Color(0xFF1E293B),
+                        decoration: isRefundedOrVoided && !isRefundEntry
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                     ),
                   ),
-                  if (isRefund) ...[
+                  if (isRefundedOrVoided) ...[
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 1.5),
                       decoration: BoxDecoration(
-                        color: AppColors.expense.withValues(alpha: 0.1),
+                        color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text(
-                        'REFUND',
+                      child: Text(
+                        isRefundEntry ? 'REFUND' : 'BATAL/REFUND',
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.expense,
+                          color: Colors.grey[700],
                         ),
                       ),
                     ),
@@ -492,7 +534,12 @@ class _CashTile extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: isIncome ? AppColors.income : AppColors.expense,
+                color: isRefundedOrVoided
+                    ? Colors.grey[500]
+                    : (isIncome ? AppColors.income : AppColors.expense),
+                decoration: isRefundedOrVoided && !isRefundEntry
+                    ? TextDecoration.lineThrough
+                    : null,
               ),
             ),
           ],
@@ -502,7 +549,18 @@ class _CashTile extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (txnModel.description.isNotEmpty)
+              if (isRefundedOrVoided)
+                Text(
+                  isRefundEntry
+                      ? 'Dana kas telah dikembalikan ke pelanggan (tidak dihitung di kas)'
+                      : 'Transaksi dibatalkan / refund (tidak dihitung di Uang Masuk)',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.orange[800],
+                  ),
+                )
+              else if (txnModel.description.isNotEmpty)
                 Text(
                   txnModel.description,
                   maxLines: 1,

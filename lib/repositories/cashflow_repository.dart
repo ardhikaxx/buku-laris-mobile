@@ -69,10 +69,33 @@ class CashflowRepository extends BaseRepository {
       final snap = await sub(wsId, Collections.cashTransactions).get();
       final fromMs = from.millisecondsSinceEpoch;
       final toMs = to.millisecondsSinceEpoch;
+
+      final refundedSaleIds = <String>{};
+      for (final doc in snap.docs) {
+        final d = doc.data();
+        final sourceSaleId = d['sourceSaleId'] as String?;
+        final sourceType = d['sourceType'] as String?;
+        final isVoided = d['isVoided'] == true || d['isRefunded'] == true;
+        if ((isVoided || sourceType == 'REFUND') &&
+            sourceSaleId != null &&
+            sourceSaleId.isNotEmpty) {
+          refundedSaleIds.add(sourceSaleId);
+        }
+      }
+
       var income = 0;
       var expense = 0;
       for (final doc in snap.docs) {
         final d = doc.data();
+        final sourceSaleId = d['sourceSaleId'] as String?;
+        final isVoided = d['isVoided'] == true || d['isRefunded'] == true;
+
+        if (isVoided) continue;
+        if (sourceSaleId != null && refundedSaleIds.contains(sourceSaleId)) {
+          // Exclude transactions from refunded/cancelled sales
+          continue;
+        }
+
         final ts = d['occurredAt'] as Timestamp?;
         final amount = (d['amount'] as num?)?.toInt() ?? 0;
         final type = d['type'] as String?;
