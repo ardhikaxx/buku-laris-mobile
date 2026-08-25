@@ -2,32 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-final NumberFormat _idr = NumberFormat.currency(
-  locale: 'id_ID',
-  symbol: 'Rp',
-  decimalDigits: 0,
-);
-
-final NumberFormat _number = NumberFormat.decimalPattern('id_ID');
+final NumberFormat _idNumber = NumberFormat.decimalPattern('id_ID');
 
 extension CurrencyInt on int {
-  String get idr => _idr.format(this);
+  String get idr => 'Rp${_idNumber.format(this)}';
 }
 
-extension CurrencyDouble on double {
-  String get idr => _idr.format(this);
-}
-
-String money(num? value) => value == null ? '-' : _idr.format(value);
+String money(num? value) => value == null ? '-' : 'Rp${_idNumber.format(value)}';
 
 String compactMoney(num value) {
-  if (value >= 1000000000) return 'Rp${(value / 1000000000).toStringAsFixed(value % 1000000000 == 0 ? 0 : 1)}M';
-  if (value >= 1000000) return 'Rp${(value / 1000000).toStringAsFixed(value % 1000000 == 0 ? 0 : 1)}jt';
-  if (value >= 1000) return 'Rp${(value / 1000).toStringAsFixed(value % 1000 == 0 ? 0 : 1)}rb';
+  String abbreviate(num dividedBy, String suffix, num remainder) {
+    final scaled = value / dividedBy;
+    var text = scaled.toStringAsFixed(scaled % 1 == 0 ? 0 : 1);
+    text = text.replaceAll('.', ',');
+    return 'Rp$text$suffix';
+  }
+
+  if (value >= 1000000000) return abbreviate(1000000000, 'M', 1000000000);
+  if (value >= 1000000) return abbreviate(1000000, 'jt', 1000000);
+  if (value >= 1000) return abbreviate(1000, 'rb', 1000);
   return money(value);
 }
 
-String number(num? value) => value == null ? '-' : _number.format(value);
+String number(num? value) => value == null ? '-' : _idNumber.format(value);
 
 String dateFull(DateTime? dt) =>
     dt == null ? '-' : DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(dt);
