@@ -227,7 +227,7 @@ class Sale {
 
   bool get hasUnknownCosts => items.any((i) => !i.hasKnownCost);
 
-  int get totalCost => items.fold(0, (sum, i) => sum + i.lineCost);
+  int get totalCost => items.fold(0, (acc, i) => acc + i.lineCost);
 
   int get estimatedProfit =>
       subtotal - discountAmount - totalCost - taxAmount - shippingCost;
