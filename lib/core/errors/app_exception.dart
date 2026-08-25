@@ -72,7 +72,7 @@ AppException mapToAppException(Object error) {
   if (error is FirebaseAuthException) return AppException(mapAuthError(error), error);
   if (error is FirebaseException) return AppException(mapFirestoreError(error), error);
   if (error.toString().contains('network')) {
-    return const AppException('Koneksi internet bermasalah. Periksa jaringan Anda.', error);
+    return AppException('Koneksi internet bermasalah. Periksa jaringan Anda.', error);
   }
   return AppException('Terjadi kesalahan. Silakan coba lagi.', error);
 }
