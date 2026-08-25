@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+
 class Validators {
   Validators._();
 
@@ -25,8 +29,7 @@ class Validators {
     return null;
   }
 
-  static String? businessName(String? v) =>
-      required(v, field: 'Nama usaha');
+  static String? businessName(String? v) => required(v, field: 'Nama usaha');
 
   static String? positiveAmount(String? v, {String field = 'Nominal'}) {
     final raw = (v ?? '').replaceAll(RegExp(r'[^0-9]'), '');
