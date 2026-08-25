@@ -29,13 +29,44 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Karyawan'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Anggota'),
-              Tab(text: 'Undangan'),
-            ],
+        appBar: FloatingCapsuleAppBar(
+          showBackButton: true,
+          titleText: 'Kelola Tim & Karyawan',
+          subtitleText: 'Hak akses & undangan staf',
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.person_add_alt_rounded, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFF8FAFC),
+                padding: const EdgeInsets.all(7),
+                minimumSize: const Size(36, 36),
+              ),
+              tooltip: 'Undang Karyawan',
+              onPressed: () => _showInviteDialog(context, ref),
+            ),
+          ],
+          bottom: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TabBar(
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              indicator: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey[700],
+              labelStyle:
+                  const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              tabs: const [
+                Tab(text: 'Anggota Aktif'),
+                Tab(text: 'Undangan Pending'),
+              ],
+            ),
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(

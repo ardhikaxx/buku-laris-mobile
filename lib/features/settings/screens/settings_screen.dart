@@ -26,15 +26,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final state = ref.watch(activeWorkspaceProvider);
     final ws = state.workspace;
     if (ws == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Pengaturan')),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: FloatingCapsuleAppBar(
+          showBackButton: true,
+          titleText: 'Pengaturan Usaha',
+        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
     final gate = ref.watch(gateProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pengaturan Usaha')),
+      appBar: const FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: 'Pengaturan Usaha',
+        subtitleText: 'Profil toko, metode bayar & konfigurasi',
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

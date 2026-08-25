@@ -6,6 +6,8 @@ import '../../../../config/providers.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validators.dart';
 
+import '../../../../core/widgets/common.dart';
+
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -47,7 +49,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: AppBar(title: const Text('Lupa Password'), backgroundColor: const Color(0xFFF6F7F9)),
+      appBar: const FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: 'Lupa Password',
+        subtitleText: 'Reset kata sandi akun',
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

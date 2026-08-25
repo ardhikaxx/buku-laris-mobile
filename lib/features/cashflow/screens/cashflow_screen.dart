@@ -44,12 +44,24 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
         ref.watch(activeWorkspaceProvider).can(Permission.cashflowManage);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Keuangan & Arus Kas'),
+      appBar: FloatingCapsuleAppBar(
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: AppColors.income.withValues(alpha: 0.12),
+          child: const Icon(Icons.account_balance_wallet_rounded,
+              color: AppColors.income, size: 20),
+        ),
+        titleText: 'Keuangan & Arus Kas',
+        subtitleText: 'Rekap mutasi kas masuk & keluar',
         actions: [
           IconButton(
             tooltip: 'Filter Tanggal',
-            icon: const Icon(Icons.date_range_rounded, size: 20),
+            icon: const Icon(Icons.date_range_rounded, size: 19),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFFF8FAFC),
+              padding: const EdgeInsets.all(7),
+              minimumSize: const Size(36, 36),
+            ),
             onPressed: () async {
               final picked = await showDateRangePicker(
                 context: context,

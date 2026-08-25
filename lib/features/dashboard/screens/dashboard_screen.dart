@@ -113,63 +113,61 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(workspace?.name ?? 'Buku Laris',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 16)),
-                  Text(
-                    '${member?.role.label ?? ''} \u2022 ${gate.profile?.displayName ?? ''}',
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: Stack(
-                children: [
-                  const Icon(Icons.notifications_outlined, size: 24),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: ConnectivityService.instance.isOnline,
-                    builder: (context, offline, _) => offline
-                        ? Positioned(
-                            right: 0,
-                            top: 0,
-                            child: Container(
-                              width: 9,
-                              height: 9,
-                              decoration: BoxDecoration(
-                                color: AppColors.expense,
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 1.5),
-                              ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-              onPressed: () => context.push('/notifications'),
-            ),
-          ],
+      appBar: FloatingCapsuleAppBar(
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          child: const Icon(Icons.storefront_rounded,
+              color: AppColors.primary, size: 20),
         ),
+        titleText: workspace?.name ?? 'Buku Laris',
+        subtitleText:
+            '${member?.role.label ?? ''} \u2022 ${gate.profile?.displayName ?? ''}',
         actions: [
-          if (isOwner)
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications_outlined, size: 21),
+                ValueListenableBuilder<bool>(
+                  valueListenable: ConnectivityService.instance.isOnline,
+                  builder: (context, offline, _) => offline
+                      ? Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: AppColors.expense,
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFFF8FAFC),
+              padding: const EdgeInsets.all(7),
+              minimumSize: const Size(36, 36),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
+          if (isOwner) ...[
+            const SizedBox(width: 4),
             IconButton(
-              icon: const Icon(Icons.settings_outlined, size: 22),
+              icon: const Icon(Icons.settings_outlined, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFF8FAFC),
+                padding: const EdgeInsets.all(7),
+                minimumSize: const Size(36, 36),
+              ),
               onPressed: () => context.push('/settings'),
             ),
-          const SizedBox(width: 4),
+          ],
         ],
       ),
       body: RefreshIndicator(

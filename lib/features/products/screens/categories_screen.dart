@@ -122,7 +122,23 @@ class CategoriesScreen extends ConsumerWidget {
     if (wsId == null) return const SizedBox.shrink();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kategori Produk')),
+      appBar: FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: 'Kategori Produk',
+        subtitleText: 'Pengelompokan jenis barang toko',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, size: 20),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFFF8FAFC),
+              padding: const EdgeInsets.all(7),
+              minimumSize: const Size(36, 36),
+            ),
+            tooltip: 'Tambah Kategori',
+            onPressed: () => _showForm(context, ref),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'categories-fab',
         backgroundColor: AppColors.primary,

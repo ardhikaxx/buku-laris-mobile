@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../constants/app_constants.dart';
 import '../errors/app_exception.dart';
 import '../theme/app_theme.dart';
+export 'floating_capsule_app_bar.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;

@@ -163,9 +163,12 @@ class ProductDetailScreen extends ConsumerWidget {
         }
         final product = snapshot.data;
         if (product == null) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: const ErrorStateView(error: AppException('Produk tidak ditemukan.')),
+          return const Scaffold(
+            appBar: FloatingCapsuleAppBar(
+              showBackButton: true,
+              titleText: 'Detail Produk',
+            ),
+            body: ErrorStateView(error: AppException('Produk tidak ditemukan.')),
           );
         }
 
@@ -177,12 +180,20 @@ class ProductDetailScreen extends ConsumerWidget {
             : null;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text(product.name, style: const TextStyle(fontSize: 15)),
+          appBar: FloatingCapsuleAppBar(
+            showBackButton: true,
+            titleText: product.name,
+            subtitleText: product.type.label,
             actions: [
               if (canManage)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 20),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFFF8FAFC),
+                    padding: const EdgeInsets.all(7),
+                    minimumSize: const Size(36, 36),
+                  ),
+                  tooltip: 'Ubah Produk',
                   onPressed: () =>
                       context.push('/products/edit/${product.id}'),
                 ),

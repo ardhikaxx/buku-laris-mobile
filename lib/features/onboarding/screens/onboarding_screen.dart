@@ -8,6 +8,7 @@ import '../../../../config/providers.dart';
 import '../../../../core/constants/catalogs.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/common.dart';
 import '../../../../models/enums.dart';
 import '../../../../models/workspace_model.dart';
 import '../../../../services/image_service.dart';
@@ -154,10 +155,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       canPop: false,
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text('Setup Usaha (${_step + 1}/3)'),
-          backgroundColor: Colors.white,
+        appBar: FloatingCapsuleAppBar(
+          leading: CircleAvatar(
+            radius: 19,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+            child: const Icon(Icons.store_mall_directory_rounded,
+                color: AppColors.primary, size: 20),
+          ),
+          titleText: 'Setup Usaha',
+          subtitleText: 'Langkah ${_step + 1} dari 3',
         ),
         body: Column(
           children: [

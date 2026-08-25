@@ -20,8 +20,10 @@ class NotificationsScreen extends ConsumerWidget {
     final repo = ref.read(notificationRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifikasi'),
+      appBar: FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: 'Notifikasi',
+        subtitleText: 'Pemberitahuan & aktivitas',
         actions: [
           StreamBuilder<int>(
             stream: repo.unreadCount(uid),
@@ -30,7 +32,7 @@ class NotificationsScreen extends ConsumerWidget {
               if (unread == 0) return const SizedBox.shrink();
               return TextButton(
                 onPressed: () => repo.markAllRead(uid),
-                child: const Text('Tandai dibaca'),
+                child: const Text('Baca Semua', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
               );
             },
           ),

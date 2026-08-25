@@ -87,7 +87,23 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Laporan')),
+      appBar: FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: 'Laporan & Rekap',
+        subtitleText: 'Analisis penjualan, kas & performa stok',
+        actions: [
+          IconButton(
+            tooltip: 'Pilih Periode',
+            icon: const Icon(Icons.date_range_rounded, size: 19),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFFF8FAFC),
+              padding: const EdgeInsets.all(7),
+              minimumSize: const Size(36, 36),
+            ),
+            onPressed: _pickRange,
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Container(

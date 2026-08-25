@@ -10,6 +10,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../models/product_category_model.dart';
 import '../../../models/product_model.dart';
@@ -195,9 +196,12 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: FloatingCapsuleAppBar(
+          showBackButton: true,
+          titleText: 'Memuat Produk...',
+        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -205,8 +209,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     final isDigital = _type == ProductType.digitalProduct;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.productId == null ? 'Tambah Produk' : 'Ubah Produk'),
+      appBar: FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: widget.productId == null ? 'Tambah Produk' : 'Ubah Produk',
+        subtitleText: 'Kelola informasi produk & harga',
       ),
       body: Form(
         key: _formKey,

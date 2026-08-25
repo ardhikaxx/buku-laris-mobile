@@ -34,9 +34,12 @@ class CustomerDetailScreen extends ConsumerWidget {
         }
         final customer = snapshot.data;
         if (customer == null) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: const EmptyState(
+          return const Scaffold(
+            appBar: FloatingCapsuleAppBar(
+              showBackButton: true,
+              titleText: 'Detail Pelanggan',
+            ),
+            body: EmptyState(
               icon: Icons.person_off_outlined,
               title: 'Pelanggan tidak ditemukan',
               message: 'Data mungkin telah dihapus.',
@@ -45,18 +48,33 @@ class CustomerDetailScreen extends ConsumerWidget {
         }
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text(customer.name,
-                style: const TextStyle(fontSize: 15)),
+          appBar: FloatingCapsuleAppBar(
+            showBackButton: true,
+            titleText: customer.name,
+            subtitleText: customer.whatsapp.isNotEmpty
+                ? customer.whatsapp
+                : (customer.email.isNotEmpty ? customer.email : 'Pelanggan'),
             actions: [
               if (canManage)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 20),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFFF8FAFC),
+                    padding: const EdgeInsets.all(7),
+                    minimumSize: const Size(36, 36),
+                  ),
+                  tooltip: 'Ubah Data',
                   onPressed: () =>
                       showCustomerForm(context, ref, existing: customer),
                 ),
+              const SizedBox(width: 4),
               IconButton(
-                icon: const Icon(Icons.chat_rounded, size: 20),
+                icon: const Icon(Icons.chat_rounded, size: 19),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFF8FAFC),
+                  padding: const EdgeInsets.all(7),
+                  minimumSize: const Size(36, 36),
+                ),
                 tooltip: 'Chat WhatsApp',
                 onPressed: customer.whatsapp.isEmpty
                     ? null

@@ -21,19 +21,15 @@ class MoreScreen extends ConsumerWidget {
     final canCustomers = isOwner || state.can(Permission.customersManage);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(state.workspace?.name ?? 'Buku Laris',
-                style: const TextStyle(fontSize: 16)),
-            Text('Menu Lainnya',
-                style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[600])),
-          ],
+      appBar: FloatingCapsuleAppBar(
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          child: const Icon(Icons.widgets_rounded,
+              color: AppColors.primary, size: 20),
         ),
+        titleText: state.workspace?.name ?? 'Buku Laris',
+        subtitleText: 'Menu operasional & pengaturan',
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

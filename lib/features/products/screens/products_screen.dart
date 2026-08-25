@@ -29,8 +29,28 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     final canManage = ref.watch(activeWorkspaceProvider).can(Permission.productsManage);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Produk'),
+      appBar: FloatingCapsuleAppBar(
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          child: const Icon(Icons.inventory_2_rounded,
+              color: AppColors.primary, size: 20),
+        ),
+        titleText: 'Katalog Produk',
+        subtitleText: 'Kelola stok, harga modal & jual',
+        actions: [
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.add, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFF8FAFC),
+                padding: const EdgeInsets.all(7),
+                minimumSize: const Size(36, 36),
+              ),
+              tooltip: 'Tambah Produk',
+              onPressed: () => context.push('/products/new'),
+            ),
+        ],
       ),
       body: Column(
         children: [

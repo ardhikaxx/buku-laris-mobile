@@ -6,6 +6,8 @@ import '../../../../config/providers.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validators.dart';
 
+import '../../../../core/widgets/common.dart';
+
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
@@ -60,10 +62,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F7F9),
-      appBar: AppBar(
-        leading: const BackButton(),
-        title: const Text('Daftar Akun'),
-        backgroundColor: const Color(0xFFF6F7F9),
+      appBar: const FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: 'Daftar Akun Baru',
+        subtitleText: 'Mulai kelola usaha Anda',
       ),
       body: SafeArea(
         child: Center(

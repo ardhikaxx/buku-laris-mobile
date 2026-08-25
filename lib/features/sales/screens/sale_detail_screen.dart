@@ -305,9 +305,12 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
         }
         final sale = snapshot.data;
         if (sale == null) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: const ErrorStateView(
+          return const Scaffold(
+            appBar: FloatingCapsuleAppBar(
+              showBackButton: true,
+              titleText: 'Detail Penjualan',
+            ),
+            body: ErrorStateView(
                 error: AppException('Transaksi tidak ditemukan.')),
           );
         }
@@ -315,36 +318,36 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
             ref.watch(activeWorkspaceProvider).workspace?.name ?? '';
 
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              tooltip: 'Kembali',
-              onPressed: () {
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                } else {
-                  context.go('/sales');
-                }
-              },
-            ),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(sale.transactionNumber,
-                    style: const TextStyle(fontSize: 15)),
-                Text(dateTimeShort(sale.createdAt),
-                    style: TextStyle(
-                        fontSize: 11, fontWeight: FontWeight.w500, color: Colors.grey[600])),
-              ],
-            ),
+          appBar: FloatingCapsuleAppBar(
+            showBackButton: true,
+            onBackPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                context.go('/sales');
+              }
+            },
+            titleText: sale.transactionNumber,
+            subtitleText: dateTimeShort(sale.createdAt),
             actions: [
               IconButton(
-                icon: const Icon(Icons.edit_note_rounded, size: 22),
+                icon: const Icon(Icons.edit_note_rounded, size: 20),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFF8FAFC),
+                  padding: const EdgeInsets.all(7),
+                  minimumSize: const Size(36, 36),
+                ),
                 tooltip: 'Ubah keterangan',
                 onPressed: () => _editNotes(sale),
               ),
+              const SizedBox(width: 4),
               IconButton(
-                icon: const Icon(Icons.share_outlined, size: 20),
+                icon: const Icon(Icons.share_outlined, size: 19),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFF8FAFC),
+                  padding: const EdgeInsets.all(7),
+                  minimumSize: const Size(36, 36),
+                ),
                 tooltip: 'Bagikan struk',
                 onPressed: () => _shareInvoice(sale, workspaceName),
               ),

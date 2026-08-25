@@ -57,7 +57,23 @@ class _LowStockScreenState extends ConsumerState<LowStockScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Stok Menipis')),
+      appBar: FloatingCapsuleAppBar(
+        showBackButton: true,
+        titleText: 'Stok Menipis',
+        subtitleText: 'Produk mendekati batas minimum',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, size: 20),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFFF8FAFC),
+              padding: const EdgeInsets.all(7),
+              minimumSize: const Size(36, 36),
+            ),
+            tooltip: 'Segarkan',
+            onPressed: _load,
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: _buildBody(),

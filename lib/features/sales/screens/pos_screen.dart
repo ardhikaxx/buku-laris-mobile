@@ -223,32 +223,29 @@ class PosScreenState extends ConsumerState<PosScreen> {
         await _handleBack();
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            tooltip: 'Kembali',
-            onPressed: _handleBack,
-          ),
-          title: const Text('Catat Penjualan'),
+        appBar: FloatingCapsuleAppBar(
+          showBackButton: true,
+          onBackPressed: _handleBack,
+          titleText: 'Catat Penjualan',
+          subtitleText: orderType == OrderType.preOrder ? 'Mode Pre-Order' : 'Kasir / POS',
           actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: SegmentedButton<OrderType>(
-                showSelectedIcon: false,
-                style: SegmentedButton.styleFrom(
-                  textStyle: const TextStyle(fontSize: 11.5),
-                ),
-                segments: [
-                  const ButtonSegment(
-                      value: OrderType.readyStock, label: Text('Stok Siap')),
-                  if (supportsPreOrder)
-                    const ButtonSegment(
-                        value: OrderType.preOrder, label: Text('Pre-Order')),
-                ],
-                selected: {orderType},
-                onSelectionChanged: (selection) =>
-                    setOrderType(selection.first),
+            SegmentedButton<OrderType>(
+              showSelectedIcon: false,
+              style: SegmentedButton.styleFrom(
+                textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
               ),
+              segments: [
+                const ButtonSegment(
+                    value: OrderType.readyStock, label: Text('Siap')),
+                if (supportsPreOrder)
+                  const ButtonSegment(
+                      value: OrderType.preOrder, label: Text('PO')),
+              ],
+              selected: {orderType},
+              onSelectionChanged: (selection) =>
+                  setOrderType(selection.first),
             ),
           ],
         ),

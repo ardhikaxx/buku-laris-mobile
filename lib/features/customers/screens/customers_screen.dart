@@ -30,7 +30,29 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
         ref.watch(activeWorkspaceProvider).can(Permission.customersManage);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pelanggan')),
+      appBar: FloatingCapsuleAppBar(
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          child: const Icon(Icons.people_alt_rounded,
+              color: AppColors.primary, size: 20),
+        ),
+        titleText: 'Data Pelanggan',
+        subtitleText: 'Daftar kontak & riwayat belanja',
+        actions: [
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.person_add_alt_1_rounded, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFF8FAFC),
+                padding: const EdgeInsets.all(7),
+                minimumSize: const Size(36, 36),
+              ),
+              tooltip: 'Tambah Pelanggan',
+              onPressed: () => showCustomerForm(context, ref),
+            ),
+        ],
+      ),
       body: Column(
         children: [
           Container(

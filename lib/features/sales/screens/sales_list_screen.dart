@@ -28,7 +28,29 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
     final canCreate = ws.can(Permission.salesCreate);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Penjualan')),
+      appBar: FloatingCapsuleAppBar(
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          child: const Icon(Icons.receipt_long_rounded,
+              color: AppColors.primary, size: 20),
+        ),
+        titleText: 'Riwayat Penjualan',
+        subtitleText: 'Kelola transaksi & pesanan pelanggan',
+        actions: [
+          if (canCreate)
+            IconButton(
+              icon: const Icon(Icons.add, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFF8FAFC),
+                padding: const EdgeInsets.all(7),
+                minimumSize: const Size(36, 36),
+              ),
+              onPressed: () => context.push('/sales/new'),
+              tooltip: 'Catat Penjualan',
+            ),
+        ],
+      ),
       body: Column(
         children: [
           Container(
