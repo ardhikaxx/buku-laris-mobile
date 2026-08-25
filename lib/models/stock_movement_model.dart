@@ -17,7 +17,7 @@ class StockMovement {
   final DateTime? createdAt;
 
   const StockMovement({
-    required this.id,
+    this.id = '',
     required this.productId,
     required this.productName,
     required this.reason,
