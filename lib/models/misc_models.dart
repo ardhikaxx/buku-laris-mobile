@@ -14,7 +14,7 @@ class NotificationModel {
   final DateTime? createdAt;
 
   const NotificationModel({
-    required this.id,
+    this.id = '',
     required this.title,
     required this.body,
     this.type = NotificationType.system,
@@ -67,7 +67,7 @@ class AuditLog {
   final DateTime? createdAt;
 
   const AuditLog({
-    required this.id,
+    this.id = '',
     required this.actorId,
     required this.actorName,
     required this.action,
