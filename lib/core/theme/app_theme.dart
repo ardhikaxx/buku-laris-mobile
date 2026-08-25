@@ -160,7 +160,6 @@ class AppTheme {
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Color(0xFFE5E7EB),
       ),
-      fontFamily: 'Roboto',
     );
   }
 }
