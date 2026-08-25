@@ -57,6 +57,16 @@ service cloud.firestore {
         || (isActiveMember(wsId) && perm in myMembership(wsId).permissions);
     }
 
+    // Bootstrap: the moment a workspace document is created, its owner must
+    // be able to seed their own OWNER membership plus default categories,
+    // payment methods and counters in the SAME batch. Rules evaluate against
+    // pre-batch state, so we look at the post-batch workspace via getAfter().
+    function isBootstrapOwner(wsId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/workspaces/$(wsId))
+        && getAfter(/databases/$(database)/documents/workspaces/$(wsId)).data.ownerId == uid();
+    }
+
     function changedKeysOnly(allowed) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowed);
     }
@@ -127,11 +137,17 @@ service cloud.firestore {
         // acceptance below). A user may also create their OWN employee
         // membership, but only backed by an ACCEPTED invitation whose email
         // matches their verified auth token email, and only with exactly the
-        // default employee permission set - never more.
+        // default employee permission set - never more. During workspace
+        // bootstrap the creator may seed their own OWNER membership.
         allow create: if (
             isOwner(wsId)
             && request.resource.data.role == 'EMPLOYEE'
             && request.resource.data.userId == memberUserId
+          )
+          || (
+            isBootstrapOwner(wsId)
+            && request.resource.data.userId == uid()
+            && request.resource.data.role == 'OWNER'
           )
           || (
             signedIn()
@@ -172,6 +188,7 @@ service cloud.firestore {
       match /counters/{counterId} {
         allow get, list: if isAnyActiveMember(wsId);
         allow create: if isOwner(wsId)
+          || isBootstrapOwner(wsId)
           || (hasPerm(wsId, 'salesCreate') && request.resource.data.seq == 0);
         // Only the sequence number may ever change, and only via the sale
         // creation transaction.
@@ -184,6 +201,7 @@ service cloud.firestore {
       match /dailySummaries/{summaryId} {
         allow get, list: if isAnyActiveMember(wsId);
         allow create, update: if isOwner(wsId)
+          || isBootstrapOwner(wsId)
           || hasPerm(wsId, 'salesCreate')
           || hasPerm(wsId, 'cashflowManage');
         allow delete: if false;
@@ -218,7 +236,10 @@ service cloud.firestore {
       // ---------- categories ----------
       match /categories/{categoryId} {
         allow get, list: if isAnyActiveMember(wsId);
-        allow create, update, delete: if hasPerm(wsId, 'categoriesManage') || isOwner(wsId);
+        allow create: if hasPerm(wsId, 'categoriesManage')
+          || isOwner(wsId)
+          || isBootstrapOwner(wsId);
+        allow update, delete: if hasPerm(wsId, 'categoriesManage') || isOwner(wsId);
       }
 
       // ---------- customers ----------
@@ -300,7 +321,7 @@ service cloud.firestore {
       // ---------- payment methods ----------
       match /paymentMethods/{methodId} {
         allow get, list: if isAnyActiveMember(wsId);
-        allow create, update, delete: if isOwner(wsId);
+        allow create, update, delete: if isOwner(wsId) || isBootstrapOwner(wsId);
       }
     }
 
