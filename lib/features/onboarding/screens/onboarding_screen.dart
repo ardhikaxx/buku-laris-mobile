@@ -33,7 +33,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String _businessScale = 'Mikro';
   String _timezone = 'Asia/Jakarta';
   String _currency = 'IDR';
-  Set<BusinessModel> _models = {BusinessModel.physicalProduct};
+  final Set<BusinessModel> _models = {BusinessModel.physicalProduct};
   final Set<String> _paymentTypes = {'CASH'};
   String? _logoDataUri;
   bool _creating = false;
@@ -273,7 +273,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         borderRadius: BorderRadius.circular(19),
                         child: Image.network(_logoDataUri!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
+                            errorBuilder: (_, _, _) =>
                                 const Icon(Icons.storefront_rounded)),
                       )
                     : const Icon(Icons.add_a_photo_outlined,
