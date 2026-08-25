@@ -1,8 +1,10 @@
+import '../core/constants/app_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/cash_transaction_model.dart';
 import '../models/daily_summary_model.dart';
 import '../models/enums.dart';
+import '../models/product_model.dart';
 import '../models/sale_model.dart';
 import 'base_repository.dart';
 import 'cashflow_repository.dart';
