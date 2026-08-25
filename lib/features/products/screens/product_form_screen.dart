@@ -13,8 +13,6 @@ import '../../../core/utils/validators.dart';
 import '../../../models/enums.dart';
 import '../../../models/product_category_model.dart';
 import '../../../models/product_model.dart';
-import '../../../repositories/product_repository.dart';
-import '../../../services/image_service.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
   final String? productId;
@@ -230,7 +228,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _categoryId,
+                    initialValue: _categoryId,
                     decoration: const InputDecoration(labelText: 'Kategori'),
                     hint: const Text('Tanpa kategori'),
                     items: _categories
