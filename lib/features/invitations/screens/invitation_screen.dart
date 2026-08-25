@@ -92,13 +92,13 @@ class _InvitationScreenState extends ConsumerState<InvitationScreen> {
                   Container(
                     width: 72,
                     height: 72,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: AppColors.accent.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Icon(Icons.mark_email_unread_outlined,
                         size: 34, color: AppColors.accent),
-                    alignment: Alignment.center,
                   ),
                   const SizedBox(height: 18),
                   Text(
@@ -206,8 +206,7 @@ class _InvitationScreenState extends ConsumerState<InvitationScreen> {
                                                   color: Colors.white))
                                           : const Text('Terima & Gabung'),
                                     ),
-                                  ),
-                                ],
+                                  ),                                ],
                               ),
                             ],
                           ),
