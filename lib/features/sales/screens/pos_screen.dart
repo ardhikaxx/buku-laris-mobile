@@ -28,6 +28,7 @@ class PosScreenState extends ConsumerState<PosScreen> {
   List<Product> _products = [];
   bool _loadingProducts = true;
   String? _loadError;
+  String? _loadedForWsId;
   final Map<String, int> qtyInCart = {};
   final Map<String, Product> cartProducts = {};
   int discountAmount = 0;
@@ -55,7 +56,15 @@ class PosScreenState extends ConsumerState<PosScreen> {
 
   Future<void> loadProducts(String term) async {
     final wsId = ref.read(gateProvider).activeWorkspaceId;
-    if (wsId == null) return;
+    if (wsId == null) {
+      if (mounted) {
+        setState(() {
+          _loadingProducts = false;
+          _products = [];
+        });
+      }
+      return;
+    }
     setState(() {
       _loadingProducts = true;
       _loadError = null;
@@ -158,11 +167,18 @@ class PosScreenState extends ConsumerState<PosScreen> {
   Widget build(BuildContext context) {
     final supportsPreOrder =
         ref.watch(activeWorkspaceProvider).workspace?.supportsPreOrder ?? false;
+    final gateWsId = ref.watch(gateProvider).activeWorkspaceId;
+    if (gateWsId != _loadedForWsId && !_loadingProducts) {
+      _loadedForWsId = gateWsId;
+      WidgetsBinding.instance.addPostFrameCallback((_) => loadProducts(''));
+    }
 
     return PopScope(
       canPop: itemCount == 0,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop || itemCount == 0) return;
+        final navigator = Navigator.of(context);
+        final router = GoRouter.of(context);
         final leave = await confirmAction(
           context,
           title: 'Buang keranjang?',
@@ -171,7 +187,16 @@ class PosScreenState extends ConsumerState<PosScreen> {
           confirmLabel: 'Keluar',
           destructive: true,
         );
-        if (leave && context.mounted) context.go('/sales');
+        if (!leave || !mounted) return;
+        setState(() {
+          qtyInCart.clear();
+          cartProducts.clear();
+        });
+        if (navigator.canPop()) {
+          navigator.pop();
+        } else {
+          router.go('/sales');
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -276,10 +301,19 @@ class PosScreenState extends ConsumerState<PosScreen> {
     if (_products.isEmpty) {
       return EmptyState(
         icon: Icons.search_off_rounded,
-        title: 'Produk tidak ditemukan',
+        title: _searchTerm.isEmpty
+            ? 'Belum ada produk yang bisa dijual'
+            : 'Produk tidak ditemukan',
         message: _searchTerm.isEmpty
-            ? 'Belum ada produk aktif. Tambahkan produk terlebih dahulu di menu Produk.'
+            ? 'Tambahkan produk atau layanan terlebih dahulu, lalu kembali ke sini untuk mencatat penjualan.'
             : 'Tidak ada produk aktif yang cocok dengan pencarian Anda.',
+        action: ref.watch(activeWorkspaceProvider).can(Permission.productsManage) &&
+                _searchTerm.isEmpty
+            ? ElevatedButton.icon(
+                onPressed: () => context.push('/products/new'),
+                icon: const Icon(Icons.add_box_outlined, size: 18),
+                label: const Text('Tambah Produk'))
+            : null,
       );
     }
     return ListView.separated(
