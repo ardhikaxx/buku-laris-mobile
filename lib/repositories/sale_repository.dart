@@ -687,7 +687,7 @@ class SaleRepository extends BaseRepository {
         .where('createdAt',
             isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
         .snapshots()
-        .map((s) => s.docs.map(Sale.fromDoc).where((x) => x.countsRevenue).fold(0, (sum, x) => sum + x.grandTotal));
+        .map((s) => s.docs.map(Sale.fromDoc).where((x) => x.countsRevenue).fold(0, (acc, x) => acc + x.grandTotal));
   }
 
   Future<List<Sale>> listDuePreOrders(String wsId, {int limit = 10}) async {
