@@ -436,6 +436,7 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<PaymentMethodModel>(
+                      isExpanded: true,
                       initialValue: _selectedMethod,
                       decoration:
                           const InputDecoration(labelText: 'Metode Pembayaran'),

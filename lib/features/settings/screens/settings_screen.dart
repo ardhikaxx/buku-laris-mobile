@@ -219,6 +219,7 @@ class _WorkspaceSectionState extends ConsumerState<_WorkspaceSection> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _businessType,
               hint: const Text('Jenis usaha'),
               items: BusinessCatalogs.businessTypes
@@ -247,6 +248,7 @@ class _WorkspaceSectionState extends ConsumerState<_WorkspaceSection> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _timezone,
               items: BusinessCatalogs.timezones
                   .map((t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)))

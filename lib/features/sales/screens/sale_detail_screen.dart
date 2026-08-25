@@ -110,6 +110,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<PaymentMethodModel>(
+                isExpanded: true,
                 initialValue: method,
                 decoration:
                     const InputDecoration(labelText: 'Metode pembayaran'),

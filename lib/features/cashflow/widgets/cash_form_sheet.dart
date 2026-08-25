@@ -198,6 +198,7 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: _category,
                 decoration: const InputDecoration(labelText: 'Kategori'),
                 items: allCategories

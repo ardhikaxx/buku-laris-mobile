@@ -297,6 +297,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _businessType,
             decoration: const InputDecoration(labelText: 'Jenis Usaha'),
             hint: const Text('Pilih jenis usaha'),
@@ -311,6 +312,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _businessScale,
                   decoration: const InputDecoration(labelText: 'Skala'),
                   items: BusinessCatalogs.businessScales
@@ -323,6 +325,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _timezone,
                   decoration: const InputDecoration(labelText: 'Zona Waktu'),
                   items: BusinessCatalogs.timezones
@@ -525,6 +528,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             initialValue: _currency,
             decoration: const InputDecoration(labelText: 'Mata Uang'),
             items: const [

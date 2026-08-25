@@ -228,6 +228,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: _categoryId,
                     decoration: const InputDecoration(labelText: 'Kategori'),
                     hint: const Text('Tanpa kategori'),
