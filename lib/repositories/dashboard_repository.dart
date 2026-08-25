@@ -100,12 +100,14 @@ class DashboardRepository extends BaseRepository {
         _revenueAndOrders(wsId, startOfDay(DateTime.now()), now)
       else
         Future.value(const _RevOrd(revenue: 0, orders: 0)),
-      if (includeFinance) _revenueAndOrders(wsId, startOfMonth(DateTime.now()), now)
+      if (includeFinance)
+        _revenueAndOrders(wsId, startOfMonth(DateTime.now()), now)
       else
         Future.value(const _RevOrd(revenue: 0, orders: 0)),
       if (includeFinance)
         _guard(
-          () => _cashflow.totalsForRange(wsId, startOfMonth(DateTime.now()), now),
+          () => _cashflow.totalsForRange(
+              wsId, startOfMonth(DateTime.now()), now),
           fallback: const CashTotals(income: 0, expense: 0),
         )
       else
@@ -116,10 +118,7 @@ class DashboardRepository extends BaseRepository {
             fallback: <Product>[])
       else
         Future.value(<Product>[]),
-      _countQuery(sub(wsId, Collections.sales).where('status', whereIn: _activeStatusNames)),
-      _countQuery(sub(wsId, Collections.sales)
-          .where('orderType', isEqualTo: OrderType.preOrder.name)
-          .where('status', whereIn: _activeStatusNames)),
+      _activeOrdersCounts(wsId),
       _guard(() => _chart(wsId, range), fallback: <DailyPoint>[]),
       if (includeFinance) _hasUnknownCostSales(wsId) else Future.value(false),
       if (includeFinance)
@@ -134,11 +133,10 @@ class DashboardRepository extends BaseRepository {
     final cashTotals = results[3] as CashTotals;
     final productCount = results[4] as int;
     final lowStock = results[5] as List<Product>;
-    final activeOrders = results[6] as int;
-    final activePreOrders = results[7] as int;
-    final chart = results[8] as List<DailyPoint>;
-    final unknownCosts = results[9] as bool;
-    final monthProfit = results[10] as (int, bool);
+    final activeCounts = results[6] as (int, int);
+    final chart = results[7] as List<DailyPoint>;
+    final unknownCosts = results[8] as bool;
+    final monthProfit = results[9] as (int, bool);
 
     return DashboardData(
       periodRevenue: period.revenue,
@@ -151,14 +149,15 @@ class DashboardRepository extends BaseRepository {
       profitHasUnknownCosts: unknownCosts || monthProfit.$2,
       productCount: productCount,
       lowStockPreview: lowStock,
-      activeOrders: activeOrders,
-      activePreOrders: activePreOrders,
+      activeOrders: activeCounts.$1,
+      activePreOrders: activeCounts.$2,
       chart: chart,
       range: range,
     );
   }
 
-  Future<T> _guard<T>(Future<T> Function() action, {required T fallback}) async {
+  Future<T> _guard<T>(Future<T> Function() action,
+      {required T fallback}) async {
     try {
       return await action();
     } catch (e) {
@@ -167,88 +166,126 @@ class DashboardRepository extends BaseRepository {
     }
   }
 
-  Future<_RevOrd> _revenueAndOrders(String wsId, DateTime from, DateTime to) async {
+  Future<_RevOrd> _revenueAndOrders(
+      String wsId, DateTime from, DateTime to) async {
     try {
-      final snap = await sub(wsId, Collections.sales)
-          .where('countsRevenue', isEqualTo: true)
-          .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(from))
-          .where('createdAt', isLessThanOrEqualTo: Timestamp.fromDate(to))
-          .aggregate(sum('grandTotal'), count())
-          .get();
-      return _RevOrd(
-        revenue: (snap.getSum('grandTotal') as num?)?.toInt() ?? 0,
-        orders: snap.count ?? 0,
-      );
-    } catch (_) {
+      final snap = await sub(wsId, Collections.sales).get();
+      final fromMs = from.millisecondsSinceEpoch;
+      final toMs = to.millisecondsSinceEpoch;
+      var revenue = 0;
+      var orders = 0;
+      for (final doc in snap.docs) {
+        final d = doc.data();
+        if (d['countsRevenue'] != true) continue;
+        final ts = d['createdAt'] as Timestamp?;
+        if (ts != null) {
+          final ms = ts.millisecondsSinceEpoch;
+          if (ms < fromMs || ms > toMs) continue;
+        }
+        revenue += (d['grandTotal'] as num?)?.toInt() ?? 0;
+        orders += 1;
+      }
+      return _RevOrd(revenue: revenue, orders: orders);
+    } catch (e) {
+      Logger.e('dashboard _revenueAndOrders failed', e);
       return const _RevOrd(revenue: 0, orders: 0);
     }
   }
 
   Future<int> _productCount(String wsId) async {
     try {
-      final snap = await sub(wsId, Collections.products)
-          .where('archived', isEqualTo: false)
-          .count()
-          .get();
-      return snap.count ?? 0;
+      final snap = await sub(wsId, Collections.products).get();
+      return snap.docs.where((d) => d.data()['archived'] != true).length;
     } catch (_) {
       return 0;
     }
   }
 
-  Future<int> _countQuery(Query<Map<String, dynamic>> q) async {
+  Future<(int, int)> _activeOrdersCounts(String wsId) async {
     try {
-      final snap = await q.count().get();
-      return snap.count ?? 0;
+      final snap = await sub(wsId, Collections.sales).get();
+      var active = 0;
+      var preOrders = 0;
+      for (final doc in snap.docs) {
+        final d = doc.data();
+        final status = d['status'] as String?;
+        if (_activeStatusNames.contains(status)) {
+          active += 1;
+          if (d['orderType'] == OrderType.preOrder.name) {
+            preOrders += 1;
+          }
+        }
+      }
+      return (active, preOrders);
     } catch (_) {
-      return 0;
+      return (0, 0);
     }
   }
 
   Future<List<DailyPoint>> _chart(String wsId, AppDateRange range) async {
-    final summaries = await _summaries(wsId, range.start, range.end);
-    final byKey = {for (final s in summaries) s.id: s};
-    final chart = <DailyPoint>[];
-    var day = DateTime(range.start.year, range.start.month, range.start.day);
-    while (!day.isAfter(range.end)) {
-      final key = DailySummary.dayKey(day);
-      final summary = byKey[key];
-      chart.add(DailyPoint(
-        day: day,
-        revenue: summary?.revenue ?? 0,
-        orders: summary?.orderCount ?? 0,
-        profit: summary?.estimatedProfit ?? 0,
-      ));
-      day = day.add(const Duration(days: 1));
-    }
-    return chart;
-  }
+    try {
+      final snap = await sub(wsId, Collections.sales).get();
+      final dailyMap = <String, DailyPoint>{};
+      var day = DateTime(range.start.year, range.start.month, range.start.day);
+      while (!day.isAfter(range.end)) {
+        final key = DailySummary.dayKey(day);
+        dailyMap[key] = DailyPoint(day: day, revenue: 0, orders: 0, profit: 0);
+        day = day.add(const Duration(days: 1));
+      }
 
-  Future<List<DailySummary>> _summaries(String wsId, DateTime from, DateTime to) async {
-    final ids = <String>[];
-    var day = DateTime(from.year, from.month, from.day);
-    while (!day.isAfter(to)) {
-      ids.add(DailySummary.dayKey(day));
-      day = day.add(const Duration(days: 1));
+      for (final doc in snap.docs) {
+        final d = doc.data();
+        if (d['countsRevenue'] != true) continue;
+        final ts = d['createdAt'] as Timestamp?;
+        if (ts == null) continue;
+        final dt = ts.toDate();
+        final key = DailySummary.dayKey(dt);
+        if (dailyMap.containsKey(key)) {
+          final existing = dailyMap[key]!;
+          final grandTotal = (d['grandTotal'] as num?)?.toInt() ?? 0;
+          final items = d['items'] as List<dynamic>? ?? [];
+          var saleCost = 0;
+          for (final item in items) {
+            if (item is Map<String, dynamic>) {
+              final cost = item['costPrice'] as num?;
+              final qty = (item['quantity'] as num?)?.toInt() ?? 1;
+              if (cost != null && cost > 0) {
+                saleCost += (cost.toInt() * qty);
+              }
+            }
+          }
+          final shipping = (d['shippingCost'] as num?)?.toInt() ?? 0;
+          final profit = grandTotal - shipping - saleCost;
+          dailyMap[key] = DailyPoint(
+            day: existing.day,
+            revenue: existing.revenue + grandTotal,
+            orders: existing.orders + 1,
+            profit: existing.profit + profit,
+          );
+        }
+      }
+      return dailyMap.values.toList()
+        ..sort((a, b) => a.day.compareTo(b.day));
+    } catch (_) {
+      return <DailyPoint>[];
     }
-    final result = <DailySummary>[];
-    for (var i = 0; i < ids.length; i += 30) {
-      final chunk = ids.sublist(i, i + 30 > ids.length ? ids.length : i + 30);
-      final snap = await sub(wsId, Collections.dailySummaries)
-          .where(FieldPath.documentId, whereIn: chunk)
-          .get();
-      result.addAll(snap.docs.map(DailySummary.fromDoc));
-    }
-    return result;
   }
 
   Future<bool> _hasUnknownCostSales(String wsId) async {
     try {
-      final snap = await sub(wsId, Collections.dailySummaries)
-          .where('hasUnknownCostSales', isEqualTo: true)
-          .limit(1)
-          .get();
-      return snap.docs.isNotEmpty;
+      final snap = await sub(wsId, Collections.sales).get();
+      for (final doc in snap.docs) {
+        final d = doc.data();
+        if (d['countsRevenue'] != true) continue;
+        final items = d['items'] as List<dynamic>? ?? [];
+        for (final item in items) {
+          if (item is Map<String, dynamic>) {
+            final cost = item['costPrice'] as num?;
+            if (cost == null || cost <= 0) return true;
+          }
+        }
+      }
+      return false;
     } catch (_) {
       return false;
     }
@@ -256,10 +293,38 @@ class DashboardRepository extends BaseRepository {
 
   Future<(int, bool)> _monthProfit(String wsId, DateTime now) async {
     try {
-      final summaries =
-          await _summaries(wsId, startOfMonth(DateTime.now()), DateTime.now());
-      final total = summaries.fold(0, (acc, s) => acc + s.estimatedProfit);
-      return (total, false);
+      final from = startOfMonth(now);
+      final fromMs = from.millisecondsSinceEpoch;
+      final toMs = now.millisecondsSinceEpoch;
+      final snap = await sub(wsId, Collections.sales).get();
+      var profit = 0;
+      var hasUnknown = false;
+      for (final doc in snap.docs) {
+        final d = doc.data();
+        if (d['countsRevenue'] != true) continue;
+        final ts = d['createdAt'] as Timestamp?;
+        if (ts != null) {
+          final ms = ts.millisecondsSinceEpoch;
+          if (ms < fromMs || ms > toMs) continue;
+        }
+        final items = d['items'] as List<dynamic>? ?? [];
+        var saleCost = 0;
+        for (final item in items) {
+          if (item is Map<String, dynamic>) {
+            final cost = item['costPrice'] as num?;
+            final qty = (item['quantity'] as num?)?.toInt() ?? 1;
+            if (cost != null && cost > 0) {
+              saleCost += (cost.toInt() * qty);
+            } else {
+              hasUnknown = true;
+            }
+          }
+        }
+        final grandTotal = (d['grandTotal'] as num?)?.toInt() ?? 0;
+        final shipping = (d['shippingCost'] as num?)?.toInt() ?? 0;
+        profit += (grandTotal - shipping - saleCost);
+      }
+      return (profit, hasUnknown);
     } catch (_) {
       return (0, false);
     }

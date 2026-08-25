@@ -46,11 +46,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
-  void _load() {
+  void _load({bool force = false}) {
     final state = ref.read(activeWorkspaceProvider);
     final wsId = ref.read(gateProvider).activeWorkspaceId;
     if (wsId == null) return;
-    if (_loadedForWsId == wsId && _future != null && _error == null) return;
+    if (!force && _loadedForWsId == wsId && _future != null && _error == null) return;
     _loadedForWsId = wsId;
     final includeFinance = state.member?.isOwner ?? false;
     setState(() {
@@ -90,7 +90,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         };
       });
     }
-    _load();
+    _load(force: true);
   }
 
   static DateTime endOfDay(DateTime dt) =>
@@ -173,7 +173,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => _load(),
+        onRefresh: () async => _load(force: true),
         child: _buildBody(context, isOwner, member?.role == UserRole.EMPLOYEE),
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 0),
@@ -211,7 +211,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
         const SizedBox(height: 14),
         if (_error != null)
-          ErrorStateView(error: _error!, onRetry: _load)
+          ErrorStateView(error: _error!, onRetry: () => _load(force: true))
         else if (_future == null)
           const SizedBox(height: 200)
         else
@@ -222,7 +222,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 return const _DashboardSkeleton();
               }
               if (snapshot.hasError) {
-                return ErrorStateView(error: snapshot.error!, onRetry: _load);
+                return ErrorStateView(
+                    error: snapshot.error!,
+                    onRetry: () => _load(force: true));
               }
               final data = snapshot.data!;
               return _DashboardContent(

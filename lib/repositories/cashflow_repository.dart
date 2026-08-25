@@ -65,21 +65,31 @@ class CashflowRepository extends BaseRepository {
   }
 
   Future<CashTotals> totalsForRange(String wsId, DateTime from, DateTime to) async {
-    final base = sub(wsId, Collections.cashTransactions)
-        .where('occurredAt', isGreaterThanOrEqualTo: Timestamp.fromDate(from))
-        .where('occurredAt', isLessThanOrEqualTo: Timestamp.fromDate(to));
-    final incomeSnap = await base
-        .where('type', isEqualTo: CashTransactionType.income.name)
-        .aggregate(sum('amount'))
-        .get();
-    final expenseSnap = await base
-        .where('type', isEqualTo: CashTransactionType.expense.name)
-        .aggregate(sum('amount'))
-        .get();
-    return CashTotals(
-      income: (incomeSnap.getSum('amount') as num?)?.toInt() ?? 0,
-      expense: (expenseSnap.getSum('amount') as num?)?.toInt() ?? 0,
-    );
+    try {
+      final snap = await sub(wsId, Collections.cashTransactions).get();
+      final fromMs = from.millisecondsSinceEpoch;
+      final toMs = to.millisecondsSinceEpoch;
+      var income = 0;
+      var expense = 0;
+      for (final doc in snap.docs) {
+        final d = doc.data();
+        final ts = d['occurredAt'] as Timestamp?;
+        final amount = (d['amount'] as num?)?.toInt() ?? 0;
+        final type = d['type'] as String?;
+        if (ts != null) {
+          final ms = ts.millisecondsSinceEpoch;
+          if (ms < fromMs || ms > toMs) continue;
+        }
+        if (type == CashTransactionType.income.name) {
+          income += amount;
+        } else if (type == CashTransactionType.expense.name) {
+          expense += amount;
+        }
+      }
+      return CashTotals(income: income, expense: expense);
+    } catch (_) {
+      return const CashTotals(income: 0, expense: 0);
+    }
   }
 
   Query<Map<String, dynamic>> listQuery(
