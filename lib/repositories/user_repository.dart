@@ -47,10 +47,12 @@ class UserRepository extends BaseRepository {
   Future<void> updateProfile(String uid, {String? displayName, String? phoneNumber, String? photoUrl}) async {
     final data = <String, dynamic>{
       'updatedAt': FieldValue.serverTimestamp(),
-      if (displayName != null) 'displayName': displayName.trim(),
-      if (phoneNumber != null) 'phoneNumber': phoneNumber.trim(),
-      if (photoUrl != null) 'photoUrl': photoUrl,
     };
+    final name = displayName?.trim();
+    if (name != null) data['displayName'] = name;
+    final phone = phoneNumber?.trim();
+    if (phone != null) data['phoneNumber'] = phone;
+    if (photoUrl != null) data['photoUrl'] = photoUrl;
     await usersCol().doc(uid).update(data);
   }
 
@@ -73,10 +75,13 @@ class UserRepository extends BaseRepository {
     final ref = usersCol().doc(uid);
     final snap = await ref.get();
     final current = snap.exists ? UserProfile.fromDoc(snap) : null;
-    await ref.update({
+    final update = <String, dynamic>{
       'workspaceIds': FieldValue.arrayRemove([workspaceId]),
-      if (current?.activeWorkspaceId == workspaceId) 'activeWorkspaceId': null,
       'updatedAt': FieldValue.serverTimestamp(),
-    });
+    };
+    if (current?.activeWorkspaceId == workspaceId) {
+      update['activeWorkspaceId'] = null;
+    }
+    await ref.update(update);
   }
 }
