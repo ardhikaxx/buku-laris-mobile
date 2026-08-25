@@ -5,6 +5,7 @@ import '../core/utils/formatters.dart';
 import '../models/daily_summary_model.dart';
 import '../models/enums.dart';
 import '../models/product_model.dart';
+import '../services/logger.dart';
 import 'base_repository.dart';
 import 'cashflow_repository.dart';
 import 'product_repository.dart';
@@ -103,16 +104,23 @@ class DashboardRepository extends BaseRepository {
       else
         Future.value(const _RevOrd(revenue: 0, orders: 0)),
       if (includeFinance)
-        _cashflow.totalsForRange(wsId, startOfMonth(DateTime.now()), now)
+        _guard(
+          () => _cashflow.totalsForRange(wsId, startOfMonth(DateTime.now()), now),
+          fallback: const CashTotals(income: 0, expense: 0),
+        )
       else
         Future.value(const CashTotals(income: 0, expense: 0)),
       _productCount(wsId),
-      if (includeFinance) _products.listLowStock(wsId, limit: 6) else Future.value(<Product>[]),
+      if (includeFinance)
+        _guard(() => _products.listLowStock(wsId, limit: 6),
+            fallback: <Product>[])
+      else
+        Future.value(<Product>[]),
       _countQuery(sub(wsId, Collections.sales).where('status', whereIn: _activeStatusNames)),
       _countQuery(sub(wsId, Collections.sales)
           .where('orderType', isEqualTo: OrderType.preOrder.name)
           .where('status', whereIn: _activeStatusNames)),
-      _chart(wsId, range),
+      _guard(() => _chart(wsId, range), fallback: <DailyPoint>[]),
       if (includeFinance) _hasUnknownCostSales(wsId) else Future.value(false),
       if (includeFinance)
         _monthProfit(wsId, now)
@@ -148,6 +156,15 @@ class DashboardRepository extends BaseRepository {
       chart: chart,
       range: range,
     );
+  }
+
+  Future<T> _guard<T>(Future<T> Function() action, {required T fallback}) async {
+    try {
+      return await action();
+    } catch (e) {
+      Logger.e('dashboard: bagian dashboard gagal dimuat, dinolkan', e);
+      return fallback;
+    }
   }
 
   Future<_RevOrd> _revenueAndOrders(String wsId, DateTime from, DateTime to) async {
