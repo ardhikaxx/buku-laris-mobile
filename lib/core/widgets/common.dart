@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../constants/app_constants.dart';
 import '../errors/app_exception.dart';
-import '../utils/formatters.dart';
+import '../theme/app_theme.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -345,6 +345,52 @@ class InfoRow extends StatelessWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: valueColor ?? const Color(0xFF111827))),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class QtyStepper extends StatelessWidget {
+  final int qty;
+  final ValueChanged<int> onChanged;
+
+  const QtyStepper({super.key, required this.qty, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            borderRadius: const BorderRadius.horizontal(left: Radius.circular(9)),
+            onTap: () => onChanged(qty - 1),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+              child: Icon(Icons.remove_rounded, size: 15, color: Color(0xFF374151)),
+            ),
+          ),
+          SizedBox(
+            width: 26,
+            child: Text('$qty',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+          ),
+          InkWell(
+            borderRadius:
+                const BorderRadius.horizontal(right: Radius.circular(9)),
+            onTap: () => onChanged(qty + 1),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+              child: Icon(Icons.add_rounded,
+                  size: 15, color: Theme.of(context).colorScheme.primary),
+            ),
           ),
         ],
       ),
