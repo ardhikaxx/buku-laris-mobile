@@ -63,7 +63,6 @@ service cloud.firestore {
     // pre-batch state, so we look at the post-batch workspace via getAfter().
     function isBootstrapOwner(wsId) {
       return signedIn()
-        && exists(/databases/$(database)/documents/workspaces/$(wsId))
         && getAfter(/databases/$(database)/documents/workspaces/$(wsId)).data.ownerId == uid();
     }
 
