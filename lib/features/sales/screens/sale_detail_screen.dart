@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../config/gate.dart';
@@ -14,8 +13,6 @@ import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../models/payment_method_model.dart';
 import '../../../models/sale_model.dart';
-import '../../../repositories/sale_repository.dart';
-import '../../../services/logger.dart';
 
 class SaleDetailScreen extends ConsumerStatefulWidget {
   final String saleId;
@@ -113,7 +110,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
               ),
               const SizedBox(height: 10),
               DropdownButtonFormField<PaymentMethodModel>(
-                value: method,
+                initialValue: method,
                 decoration:
                     const InputDecoration(labelText: 'Metode pembayaran'),
                 items: methods
