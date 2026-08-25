@@ -38,6 +38,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   AppDateRange _range = AppDateRange.thisMonth();
   Future<DashboardData>? _future;
   Object? _error;
+  String? _loadedForWsId;
 
   @override
   void initState() {
@@ -49,6 +50,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final state = ref.read(activeWorkspaceProvider);
     final wsId = ref.read(gateProvider).activeWorkspaceId;
     if (wsId == null) return;
+    if (_loadedForWsId == wsId && _future != null && _error == null) return;
+    _loadedForWsId = wsId;
     final includeFinance = state.member?.isOwner ?? false;
     setState(() {
       _error = null;
@@ -100,6 +103,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final workspace = active.workspace;
     final member = active.member;
     final isOwner = member?.isOwner ?? false;
+
+    if (gate.activeWorkspaceId != _loadedForWsId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    }
 
     if (workspace == null && active.loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -222,6 +229,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 data: data,
                 isOwner: isOwner,
                 isEmployee: isEmployee,
+                canManageProducts:
+                    ref.read(activeWorkspaceProvider).can(Permission.productsManage),
                 periodLabel: _period.label,
               );
             },
@@ -235,12 +244,14 @@ class _DashboardContent extends StatelessWidget {
   final DashboardData data;
   final bool isOwner;
   final bool isEmployee;
+  final bool canManageProducts;
   final String periodLabel;
 
   const _DashboardContent({
     required this.data,
     required this.isOwner,
     required this.isEmployee,
+    required this.canManageProducts,
     required this.periodLabel,
   });
 
@@ -383,6 +394,46 @@ class _DashboardContent extends StatelessWidget {
           ),
           const SizedBox(height: 14),
         ],
+        if (data.periodOrders == 0 && data.productCount == 0) ...[
+          Card(
+            color: const Color(0xFFF0FDFA),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Icon(Icons.rocket_launch_outlined,
+                      size: 34, color: AppColors.primary),
+                  const SizedBox(height: 8),
+                  Text('Mulai dari sini!',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.teal[900])),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Usaha Anda baru dibuat sehingga semua angka masih nol. '
+                    'Tambahkan produk atau layanan pertama, lalu catat penjualan lewat tombol Aksi Cepat di bawah.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 12.5, height: 1.55, color: Colors.grey[700]),
+                  ),
+                  if (canManageProducts) ...[
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          minimumSize: const Size.fromHeight(42)),
+                      onPressed: () => context.push('/products/new'),
+                      icon: const Icon(Icons.add_box_outlined, size: 18),
+                      label: const Text('Tambah Produk Pertama'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+        ],
         SectionHeader('Grafik Penjualan ($periodLabel)'),
         Card(
           child: Padding(
@@ -484,10 +535,18 @@ class _RevenueChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (points.isEmpty) {
+    if (points.isEmpty || points.every((p) => p.revenue == 0)) {
       return Center(
-          child: Text('Belum ada data penjualan',
-              style: TextStyle(fontSize: 12.5, color: Colors.grey[500])));
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bar_chart_rounded, size: 34, color: Colors.grey[350]),
+            const SizedBox(height: 8),
+            Text('Grafik akan terisi setelah ada penjualan',
+                style: TextStyle(fontSize: 12.5, color: Colors.grey[500])),
+          ],
+        ),
+      );
     }
     final maxY = points.map((p) => p.revenue).fold<int>(0, max) * 1.15;
     return BarChart(
