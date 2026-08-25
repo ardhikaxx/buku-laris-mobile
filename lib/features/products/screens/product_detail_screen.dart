@@ -246,12 +246,12 @@ class ProductDetailScreen extends ConsumerWidget {
                           ? 'Stok Saat Ini'
                           : 'Tersedia',
                       value: product.unlimitedStock
-                          ? '∞'
+                          ? 'Tanpa batas'
                           : product.type.tracksStock && product.trackStock
-                              ? '${number(product.stock)}'
+                              ? number(product.stock)
                               : product.type == ProductType.digitalProduct
                                   ? (product.licenseCount == null
-                                      ? '∞'
+                                      ? 'Tanpa batas'
                                       : number(product.licenseCount))
                                   : 'Jasa',
                       icon: Icons.inventory_2_outlined,
