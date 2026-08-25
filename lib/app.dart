@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,13 +8,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'config/gate.dart';
 import 'config/router.dart';
 import 'core/theme/app_theme.dart';
+import 'services/logger.dart';
 
 class BukuLarisApp extends ConsumerWidget {
   const BukuLarisApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(gateProvider.select((s) => s.status), (_, _) {});
+    ref.listen(gateProvider.select((s) => s.status), (_, __) {});
+    FlutterError.onError = (details) {
+      Logger.e('FLUTTER ERROR: ${details.exception}', details.stack);
+      FlutterError.presentError(details);
+    };
     final router = ref.watch(routerProvider);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(

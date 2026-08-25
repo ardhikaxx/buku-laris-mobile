@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,8 +29,10 @@ class PosScreenState extends ConsumerState<PosScreen> {
   String _searchTerm = '';
   List<Product> _products = [];
   bool _loadingProducts = true;
+  bool _indexBuilding = false;
   String? _loadError;
   String? _loadedForWsId;
+  Timer? _retryTimer;
   final Map<String, int> qtyInCart = {};
   final Map<String, Product> cartProducts = {};
   int discountAmount = 0;
@@ -50,6 +54,7 @@ class PosScreenState extends ConsumerState<PosScreen> {
 
   @override
   void dispose() {
+    _retryTimer?.cancel();
     notesController.dispose();
     super.dispose();
   }
@@ -83,17 +88,31 @@ class PosScreenState extends ConsumerState<PosScreen> {
       final seen = <String>{};
       results.retainWhere((p) => p.availableForSale && seen.add(p.id));
       if (!mounted) return;
+      _retryTimer?.cancel();
       setState(() {
         _products = results;
         _loadingProducts = false;
+        _indexBuilding = false;
       });
     } catch (e) {
       Logger.e('pos load products failed', e);
       if (!mounted) return;
+      final isIndexBuilding = e.toString().contains('index');
       setState(() {
         _loadError = mapToAppException(e).message;
         _loadingProducts = false;
+        _indexBuilding = isIndexBuilding;
       });
+      if (isIndexBuilding) {
+        _retryTimer?.cancel();
+        _retryTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+          if (!mounted) {
+            _retryTimer?.cancel();
+            return;
+          }
+          loadProducts(_searchTerm.trim());
+        });
+      }
     }
   }
 
@@ -294,6 +313,34 @@ class PosScreenState extends ConsumerState<PosScreen> {
 
   Widget _buildProductList() {
     if (_loadingProducts) return const ListSkeleton(itemCount: 5);
+    if (_indexBuilding) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: CircularProgressIndicator(strokeWidth: 2.6)),
+              const SizedBox(height: 16),
+              Text('Menyiapkan indeks produk...',
+                  style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey[800])),
+              const SizedBox(height: 6),
+              Text(
+                'Firebase sedang membangun indeks pertama kali (1-3 menit). Halaman ini otomatis dimuat ulang setiap 15 detik.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12.5, height: 1.5, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     if (_loadError != null) {
       return ErrorStateView(
           error: _loadError!, onRetry: () => loadProducts(_searchTerm));
