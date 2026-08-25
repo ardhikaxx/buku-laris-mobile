@@ -342,16 +342,33 @@ class _DashboardContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          StatCard(
-            label: data.profitHasUnknownCosts
-                ? 'Estimasi Keuntungan (bulan ini)*'
-                : 'Keuntungan (bulan ini)',
-            value: compactMoney(data.monthProfitEstimate),
-            icon: Icons.savings_outlined,
-            color: AppColors.accent,
-            sublabel: data.profitHasUnknownCosts
-                ? '*beberapa produk belum punya harga modal'
-                : null,
+          Row(
+            children: [
+              Expanded(
+                child: StatCard(
+                  label: 'Arus Kas Bersih (bulan ini)',
+                  value: compactMoney(data.monthCashIn - data.monthCashOut),
+                  icon: Icons.account_balance_wallet_outlined,
+                  color: (data.monthCashIn - data.monthCashOut) >= 0
+                      ? AppColors.primary
+                      : AppColors.expense,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: StatCard(
+                  label: data.profitHasUnknownCosts
+                      ? 'Estimasi Keuntungan*'
+                      : 'Estimasi Keuntungan',
+                  value: compactMoney(data.monthProfitEstimate),
+                  icon: Icons.savings_outlined,
+                  color: AppColors.accent,
+                  sublabel: data.profitHasUnknownCosts
+                      ? '*modal belum lengkap'
+                      : null,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 18),
         ] else ...[

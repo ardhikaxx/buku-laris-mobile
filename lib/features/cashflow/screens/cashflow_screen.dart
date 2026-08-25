@@ -13,6 +13,8 @@ import '../../../models/enums.dart';
 import '../../shared/widgets/navigation.dart';
 import '../widgets/cash_form_sheet.dart';
 
+enum _CashTab { all, income, expense }
+
 class CashflowScreen extends ConsumerStatefulWidget {
   const CashflowScreen({super.key});
 
@@ -21,7 +23,7 @@ class CashflowScreen extends ConsumerStatefulWidget {
 }
 
 class _CashflowScreenState extends ConsumerState<CashflowScreen> {
-  CashTransactionType _tab = CashTransactionType.income;
+  _CashTab _tab = _CashTab.all;
   DateTimeRange _range = _thisMonth();
 
   static DateTimeRange _thisMonth() {
@@ -32,6 +34,9 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
     );
   }
 
+  static DateTime endOfDay(DateTime dt) =>
+      DateTime(dt.year, dt.month, dt.day, 23, 59, 59);
+
   @override
   Widget build(BuildContext context) {
     final wsId = ref.watch(gateProvider).activeWorkspaceId;
@@ -39,121 +44,342 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
         ref.watch(activeWorkspaceProvider).can(Permission.cashflowManage);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Keuangan')),
+      appBar: AppBar(
+        title: const Text('Keuangan & Arus Kas'),
+        actions: [
+          IconButton(
+            tooltip: 'Filter Tanggal',
+            icon: const Icon(Icons.date_range_rounded, size: 20),
+            onPressed: () async {
+              final picked = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime(2020),
+                lastDate: DateTime.now(),
+                initialDateRange: _range,
+                locale: const Locale('id', 'ID'),
+              );
+              if (picked != null) {
+                setState(() {
+                  _range = DateTimeRange(
+                    start: picked.start,
+                    end: endOfDay(picked.end),
+                  );
+                });
+              }
+            },
+          ),
+        ],
+      ),
       body: wsId == null
           ? const SizedBox.shrink()
-          : Column(
-              children: [
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SegmentedButton<CashTransactionType>(
-                          showSelectedIcon: false,
-                          segments: [
-                            ButtonSegment(
-                                value: CashTransactionType.income,
-                                label: Text('Uang Masuk',
-                                    style:
-                                        TextStyle(fontSize: 12, color: _tab == CashTransactionType.income ? Colors.white : null)),
+          : StreamBuilder<List<CashTransaction>>(
+              stream: ref.watch(cashflowRepositoryProvider).watchAll(
+                    wsId,
+                    from: _range.start,
+                    to: _range.end,
+                  ),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const ListSkeleton(itemCount: 6);
+                }
+                if (snapshot.hasError) {
+                  return ErrorStateView(
+                    error: snapshot.error!,
+                    onRetry: () => setState(() {}),
+                  );
+                }
+
+                final allItems = snapshot.data ?? [];
+                final totalIncome = allItems
+                    .where((t) => t.type == CashTransactionType.income)
+                    .fold(0, (acc, t) => acc + t.amount);
+                final totalExpense = allItems
+                    .where((t) => t.type == CashTransactionType.expense)
+                    .fold(0, (acc, t) => acc + t.amount);
+                final netCash = totalIncome - totalExpense;
+
+                final filteredItems = allItems.where((t) {
+                  if (_tab == _CashTab.income) {
+                    return t.type == CashTransactionType.income;
+                  }
+                  if (_tab == _CashTab.expense) {
+                    return t.type == CashTransactionType.expense;
+                  }
+                  return true;
+                }).toList();
+
+                return Column(
+                  children: [
+                    // Financial Summary Card
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(12),
+                              border:
+                                  Border.all(color: const Color(0xFFE2E8F0)),
                             ),
-                            ButtonSegment(
-                                value: CashTransactionType.expense,
-                                label: Text('Uang Keluar',
-                                    style:
-                                        TextStyle(fontSize: 12, color: _tab == CashTransactionType.expense ? Colors.white : null))),
-                          ],
-                          selected: {_tab},
-                          style: SegmentedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade100,
-                            selectedBackgroundColor:
-                                _tab == CashTransactionType.income
-                                    ? AppColors.income
-                                    : AppColors.expense,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Periode: ${dateShort(_range.start)} - ${dateShort(_range.end)}',
+                                      style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey[600]),
+                                    ),
+                                    Text(
+                                      '${allItems.length} Catatan',
+                                      style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.grey[700]),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.south_west_rounded,
+                                                  size: 13,
+                                                  color: AppColors.income),
+                                              const SizedBox(width: 4),
+                                              Text('Uang Masuk',
+                                                  style: TextStyle(
+                                                      fontSize: 11,
+                                                      color: Colors.grey[600],
+                                                      fontWeight:
+                                                          FontWeight.w500)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            money(totalIncome),
+                                            style: const TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppColors.income,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 1,
+                                      height: 32,
+                                      color: Colors.grey[300],
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.north_east_rounded,
+                                                  size: 13,
+                                                  color: AppColors.expense),
+                                              const SizedBox(width: 4),
+                                              Text('Uang Keluar',
+                                                  style: TextStyle(
+                                                      fontSize: 11,
+                                                      color: Colors.grey[600],
+                                                      fontWeight:
+                                                          FontWeight.w500)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            money(totalExpense),
+                                            style: const TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppColors.expense,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 1,
+                                      height: 32,
+                                      color: Colors.grey[300],
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                  Icons
+                                                      .account_balance_wallet_outlined,
+                                                  size: 13,
+                                                  color: netCash >= 0
+                                                      ? AppColors.primary
+                                                      : AppColors.expense),
+                                              const SizedBox(width: 4),
+                                              Text('Sisa Kas',
+                                                  style: TextStyle(
+                                                      fontSize: 11,
+                                                      color: Colors.grey[600],
+                                                      fontWeight:
+                                                          FontWeight.w500)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            money(netCash),
+                                            style: TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: netCash >= 0
+                                                  ? AppColors.primary
+                                                  : AppColors.expense,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                          onSelectionChanged: (selection) =>
-                              setState(() => _tab = selection.first),
-                        ),
+                          const SizedBox(height: 10),
+                          // Tab Selector
+                          SegmentedButton<_CashTab>(
+                            showSelectedIcon: false,
+                            segments: [
+                              ButtonSegment(
+                                value: _CashTab.all,
+                                label: Text(
+                                  'Semua (${allItems.length})',
+                                  style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: _tab == _CashTab.all
+                                          ? Colors.white
+                                          : null),
+                                ),
+                              ),
+                              ButtonSegment(
+                                value: _CashTab.income,
+                                label: Text(
+                                  'Masuk (${allItems.where((t) => t.type == CashTransactionType.income).length})',
+                                  style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: _tab == _CashTab.income
+                                          ? Colors.white
+                                          : null),
+                                ),
+                              ),
+                              ButtonSegment(
+                                value: _CashTab.expense,
+                                label: Text(
+                                  'Keluar (${allItems.where((t) => t.type == CashTransactionType.expense).length})',
+                                  style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: _tab == _CashTab.expense
+                                          ? Colors.white
+                                          : null),
+                                ),
+                              ),
+                            ],
+                            selected: {_tab},
+                            style: SegmentedButton.styleFrom(
+                              backgroundColor: Colors.grey.shade100,
+                              selectedBackgroundColor: switch (_tab) {
+                                _CashTab.all => AppColors.primary,
+                                _CashTab.income => AppColors.income,
+                                _CashTab.expense => AppColors.expense,
+                              },
+                            ),
+                            onSelectionChanged: (selection) =>
+                                setState(() => _tab = selection.first),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        tooltip: 'Filter tanggal',
-                        icon: const Icon(Icons.date_range_rounded, size: 20),
-                        onPressed: () async {
-                          final picked = await showDateRangePicker(
-                            context: context,
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime.now(),
-                            initialDateRange: _range,
-                            locale: const Locale('id', 'ID'),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              _range = DateTimeRange(
-                                start: picked.start,
-                                end: endOfDay(picked.end),
-                              );
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: PagedListView<CashTransaction>(
-                    key: ValueKey('${_tab.name}-${_range.start}-${_range.end}'),
-                    buildQuery: () => ref
-                        .read(cashflowRepositoryProvider)
-                        .listQuery(wsId,
-                            type: _tab,
-                            from: _range.start,
-                            to: _range.end),
-                    mapper: CashTransaction.fromDoc,
-                    emptyState: EmptyState(
-                      icon: _tab == CashTransactionType.income
-                          ? Icons.south_west_rounded
-                          : Icons.north_east_rounded,
-                      title: 'Belum ada catatan',
-                      message: _tab == CashTransactionType.income
-                          ? 'Catat pemasukan dari penjualan, DP, atau modal masuk di sini.'
-                          : 'Catat pengeluaran seperti stok, operasional, dan biaya lainnya.',
-                      action: canManage
-                          ? ElevatedButton.icon(
-                              onPressed: () => CashFormSheet.show(context,
-                                  isIncome: _tab == CashTransactionType.income),
-                              icon: const Icon(Icons.add, size: 18),
-                              label: Text(_tab == CashTransactionType.income
-                                  ? 'Uang Masuk'
-                                  : 'Uang Keluar'))
-                          : null,
                     ),
-                    itemBuilder: (context, txnModel, index) =>
-                        _CashTile(txnModel: txnModel, canManage: canManage),
-                  ),
-                ),
-              ],
+                    Expanded(
+                      child: filteredItems.isEmpty
+                          ? EmptyState(
+                              icon: _tab == _CashTab.income
+                                  ? Icons.south_west_rounded
+                                  : (_tab == _CashTab.expense
+                                      ? Icons.north_east_rounded
+                                      : Icons.account_balance_wallet_outlined),
+                              title: 'Belum ada catatan kas',
+                              message: _tab == _CashTab.income
+                                  ? 'Belum ada pemasukan di periode ini.'
+                                  : (_tab == _CashTab.expense
+                                      ? 'Belum ada pengeluaran di periode ini.'
+                                      : 'Belum ada mutasi kas tercatat di periode ini.'),
+                              action: canManage
+                                  ? ElevatedButton.icon(
+                                      onPressed: () => CashFormSheet.show(
+                                          context,
+                                          isIncome:
+                                              _tab != _CashTab.expense),
+                                      icon: const Icon(Icons.add, size: 18),
+                                      label: Text(_tab == _CashTab.expense
+                                          ? 'Catat Uang Keluar'
+                                          : 'Catat Uang Masuk'))
+                                  : null,
+                            )
+                          : ListView.separated(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                              itemCount: filteredItems.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 8),
+                              itemBuilder: (context, index) => _CashTile(
+                                txnModel: filteredItems[index],
+                                canManage: canManage,
+                              ),
+                            ),
+                    ),
+                  ],
+                );
+              },
             ),
       floatingActionButton: canManage
           ? FloatingActionButton.extended(
               heroTag: 'cash-fab',
-              backgroundColor:
-                  _tab == CashTransactionType.income ? AppColors.income : AppColors.expense,
+              backgroundColor: _tab == _CashTab.expense
+                  ? AppColors.expense
+                  : AppColors.primary,
               foregroundColor: Colors.white,
-              onPressed: () =>
-                  CashFormSheet.show(context, isIncome: _tab == CashTransactionType.income),
+              onPressed: () => CashFormSheet.show(context,
+                  isIncome: _tab != _CashTab.expense),
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('Catat',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+              label: const Text('Catat Kas',
+                  style:
+                      TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
             )
           : null,
       bottomNavigationBar: const AppBottomNav(currentIndex: 3),
     );
   }
-
-  static DateTime endOfDay(DateTime dt) =>
-      DateTime(dt.year, dt.month, dt.day, 23, 59, 59);
 }
 
 class _CashTile extends ConsumerWidget {
@@ -165,118 +391,196 @@ class _CashTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isIncome = txnModel.type == CashTransactionType.income;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Card(
-        child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
-          onTap: () {
-            if (txnModel.sourceSaleId.isNotEmpty) {
-              context.push('/sales/${txnModel.sourceSaleId}');
-            }
-          },
-          leading: CircleAvatar(
-            radius: 19,
-            backgroundColor: isIncome
-                ? AppColors.income.withValues(alpha: 0.11)
-                : AppColors.expense.withValues(alpha: 0.11),
-            child: Icon(
-              isIncome ? Icons.south_west_rounded : Icons.north_east_rounded,
-              color: isIncome ? AppColors.income : AppColors.expense,
-              size: 19,
-            ),
+    final isSaleLinked = txnModel.sourceSaleId.isNotEmpty;
+    final isRefund = txnModel.sourceType == 'REFUND' ||
+        txnModel.category.toLowerCase().contains('refund') ||
+        txnModel.category.toLowerCase().contains('batal');
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isRefund
+              ? AppColors.expense.withValues(alpha: 0.35)
+              : Colors.grey.shade200,
+        ),
+      ),
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        onTap: () {
+          if (isSaleLinked) {
+            context.push('/sales/${txnModel.sourceSaleId}');
+          }
+        },
+        leading: CircleAvatar(
+          radius: 20,
+          backgroundColor: isIncome
+              ? AppColors.income.withValues(alpha: 0.12)
+              : AppColors.expense.withValues(alpha: 0.12),
+          child: Icon(
+            isIncome
+                ? Icons.south_west_rounded
+                : (isRefund
+                    ? Icons.replay_rounded
+                    : Icons.north_east_rounded),
+            color: isIncome ? AppColors.income : AppColors.expense,
+            size: 20,
           ),
-          title: Row(
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      txnModel.category,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ),
+                  if (isRefund) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: AppColors.expense.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'REFUND',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.expense,
+                        ),
+                      ),
+                    ),
+                  ] else if (isSaleLinked) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'PENJUALAN',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${isIncome ? '+' : '-'}${money(txnModel.amount)}',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: isIncome ? AppColors.income : AppColors.expense,
+              ),
+            ),
+          ],
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  txnModel.category,
+              if (txnModel.description.isNotEmpty)
+                Text(
+                  txnModel.description,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: isIncome ? AppColors.income : AppColors.expense),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
                 ),
-              ),
-              Text(
-                '${isIncome ? '+' : '-'}${money(txnModel.amount)}',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w800,
-                  color: isIncome ? AppColors.income : AppColors.expense,
-                ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  if (txnModel.paymentMethodName.isNotEmpty) ...[
+                    Icon(Icons.credit_card_rounded,
+                        size: 12, color: Colors.grey[500]),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${txnModel.paymentMethodName} \u2022 ',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    ),
+                  ],
+                  Text(
+                    dateTimeShort(txnModel.occurredAt),
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
+                  if (isSaleLinked) ...[
+                    const Spacer(),
+                    Text(
+                      'Lihat Struk \u203A',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (txnModel.description.isNotEmpty)
-                  Text(txnModel.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12.5, color: Colors.grey[700])),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    if (txnModel.paymentMethodName.isNotEmpty) ...[
-                      Icon(Icons.credit_card, size: 11.5, color: Colors.grey[500]),
-                      const SizedBox(width: 3),
-                      Text('${txnModel.paymentMethodName} • ',
-                          style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                    ],
-                    Text(dateShort(txnModel.occurredAt),
-                        style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                    if (txnModel.sourceSaleId.isNotEmpty)
-                      Text(' • dari penjualan',
-                          style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          trailing: canManage && txnModel.sourceSaleId.isEmpty
-              ? PopupMenuButton<String>(
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(Icons.more_vert_rounded, size: 18),
-                  onSelected: (value) async {
-                    if (value == 'edit') {
-                      await CashFormSheet.show(context,
-                          isIncome: isIncome, existing: txnModel);
-                    } else if (value == 'delete') {
-                      final confirmed = await confirmAction(
-                        context,
-                        title: 'Hapus catatan kas?',
-                        message:
-                            '${isIncome ? '+' : '-'}${money(txnModel.amount)} — ${txnModel.category}',
-                        destructive: true,
-                      );
-                      if (!confirmed) return;
-                      try {
-                        await ref
-                            .read(cashflowRepositoryProvider)
-                            .delete(txnModel);
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(mapToAppException(e).message),
-                            backgroundColor: AppColors.expense,
-                          ));
-                        }
+        ),
+        trailing: canManage && !isSaleLinked
+            ? PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.more_vert_rounded, size: 18),
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    await CashFormSheet.show(context,
+                        isIncome: isIncome, existing: txnModel);
+                  } else if (value == 'delete') {
+                    final confirmed = await confirmAction(
+                      context,
+                      title: 'Hapus catatan kas?',
+                      message:
+                          '${isIncome ? '+' : '-'}${money(txnModel.amount)} \u2014 ${txnModel.category}',
+                      destructive: true,
+                    );
+                    if (!confirmed) return;
+                    try {
+                      await ref
+                          .read(cashflowRepositoryProvider)
+                          .delete(txnModel);
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(mapToAppException(e).message),
+                          backgroundColor: AppColors.expense,
+                        ));
                       }
                     }
-                  },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Ubah')),
-                    PopupMenuItem(value: 'delete', child: Text('Hapus')),
-                  ],
-                )
-              : null,
-        ),
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'edit', child: Text('Ubah')),
+                  PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Hapus',
+                          style: TextStyle(color: AppColors.expense))),
+                ],
+              )
+            : null,
       ),
     );
   }

@@ -114,12 +114,39 @@ class CashflowRepository extends BaseRepository {
     return q.orderBy('occurredAt', descending: true);
   }
 
+  Stream<List<CashTransaction>> watchAll(
+    String wsId, {
+    CashTransactionType? type,
+    String? category,
+    DateTime? from,
+    DateTime? to,
+  }) {
+    return sub(wsId, Collections.cashTransactions).snapshots().map((s) {
+      final fromMs = from?.millisecondsSinceEpoch;
+      final toMs = to?.millisecondsSinceEpoch;
+      final list = s.docs
+          .map(CashTransaction.fromDoc)
+          .where((txn) {
+            if (type != null && txn.type != type) return false;
+            if (category != null && category.isNotEmpty && txn.category != category) {
+              return false;
+            }
+            final ms = txn.occurredAt.millisecondsSinceEpoch;
+            if (fromMs != null && ms < fromMs) return false;
+            if (toMs != null && ms > toMs) return false;
+            return true;
+          })
+          .toList();
+      list.sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
+      return list;
+    });
+  }
+
   Stream<List<CashTransaction>> watchRecent(String wsId, {int limit = 5}) {
-    return sub(wsId, Collections.cashTransactions)
-        .orderBy('occurredAt', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map((s) => s.docs.map(CashTransaction.fromDoc).toList());
+    return watchAll(wsId).map((list) {
+      if (list.length > limit) return list.sublist(0, limit);
+      return list;
+    });
   }
 
   Future<List<DailySummary>> summariesInRange(

@@ -446,13 +446,13 @@ class SaleRepository extends BaseRepository {
           CashTransaction(
             workspaceId: wsId,
             type: CashTransactionType.expense,
-            category: 'Biaya Lainnya',
+            category: 'Pengembalian Dana (Batal)',
             amount: sale.paidAmount,
             occurredAt: DateTime.now(),
             paymentMethodName: sale.paymentMethodName,
             sourceSaleId: sale.id,
             sourceType: 'REFUND',
-            description: 'Pengembalian dana ${sale.transactionNumber}',
+            description: 'Pengembalian dana pembatalan ${sale.transactionNumber}',
             createdBy: actorId,
           ).toCreateMap(occurredAt: DateTime.now()),
         );
@@ -488,12 +488,13 @@ class SaleRepository extends BaseRepository {
             CashTransaction(
               workspaceId: wsId,
               type: CashTransactionType.expense,
-              category: 'Biaya Lainnya',
+              category: 'Refund Penjualan',
               amount: sale.paidAmount,
               occurredAt: DateTime.now(),
+              paymentMethodName: sale.paymentMethodName,
               sourceSaleId: sale.id,
               sourceType: 'REFUND',
-              description: 'Refund ${sale.transactionNumber}',
+              description: 'Refund penjualan ${sale.transactionNumber}',
               createdBy: actorId,
             ).toCreateMap(occurredAt: DateTime.now()),
           );
