@@ -285,7 +285,7 @@ class PosScreenState extends ConsumerState<PosScreen> {
     return ListView.separated(
       padding: const EdgeInsets.all(14),
       itemCount: _products.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      separatorBuilder: (_, _) => const SizedBox(height: 6),
       itemBuilder: (context, index) {
         final product = _products[index];
         final inCart = qtyInCart[product.id] ?? 0;
