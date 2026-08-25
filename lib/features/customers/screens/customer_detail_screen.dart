@@ -11,7 +11,6 @@ import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../models/customer_model.dart';
 import '../../../models/sale_model.dart';
-import '../../../repositories/customer_repository.dart';
 import '../screens/customers_screen.dart' show showCustomerForm;
 
 class CustomerDetailScreen extends ConsumerWidget {
