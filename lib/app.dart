@@ -13,7 +13,7 @@ class BukuLarisApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(gateProvider.select((s) => s.status), (_, __) {});
+    ref.listen(gateProvider.select((s) => s.status), (_, _) {});
     final router = ref.watch(routerProvider);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
