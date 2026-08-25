@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/providers.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -137,7 +138,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
                       ),
                       validator: (v) =>
-                          ValidatorsHolder.email(v),
+                          Validators.email(v),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -225,16 +226,5 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ),
     );
-  }
-}
-
-class ValidatorsHolder {
-  static String? email(String? v) {
-    final value = v?.trim() ?? '';
-    if (value.isEmpty) return 'Email wajib diisi';
-    if (!RegExp(r'^[\w.\-+]+@([\w\-]+\.)+[a-zA-Z]{2,}$').hasMatch(value)) {
-      return 'Format email tidak valid';
-    }
-    return null;
   }
 }
