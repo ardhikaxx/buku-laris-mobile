@@ -100,7 +100,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
             ownerName: gate.profile?.displayName ?? '',
             invitedEmail: emailController.text,
           );
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
               'Undangan terkirim ke ${emailController.text}. Undangan berlaku 7 hari.'),
@@ -109,7 +109,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
       }
     } catch (e) {
       Logger.e('invite failed', e);
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(mapToAppException(e).message),
           backgroundColor: AppColors.expense,
@@ -144,7 +144,7 @@ class _MembersTab extends ConsumerWidget {
         return ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: members.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final member = members[index];
             final isSelf = member.userId == currentUid;
@@ -367,7 +367,7 @@ class _InvitationsTab extends ConsumerWidget {
         return ListView.separated(
           padding: const EdgeInsets.all(16),
           itemCount: invitations.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final inv = invitations[index];
             return Card(
