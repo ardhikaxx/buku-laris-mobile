@@ -184,7 +184,7 @@ class _WorkspaceSectionState extends ConsumerState<_WorkspaceSection> {
                                     width: 56,
                                     height: 56,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
+                                    errorBuilder: (_, _, _) =>
                                         const Icon(Icons.storefront_rounded)),
                               )
                             : const Icon(Icons.storefront_rounded,
@@ -638,11 +638,12 @@ class _AccountSection extends ConsumerWidget {
       context,
       title: 'Hapus akun secara permanen?',
       message:
-          'Profil akun akan dihapus dari aplikasi dan Anda akan keluar. Workspace yang Anda miliki tidak ikut terhapus — hapus workspace terlebih dahulu jika diinginkan.',
+          'Profil akun akan dihapus dari aplikasi dan Anda akan keluar. Workspace yang Anda miliki tidak ikut terhapus. Hapus workspace terlebih dahulu jika diinginkan.',
       confirmLabel: 'Lanjutkan',
       destructive: true,
     );
     if (!firstConfirm) return;
+    if (!context.mounted) return;
 
     final typedOk = await confirmTyped(
       context,
