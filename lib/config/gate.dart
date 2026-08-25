@@ -8,7 +8,7 @@ import '../models/invitation_model.dart';
 import '../models/user_profile_model.dart';
 import '../models/workspace_member_model.dart';
 import '../models/workspace_model.dart';
-import '../services/auth_service.dart';
+import '../repositories/membership_repository.dart';
 import 'providers.dart';
 
 enum GateStatus { loading, signedOut, needsOnboarding, hasInvitations, ready }
