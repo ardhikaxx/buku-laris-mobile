@@ -202,7 +202,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
     }
     buffer.writeln('------------------------------');
     for (final item in sale.items) {
-      buffer.writeln('${item.productName}');
+      buffer.writeln(item.productName);
       buffer.writeln(
           '${item.qty} ${item.unit} x ${money(item.unitPrice)} = ${money(item.lineTotal)}');
     }
