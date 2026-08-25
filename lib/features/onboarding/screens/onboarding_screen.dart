@@ -8,10 +8,8 @@ import '../../../../config/providers.dart';
 import '../../../../core/constants/catalogs.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/debug_utils.dart';
 import '../../../../models/enums.dart';
 import '../../../../models/workspace_model.dart';
-import '../../../../services/demo_data_service.dart';
 import '../../../../services/image_service.dart';
 import '../../../../services/logger.dart';
 
@@ -37,7 +35,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final Set<String> _paymentTypes = {'CASH'};
   String? _logoDataUri;
   bool _creating = false;
-  bool _seedDemo = false;
   int _step = 0;
   String? _error;
 
@@ -125,26 +122,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
       );
 
-      final result =
-          await ref.read(workspaceRepositoryProvider).createWorkspace(
-                workspace: workspace,
-                ownerUid: user.uid,
-                ownerName:
-                    (user.displayName ?? _nameController.text.trim()).trim(),
-                ownerEmail: (user.email ?? '').toLowerCase(),
-              );
+      await ref.read(workspaceRepositoryProvider).createWorkspace(
+            workspace: workspace,
+            ownerUid: user.uid,
+            ownerName:
+                (user.displayName ?? _nameController.text.trim()).trim(),
+            ownerEmail: (user.email ?? '').toLowerCase(),
+          );
 
       if (!mounted) return;
-
-      if (_seedDemo && kDebugModeSafe) {
-        await DemoDataService().seed(
-          wsId: result.workspaceId,
-          workspaceName: workspace.name,
-          ownerId: user.uid,
-          template: _demoTemplateFor(models),
-          onProgress: (status) => Logger.d(status),
-        );
-      }
 
       if (mounted) context.go('/home');
     } on AppException catch (e) {
@@ -536,19 +522,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ],
             onChanged: (v) => setState(() => _currency = v ?? 'IDR'),
           ),
-          if (kDebugModeSafe) ...[
-            const SizedBox(height: 14),
-            CheckboxListTile(
-              value: _seedDemo,
-              onChanged: (v) => setState(() => _seedDemo = v ?? false),
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              title: const Text('Isi dengan data contoh (development)',
-                  style: TextStyle(fontSize: 13.5)),
-              subtitle: Text('Produk, pelanggan & transaksi 60 hari terakhir',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-            ),
-          ],
         ],
       ),
     );
@@ -577,19 +550,4 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
     );
   }
-}
-
-DemoTemplate _demoTemplateFor(List<BusinessModel> models) {
-  if (models.contains(BusinessModel.digitalProduct) &&
-      models.contains(BusinessModel.service)) {
-    return DemoTemplate.hybrid;
-  }
-  if (models.contains(BusinessModel.digitalProduct)) {
-    return DemoTemplate.digitalProducts;
-  }
-  if (models.contains(BusinessModel.service) ||
-      models.contains(BusinessModel.layanan)) {
-    return DemoTemplate.serviceBusiness;
-  }
-  return DemoTemplate.physicalStore;
 }

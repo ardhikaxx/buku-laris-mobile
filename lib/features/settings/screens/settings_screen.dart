@@ -7,12 +7,10 @@ import '../../../config/providers.dart';
 import '../../../core/constants/catalogs.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/debug_utils.dart';
 import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../models/payment_method_model.dart';
 import '../../../models/workspace_model.dart';
-import '../../../services/demo_data_service.dart';
 import '../../../services/image_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -760,14 +758,6 @@ class _DangerZoneSection extends ConsumerWidget {
               icon: const Icon(Icons.delete_forever_rounded, size: 19),
               label: const Text('Hapus Workspace Permanen'),
             ),
-            if (kDebugModeSafe) ...[
-              const Divider(height: 24),
-              OutlinedButton.icon(
-                onPressed: () => _seedDemoData(context, ref),
-                icon: const Icon(Icons.dataset_outlined, size: 19),
-                label: const Text('Isi Data Contoh (Dev)'),
-              ),
-            ],
           ],
         ),
       ),
@@ -836,56 +826,6 @@ class _DangerZoneSection extends ConsumerWidget {
       onProgress('Menghapus data... $count');
     }
     return total;
-  }
-
-  Future<void> _seedDemoData(BuildContext context, WidgetRef ref) async {
-    final template = await showDialog<DemoTemplate>(
-      context: context,
-      builder: (ctx) => SimpleDialog(
-        title: const Text('Pilih jenis usaha demo'),
-        children: [
-          for (final t in DemoTemplate.values)
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(ctx, t),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(t.label),
-              ),
-            ),
-        ],
-      ),
-    );
-    if (template == null || !context.mounted) return;
-
-    final gate = ref.read(gateProvider);
-    final progressController = ShowProgressController(context);
-    try {
-      final service = DemoDataService();
-      await service.clearDemoData(gate.activeWorkspaceId!);
-      final created = await service.seed(
-        wsId: gate.activeWorkspaceId!,
-        workspaceName:
-            ref.read(activeWorkspaceProvider).workspace?.name ?? 'Demo',
-        ownerId: ref.read(authServiceProvider).currentUser!.uid,
-        template: template,
-        onProgress: (status) => progressController.update(status),
-      );
-      progressController.close();
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('$created transaksi demo berhasil dibuat'),
-          backgroundColor: AppColors.income,
-        ));
-      }
-    } catch (e) {
-      progressController.close();
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(mapToAppException(e).message),
-          backgroundColor: AppColors.expense,
-        ));
-      }
-    }
   }
 }
 
