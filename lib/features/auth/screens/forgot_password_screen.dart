@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/providers.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/validators.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -118,7 +119,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                             labelText: 'Email',
                             prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
                           ),
-                          validator: ValidatorsHolder.email,
+                          validator: Validators.email,
                         ),
                         const SizedBox(height: 18),
                         ElevatedButton(
