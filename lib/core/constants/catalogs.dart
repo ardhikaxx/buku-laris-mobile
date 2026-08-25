@@ -18,6 +18,8 @@ class CashCategories {
     'Gaji Karyawan',
     'Sewa Tempat',
     'Marketing',
+    'Refund Penjualan',
+    'Pengembalian Dana',
     'Biaya Lainnya',
   ];
 }
