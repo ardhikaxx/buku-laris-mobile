@@ -20,8 +20,7 @@ import '../features/products/screens/product_detail_screen.dart';
 import '../features/products/screens/product_form_screen.dart';
 import '../features/products/screens/products_screen.dart';
 import '../features/reports/screens/reports_screen.dart';
-import '../features/sales/screens/pos_screen.dart';
-import '../features/sales/screens/sale_detail_screen.dart';
+import '../features/sales/screens/pos_screen.dart';import '../features/sales/screens/sale_detail_screen.dart';
 import '../features/sales/screens/sales_list_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import '../features/workspace/screens/personal_workspace_screen.dart';
@@ -104,13 +103,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sales/new',
         pageBuilder: (context, state) {
-          final orderTypeRaw = state.uri.queryParameters['type'];
-          final orderType = orderTypeRaw == 'preorder'
-              ? OrderTypeRouter.preOrder
-              : OrderTypeRouter.readyStock;
+          final isPreOrder = state.uri.queryParameters['type'] == 'preorder';
           return MaterialPage(
             key: state.pageKey,
-            child: PosScreen(initialOrderType: orderType),
+            child: PosScreen(initialPreOrder: isPreOrder),
           );
         },
       ),
@@ -184,5 +180,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-enum OrderTypeRouter { readyStock, preOrder }
