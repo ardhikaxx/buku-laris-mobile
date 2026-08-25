@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../core/errors/app_exception.dart';
@@ -6,16 +7,11 @@ import 'logger.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? get currentUser => _auth.currentUser;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
-
-  String? get googleWebClientId {
-    const fromDefine = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
-    if (fromDefine.isNotEmpty) return fromDefine;
-    return '627019837892-ldcv7v96bjk63595lr5e541i2pjslejf.apps.googleusercontent.com';
-  }
 
   Future<User?> registerWithEmail({
     required String email,
@@ -58,29 +54,28 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
-      final googleSignIn = GoogleSignIn.instance;
-      await googleSignIn.initialize(serverClientId: googleWebClientId);
-      final account = await googleSignIn.authenticate();
-      final idToken = account.authentication.idToken;
-      if (idToken == null) {
-        await googleSignIn.signOut();
-        throw const AppException(
-          'Google Sign-In belum terkonfigurasi. Tambahkan SHA-1 aplikasi di '
-          'Firebase Console dan aktifkan Google Sign-In, lalu perbarui '
-          'google-services.json.',
-        );
-      }
-      final credential = GoogleAuthProvider.credential(idToken: idToken);
+      final account = await _googleSignIn.signIn();
+      if (account == null) return null;
+      final auth = await account.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: auth.idToken,
+        accessToken: auth.accessToken,
+      );
       final userCred = await _auth.signInWithCredential(credential);
       return userCred.user;
-    } on GoogleSignInException catch (e) {
-      if (e.code == GoogleSignInExceptionCode.canceled) return null;
-      Logger.e('google sign in exception', e);
-      throw AppException(
-          'Login dengan Google gagal: ${e.description ?? e.code.name}', e);
     } on FirebaseAuthException catch (e) {
       Logger.e('google firebase auth failed', e);
       throw AppException(mapAuthError(e), e);
+    } on PlatformException catch (e) {
+      Logger.e('google sign in platform exception', e);
+      if (e.code == 'sign_in_canceled' || e.code == 'sign_in_failed') {
+        throw const AppException('Login dengan Google dibatalkan.');
+      }
+      throw AppException('Login dengan Google gagal: ${e.message ?? e.code}', e);
+    } catch (e) {
+      Logger.e('google sign in failed', e);
+      throw const AppException(
+          'Login dengan Google gagal. Periksa koneksi dan coba lagi.');
     }
   }
 
@@ -94,8 +89,7 @@ class AuthService {
 
   Future<void> signOut() async {
     try {
-      final google = GoogleSignIn.instance;
-      await google.signOut();
+      await _googleSignIn.signOut();
     } catch (_) {}
     await _auth.signOut();
   }
@@ -113,20 +107,22 @@ class AuthService {
                 email: user.email!, password: password);
             await user.reauthenticateWithCredential(cred);
           } else {
-            final googleSignIn = GoogleSignIn.instance;
-            await googleSignIn.initialize(serverClientId: googleWebClientId);
-            final account = await googleSignIn.authenticate();
-            final idToken = account.authentication.idToken;
-            if (idToken == null) rethrow;
-            await user.reauthenticateWithCredential(
-                GoogleAuthProvider.credential(idToken: idToken));
+            final account = await _googleSignIn.signIn();
+            if (account == null) {
+              throw const AppException(
+                  'Verifikasi ulang dibatalkan. Akun tidak dihapus.');
+            }
+            final auth = await account.authentication;
+            await user.reauthenticateWithCredential(GoogleAuthProvider.credential(
+              idToken: auth.idToken,
+              accessToken: auth.accessToken,
+            ));
           }
           await _auth.currentUser?.delete();
         } on FirebaseAuthException catch (e2) {
           throw AppException(mapAuthError(e2), e2);
-        } on GoogleSignInException catch (e3) {
-          throw AppException(
-              'Verifikasi ulang dibatalkan. Akun tidak dihapus.', e3);
+        } on AppException {
+          rethrow;
         }
       } else {
         throw AppException(mapAuthError(e), e);

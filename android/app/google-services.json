@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "627019837892-3uvhcrhr2jpp7abg7kevsq4vl0ntjq7s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.buku_laris",
+            "certificate_hash": "f0b7683c2c2e77674954fdbeb0b4d88c11736e16"
+          }
+        },
+        {
           "client_id": "627019837892-6mamscqmohck9kghr7dm6lsrudod8l1m.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
