@@ -241,7 +241,7 @@ class DashboardRepository extends BaseRepository {
     try {
       final summaries =
           await _summaries(wsId, startOfMonth(DateTime.now()), DateTime.now());
-      final total = summaries.fold(0, (sum, s) => sum + s.estimatedProfit);
+      final total = summaries.fold(0, (acc, s) => acc + s.estimatedProfit);
       return (total, false);
     } catch (_) {
       return (0, false);
