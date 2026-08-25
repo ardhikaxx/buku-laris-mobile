@@ -1,8 +1,10 @@
+import '../core/constants/app_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/utils/formatters.dart';
 import '../models/daily_summary_model.dart';
 import '../models/enums.dart';
+import '../models/product_model.dart';
 import 'base_repository.dart';
 import 'cashflow_repository.dart';
 import 'product_repository.dart';
@@ -75,7 +77,7 @@ class DashboardData {
 }
 
 class DashboardRepository extends BaseRepository {
-  static const _activeStatusNames = [
+  static final List<String> _activeStatusNames = [
     SaleStatus.pending.name,
     SaleStatus.confirmed.name,
     SaleStatus.processing.name,
