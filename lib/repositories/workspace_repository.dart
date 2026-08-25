@@ -77,16 +77,14 @@ class WorkspaceRepository extends BaseRepository {
 
   Stream<List<PaymentMethodModel>> watchPaymentMethods(String wsId,
       {bool onlyActive = false}) {
-    var q = sub(wsId, Collections.paymentMethods)
-        .orderBy('sortOrder') as Query<Map<String, dynamic>>;
+    var q = sub(wsId, Collections.paymentMethods).orderBy('sortOrder');
     if (onlyActive) q = q.where('isActive', isEqualTo: true);
     return q.snapshots().map((s) => s.docs.map(PaymentMethodModel.fromDoc).toList());
   }
 
   Future<List<PaymentMethodModel>> listPaymentMethods(String wsId,
       {bool onlyActive = false}) async {
-    var q = sub(wsId, Collections.paymentMethods)
-        .orderBy('sortOrder') as Query<Map<String, dynamic>>;
+    var q = sub(wsId, Collections.paymentMethods).orderBy('sortOrder');
     if (onlyActive) q = q.where('isActive', isEqualTo: true);
     final snap = await q.get();
     return snap.docs.map(PaymentMethodModel.fromDoc).toList();
