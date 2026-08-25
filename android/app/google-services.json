@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "627019837892",
+    "project_id": "buku-laris",
+    "storage_bucket": "buku-laris.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627019837892:android:846a6bda3c1d3df53f3491",
+        "android_client_info": {
+          "package_name": "com.example.buku_laris"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrl1txAnuW6X_8v-ZKQeMqbuYGWQoLdfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
