@@ -6,7 +6,6 @@ import '../../../config/gate.dart';
 import '../../../config/providers.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
 
 class LowStockScreen extends ConsumerStatefulWidget {
