@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/providers.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/validators.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -110,7 +111,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         labelText: 'Email',
                         prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
                       ),
-                      validator: ValidatorsHolder.email,
+                      validator: Validators.email,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -163,6 +164,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               : null,
                     ),
                     const SizedBox(height: 24),
+                    if (_error != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(_error!,
+                            style: const TextStyle(
+                                fontSize: 13, color: Color(0xFFB91C1C))),
+                      ),
                     ElevatedButton(
                       onPressed: _loading ? null : _submit,
                       child: _loading
