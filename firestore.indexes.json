@@ -1,0 +1,103 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "invitations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "invitedEmail", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ],
+      "why": "Mencari undangan PENDING milik sebuah email (halaman invitation saat user login)."
+    },
+    {
+      "collectionGroup": "invitations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "workspaceId", "order": "ASCENDING" },
+        { "fieldPath": "invitedEmail", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ],
+      "why": "Validasi owner: cegah duplikasi undangan aktif untuk email yang sama pada satu workspace."
+    },
+    {
+      "collectionGroup": "invitations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "workspaceId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Daftar riwayat undangan per workspace (tab Undangan di halaman Karyawan)."
+    },
+    {
+      "collectionGroup": "members",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ],
+      "why": "collectionGroup query 'semua membership aktif saya' lintas workspace."
+    },
+    {
+      "collectionGroup": "sales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "customerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Histori transaksi per pelanggan dengan cursor pagination."
+    },
+    {
+      "collectionGroup": "sales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countsRevenue", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ],
+      "why": "Aggregate sum(grandTotal) dashboard/laporan per rentang tanggal hanya menghitung transaksi revenue."
+    },
+    {
+      "collectionGroup": "sales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "items.productId", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Cek pemakaian produk dalam transaksi sebelum izin hapus permanen produk."
+    },
+    {
+      "collectionGroup": "cashTransactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "occurredAt", "order": "DESCENDING" }
+      ],
+      "why": "Filter tab uang masuk/keluar + urutan tanggal + aggregate sum(amount) per periode."
+    },
+    {
+      "collectionGroup": "stockMovements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "productId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Ledger histori stok per produk, lazy loading cursor-based."
+    },
+    {
+      "collectionGroup": "notifications",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Urutkan notifikasi terbaru (subcollection users/{uid}/notifications) - single-field otomatis cukup, dideklarasikan eksplisit untuk kejelasan."
+    },
+    {
+      "collectionGroup": "dailySummaries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "hasUnknownCostSales", "order": "ASCENDING" }
+      ],
+      "why": "Deteksi cepat apakah laba harus ditandai estimasi (single field, auto-index; didokumentasikan karena dipakai rule laporan)."
+    }
+  ],
+  "fieldOverrides": []
+}
