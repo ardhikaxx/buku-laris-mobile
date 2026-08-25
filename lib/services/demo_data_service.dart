@@ -1,12 +1,10 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 
 import '../core/constants/app_constants.dart';
 import '../models/cash_transaction_model.dart';
 import '../models/daily_summary_model.dart';
-import '../models/customer_model.dart';
 import '../models/enums.dart';
 import '../models/product_model.dart';
 import '../models/sale_model.dart';
@@ -339,7 +337,7 @@ class DemoDataService {
     };
 
     for (final entry in catalog) {
-      final catName = entry.$1 as String;
+      final catName = entry.$1;
       final catRef = await _sub(wsId, Collections.categories).add({
         'name': catName,
         'description': '',
@@ -351,7 +349,7 @@ class DemoDataService {
       });
       categoryNames[catRef.id] = catName;
       final products = <Product>[];
-      for (final p in entry.$2 as List<(String, int, int, String, int, int, bool)>) {
+      for (final p in entry.$2) {
         final isPhysical = p.$7;
         final isServiceLike =
             !isPhysical && p.$5 == 0 && template != DemoTemplate.digitalProducts;
