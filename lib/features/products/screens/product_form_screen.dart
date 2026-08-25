@@ -174,7 +174,17 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         await repo.update(wsId, product, hadInitialStock: _hadInitialStock);
       }
 
-      if (mounted) context.pop();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.productId == null
+                ? 'Produk "${product.name}" berhasil ditambahkan'
+                : 'Produk "${product.name}" berhasil diperbarui'),
+            backgroundColor: AppColors.income,
+          ),
+        );
+        context.pop();
+      }
     } catch (e) {
       if (mounted) setState(() => _error = mapToAppException(e).message);
     } finally {

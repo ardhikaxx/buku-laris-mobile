@@ -40,7 +40,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             child: TextField(
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: 'Cari nama produk...',
+                hintText: 'Cari nama produk, SKU, barcode...',
                 prefixIcon: const Icon(Icons.search_rounded, size: 20),
                 isDense: true,
                 suffixIcon: _searchTerm.isEmpty
@@ -50,6 +50,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                         onPressed: () => setState(() => _searchTerm = ''),
                       ),
               ),
+              onChanged: (v) => setState(() => _searchTerm = v.trim()),
               onSubmitted: (v) => setState(() => _searchTerm = v.trim()),
             ),
           ),
@@ -84,36 +85,62 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           Expanded(
             child: wsId == null
                 ? const SizedBox.shrink()
-                : PagedListView<Product>(
-                    key: ValueKey('$_searchTerm-$_typeFilter-$_categoryFilter'),
-                    buildQuery: () {
-                      var q = ref
-                          .read(productRepositoryProvider)
-                          .baseQuery(wsId, type: _typeFilter)
-                          .orderBy('name');
-                      if (_searchTerm.isNotEmpty) {
-                        q = q.where('name',
-                            isGreaterThanOrEqualTo: _searchTerm);
-                        q = q.where('name',
-                            isLessThanOrEqualTo: '$_searchTerm\uf8ff');
+                : StreamBuilder<List<Product>>(
+                    stream: ref
+                        .watch(productRepositoryProvider)
+                        .watchAll(wsId,
+                            type: _typeFilter,
+                            categoryId: _categoryFilter),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const ListSkeleton(itemCount: 6);
                       }
-                      return q;
+                      if (snapshot.hasError) {
+                        return ErrorStateView(
+                          error: snapshot.error!,
+                          onRetry: () => setState(() {}),
+                        );
+                      }
+                      var products = snapshot.data ?? [];
+                      if (_searchTerm.isNotEmpty) {
+                        final term = _searchTerm.toLowerCase();
+                        products = products
+                            .where((p) =>
+                                p.name.toLowerCase().contains(term) ||
+                                p.sku.toLowerCase().contains(term) ||
+                                p.barcode.toLowerCase().contains(term))
+                            .toList();
+                      }
+                      if (products.isEmpty) {
+                        return EmptyState(
+                          icon: Icons.inventory_2_outlined,
+                          title: _searchTerm.isNotEmpty || _typeFilter != null
+                              ? 'Produk tidak ditemukan'
+                              : 'Belum ada produk',
+                          message: _searchTerm.isNotEmpty || _typeFilter != null
+                              ? 'Tidak ada produk yang cocok dengan filter atau pencarian Anda.'
+                              : 'Tambahkan produk pertama Anda untuk mulai berjualan.',
+                          action: canManage &&
+                                  _searchTerm.isEmpty &&
+                                  _typeFilter == null
+                              ? ElevatedButton.icon(
+                                  onPressed: () =>
+                                      context.push('/products/new'),
+                                  icon: const Icon(Icons.add, size: 18),
+                                  label: const Text('Tambah Produk'))
+                              : null,
+                        );
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: products.length,
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: 10),
+                        itemBuilder: (context, index) =>
+                            _ProductCard(product: products[index]),
+                      );
                     },
-                    mapper: Product.fromDoc,
-                    emptyState: EmptyState(
-                      icon: Icons.inventory_2_outlined,
-                      title: 'Belum ada produk',
-                      message:
-                          'Tambahkan produk pertama Anda untuk mulai berjualan.',
-                      action: canManage
-                          ? ElevatedButton.icon(
-                              onPressed: () => context.push('/products/new'),
-                              icon: const Icon(Icons.add, size: 18),
-                              label: const Text('Tambah Produk'))
-                          : null,
-                    ),
-                    itemBuilder: (context, product, index) =>
-                        _ProductCard(product: product),
                   ),
           ),
         ],

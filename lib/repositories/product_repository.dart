@@ -66,45 +66,87 @@ class ProductRepository extends BaseRepository {
     return q;
   }
 
-  Stream<List<Product>> watchRecent(String wsId, {int limit = 5}) {
-    return baseQuery(wsId, onlyActiveForSelling: true)
-        .orderBy('name')
-        .limit(limit)
-        .snapshots()
-        .map((s) => s.docs.map(Product.fromDoc).toList());
+  Stream<List<Product>> watchAll(
+    String wsId, {
+    bool includeArchived = false,
+    ProductType? type,
+    String? categoryId,
+    bool onlyActiveForSelling = false,
+  }) {
+    return sub(wsId, Collections.products).snapshots().map((s) {
+      final list = s.docs
+          .map(Product.fromDoc)
+          .where((p) => includeArchived || !p.archived)
+          .toList();
+      if (onlyActiveForSelling) {
+        list.retainWhere((p) => p.isActive);
+      }
+      if (type != null) {
+        list.retainWhere((p) => p.type == type);
+      }
+      if (categoryId != null && categoryId.isNotEmpty) {
+        list.retainWhere((p) => p.categoryId == categoryId);
+      }
+      list.sort((a, b) =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      return list;
+    });
   }
 
-  Future<List<Product>> searchByName(String wsId, String term, {int limit = 10}) async {
-    final cleanTerm = term.trim();
+  Stream<List<Product>> watchRecent(String wsId, {int limit = 5}) {
+    return watchAll(wsId, onlyActiveForSelling: true).map((list) {
+      if (list.length > limit) return list.sublist(0, limit);
+      return list;
+    });
+  }
+
+  Future<List<Product>> searchByName(String wsId, String term,
+      {int limit = 15}) async {
+    final cleanTerm = term.trim().toLowerCase();
     if (cleanTerm.isEmpty) return [];
-    var q = baseQuery(wsId, onlyActiveForSelling: true).orderBy('name');
-    q = q.where('name', isGreaterThanOrEqualTo: cleanTerm);
-    q = q.where('name', isLessThanOrEqualTo: '$cleanTerm\uf8ff');
-    final snap = await q.limit(limit).get();
-    return snap.docs.map(Product.fromDoc).toList();
+    try {
+      final snap = await sub(wsId, Collections.products).get();
+      final results = snap.docs
+          .map(Product.fromDoc)
+          .where((p) =>
+              !p.archived &&
+              p.isActive &&
+              (p.name.toLowerCase().contains(cleanTerm) ||
+                  p.sku.toLowerCase().contains(cleanTerm) ||
+                  p.barcode.toLowerCase().contains(cleanTerm)))
+          .toList();
+      results.sort((a, b) =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      if (results.length > limit) return results.sublist(0, limit);
+      return results;
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<List<Product>> searchByBarcodeOrSku(String wsId, String code) async {
-    final clean = code.trim();
+    final clean = code.trim().toLowerCase();
     if (clean.isEmpty) return [];
-    final results = <Product>[];
-    final skuSnap = await sub(wsId, Collections.products)
-        .where('sku', isEqualTo: clean)
-        .limit(3)
-        .get();
-    results.addAll(skuSnap.docs.map(Product.fromDoc));
-    if (results.isEmpty) {
-      final barcodeSnap = await sub(wsId, Collections.products)
-          .where('barcode', isEqualTo: clean)
-          .limit(3)
-          .get();
-      results.addAll(barcodeSnap.docs.map(Product.fromDoc));
+    try {
+      final snap = await sub(wsId, Collections.products).get();
+      final results = snap.docs
+          .map(Product.fromDoc)
+          .where((p) =>
+              !p.archived &&
+              (p.sku.toLowerCase() == clean ||
+                  p.barcode.toLowerCase() == clean))
+          .toList();
+      return results;
+    } catch (_) {
+      return [];
     }
-    return results;
   }
 
   Stream<Product?> watchById(String wsId, String productId) {
-    return sub(wsId, Collections.products).doc(productId).snapshots().map((doc) {
+    return sub(wsId, Collections.products)
+        .doc(productId)
+        .snapshots()
+        .map((doc) {
       if (!doc.exists || doc.data() == null) return null;
       return Product.fromDoc(doc);
     });
@@ -161,32 +203,43 @@ class ProductRepository extends BaseRepository {
   }
 
   Stream<int> countLowStock(String wsId) {
-    return baseQuery(wsId, onlyActiveForSelling: true)
-        .where('type', isEqualTo: ProductType.physicalProduct.name)
-        .where('trackStock', isEqualTo: true)
-        .snapshots()
-        .map((s) => s.docs
-            .map(Product.fromDoc)
-            .where((p) => !p.unlimitedStock && p.stock <= p.minStock)
-            .length);
+    return watchAll(wsId, onlyActiveForSelling: true).map((products) => products
+        .where((p) =>
+            p.type.tracksStock &&
+            p.trackStock &&
+            !p.unlimitedStock &&
+            p.stock <= p.minStock)
+        .length);
   }
 
   Future<List<Product>> listLowStock(String wsId, {int limit = 20}) async {
-    final snap = await baseQuery(wsId, onlyActiveForSelling: true)
-        .where('type', isEqualTo: ProductType.physicalProduct.name)
-        .where('trackStock', isEqualTo: true)
-        .orderBy('stock')
-        .limit(limit * 2)
-        .get();
-    return snap.docs
-        .map(Product.fromDoc)
-        .where((p) => !p.unlimitedStock && p.stock <= p.minStock)
-        .take(limit)
-        .toList();
+    final all = await listAll(wsId);
+    final filtered = all
+        .where((p) =>
+            p.type.tracksStock &&
+            p.trackStock &&
+            !p.unlimitedStock &&
+            p.stock <= p.minStock &&
+            p.availableForSale)
+        .toList()
+      ..sort((a, b) => a.stock.compareTo(b.stock));
+    if (filtered.length > limit) return filtered.sublist(0, limit);
+    return filtered;
   }
 
   Future<List<Product>> listAll(String wsId, {int limit = 500}) async {
-    final snap = await baseQuery(wsId).orderBy('name').limit(limit).get();
-    return snap.docs.map(Product.fromDoc).toList();
+    try {
+      final snap = await sub(wsId, Collections.products).get();
+      final list = snap.docs
+          .map(Product.fromDoc)
+          .where((p) => !p.archived)
+          .toList();
+      list.sort((a, b) =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      if (list.length > limit) return list.sublist(0, limit);
+      return list;
+    } catch (e) {
+      return [];
+    }
   }
 }
