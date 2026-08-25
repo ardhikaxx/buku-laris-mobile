@@ -8,7 +8,6 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../core/widgets/common.dart';
 import '../../../../models/cash_transaction_model.dart';
 import '../../../../models/enums.dart';
 
@@ -199,7 +198,7 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _category,
+                initialValue: _category,
                 decoration: const InputDecoration(labelText: 'Kategori'),
                 items: allCategories
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))
