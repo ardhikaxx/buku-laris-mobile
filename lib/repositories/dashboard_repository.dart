@@ -166,6 +166,18 @@ class DashboardRepository extends BaseRepository {
     }
   }
 
+  bool _isValidSaleForRevenue(Map<String, dynamic> d) {
+    final status = d['status'] as String?;
+    final paymentStatus = d['paymentStatus'] as String?;
+    if (status == SaleStatus.cancelled.name ||
+        status == SaleStatus.refunded.name ||
+        status == SaleStatus.draft.name ||
+        paymentStatus == PaymentStatus.refunded.name) {
+      return false;
+    }
+    return d['countsRevenue'] == true;
+  }
+
   Future<_RevOrd> _revenueAndOrders(
       String wsId, DateTime from, DateTime to) async {
     try {
@@ -176,7 +188,7 @@ class DashboardRepository extends BaseRepository {
       var orders = 0;
       for (final doc in snap.docs) {
         final d = doc.data();
-        if (d['countsRevenue'] != true) continue;
+        if (!_isValidSaleForRevenue(d)) continue;
         final ts = d['createdAt'] as Timestamp?;
         if (ts != null) {
           final ms = ts.millisecondsSinceEpoch;
@@ -235,7 +247,7 @@ class DashboardRepository extends BaseRepository {
 
       for (final doc in snap.docs) {
         final d = doc.data();
-        if (d['countsRevenue'] != true) continue;
+        if (!_isValidSaleForRevenue(d)) continue;
         final ts = d['createdAt'] as Timestamp?;
         if (ts == null) continue;
         final dt = ts.toDate();
@@ -276,7 +288,7 @@ class DashboardRepository extends BaseRepository {
       final snap = await sub(wsId, Collections.sales).get();
       for (final doc in snap.docs) {
         final d = doc.data();
-        if (d['countsRevenue'] != true) continue;
+        if (!_isValidSaleForRevenue(d)) continue;
         final items = d['items'] as List<dynamic>? ?? [];
         for (final item in items) {
           if (item is Map<String, dynamic>) {
@@ -301,7 +313,7 @@ class DashboardRepository extends BaseRepository {
       var hasUnknown = false;
       for (final doc in snap.docs) {
         final d = doc.data();
-        if (d['countsRevenue'] != true) continue;
+        if (!_isValidSaleForRevenue(d)) continue;
         final ts = d['createdAt'] as Timestamp?;
         if (ts != null) {
           final ms = ts.millisecondsSinceEpoch;

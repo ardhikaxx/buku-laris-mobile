@@ -481,6 +481,7 @@ class SaleRepository extends BaseRepository {
               spentDelta: -sale.grandTotal, countDelta: -1);
         }
         updates['paymentStatus'] = PaymentStatus.refunded.name;
+        updates['countsRevenue'] = false;
         if (sale.paidAmount > 0) {
           txn.set(
             sub(wsId, Collections.cashTransactions).doc(),
