@@ -12,7 +12,20 @@
           "package_name": "com.example.buku_laris"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "627019837892-6mamscqmohck9kghr7dm6lsrudod8l1m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.buku_laris",
+            "certificate_hash": "432ff86274eca1596a9be203c740395e84982c80"
+          }
+        },
+        {
+          "client_id": "627019837892-ldcv7v96bjk63595lr5e541i2pjslejf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCrl1txAnuW6X_8v-ZKQeMqbuYGWQoLdfs"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "627019837892-ldcv7v96bjk63595lr5e541i2pjslejf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
