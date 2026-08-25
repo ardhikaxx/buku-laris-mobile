@@ -1,0 +1,350 @@
+rules_version = '2';
+
+// Buku Laris - UMKM Workspace Management
+//
+// Model: every business document lives under workspaces/{wsId}/...
+// Membership lives at workspaces/{wsId}/members/{uid} with fields:
+//   userId, workspaceId, displayName, email, role ('OWNER'|'EMPLOYEE'),
+//   permissions: string[], status ('ACTIVE'|'SUSPENDED'|'REMOVED')
+// Invitations live at top-level /invitations and reference workspaceId.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function userEmailLower() {
+      return request.auth.token.email.lower();
+    }
+
+    function memberPath(wsId, memberId) {
+      return /databases/$(database)/documents/workspaces/$(wsId)/members/$(memberId);
+    }
+
+    function membershipExists(wsId) {
+      return signedIn()
+        && exists(memberPath(wsId, uid()));
+    }
+
+    function myMembership(wsId) {
+      return get(memberPath(wsId, uid())).data;
+    }
+
+    function isActiveMember(wsId) {
+      return membershipExists(wsId)
+        && myMembership(wsId).role == 'EMPLOYEE'
+        && myMembership(wsId).status == 'ACTIVE';
+    }
+
+    function isOwner(wsId) {
+      return membershipExists(wsId)
+        && myMembership(wsId).role == 'OWNER'
+        && myMembership(wsId).status == 'ACTIVE';
+    }
+
+    function isAnyActiveMember(wsId) {
+      return isOwner(wsId) || isActiveMember(wsId);
+    }
+
+    function hasPerm(wsId, perm) {
+      return isOwner(wsId)
+        || (isActiveMember(wsId) && perm in myMembership(wsId).permissions);
+    }
+
+    function changedKeysOnly(allowed) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowed);
+    }
+
+    function employeeDefaultPermissions() {
+      return [
+        'dashboardView',
+        'productsView',
+        'preorderManage',
+        'salesCreate',
+        'salesEditStatus',
+        'salesRecordPayment',
+        'customersManage',
+        'reportsSalesView'
+      ];
+    }
+
+    // ---------- users ----------
+    match /users/{userId} {
+      allow get, list: if signedIn() && request.auth.uid == userId;
+
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid;
+
+      // A user may edit their own profile. Role escalation through this doc
+      // gains nothing: every workspace read re-checks the members subcolle-
+      // ction, which is the single source of truth.
+      allow update: if signedIn() && request.auth.uid == userId;
+
+      allow delete: if false;
+
+      match /notifications/{notificationId} {
+        allow get, list, update, delete: if signedIn() && request.auth.uid == userId;
+
+        // Other members may push notifications, but only into the context of
+        // a workspace they belong to, and only well-formed, unread docs.
+        allow create: if signedIn()
+          && request.resource.data.read == false
+          && request.resource.data.title is string
+          && request.resource.data.body is string
+          && ('workspaceId' in request.resource.data)
+          && request.resource.data.workspaceId is string
+          && isAnyActiveMember(request.resource.data.workspaceId);
+      }
+    }
+
+    // ---------- workspaces ----------
+    match /workspaces/{wsId} {
+      allow get, list: if isAnyActiveMember(wsId);
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == uid()
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100;
+
+      allow update: if isOwner(wsId)
+        && request.resource.data.ownerId == resource.data.ownerId;
+
+      allow delete: if isOwner(wsId);
+
+      // ---------- members ----------
+      match /members/{memberUserId} {
+        allow get, list: if isAnyActiveMember(wsId);
+
+        // Owner adds members directly (rare; normal path is invitation
+        // acceptance below). A user may also create their OWN employee
+        // membership, but only backed by an ACCEPTED invitation whose email
+        // matches their verified auth token email, and only with exactly the
+        // default employee permission set - never more.
+        allow create: if (
+            isOwner(wsId)
+            && request.resource.data.role == 'EMPLOYEE'
+            && request.resource.data.userId == memberUserId
+          )
+          || (
+            signedIn()
+            && request.auth.uid == memberUserId
+            && request.resource.data.userId == uid()
+            && request.resource.data.workspaceId == wsId
+            && request.resource.data.role == 'EMPLOYEE'
+            && request.resource.data.status == 'ACTIVE'
+            && request.resource.data.invitationId is string
+            && request.resource.data.permissions == employeeDefaultPermissions()
+            && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.status == 'ACCEPTED'
+            && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.invitedEmail == userEmailLower()
+            && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.workspaceId == wsId
+          );
+
+        // Owner manages roles/permissions/status; a member may only touch
+        // their own lastActiveAt heartbeat.
+        allow update: if (isOwner(wsId)
+              && request.resource.data.userId == resource.data.userId
+              && request.resource.data.workspaceId == resource.data.workspaceId
+              && request.resource.data.role == resource.data.role)
+          || (signedIn()
+              && request.auth.uid == memberUserId
+              && changedKeysOnly(['lastActiveAt']));
+
+        // An owner may never delete their own membership while the workspace
+        // is alive (delete the whole workspace instead); after the workspace
+        // document is gone, a former member may clean up their own leftover
+        // membership record so cascade deletes leave no orphans.
+        allow delete: if isOwner(wsId)
+            && !(resource.data.role == 'OWNER' && resource.data.userId == uid())
+          || (signedIn()
+              && request.auth.uid == memberUserId
+              && !exists(/databases/$(database)/documents/workspaces/$(wsId)));
+      }
+
+      // ---------- counters ----------
+      match /counters/{counterId} {
+        allow get, list: if isAnyActiveMember(wsId);
+        allow create: if isOwner(wsId)
+          || (hasPerm(wsId, 'salesCreate') && request.resource.data.seq == 0);
+        // Only the sequence number may ever change, and only via the sale
+        // creation transaction.
+        allow update: if isOwner(wsId)
+          || (hasPerm(wsId, 'salesCreate') && changedKeysOnly(['seq']));
+        allow delete: if false;
+      }
+
+      // ---------- daily summaries (denormalized dashboards) ----------
+      match /dailySummaries/{summaryId} {
+        allow get, list: if isAnyActiveMember(wsId);
+        allow create, update: if isOwner(wsId)
+          || hasPerm(wsId, 'salesCreate')
+          || hasPerm(wsId, 'cashflowManage');
+        allow delete: if false;
+      }
+
+      // ---------- audit logs (append-only, owner-readable) ----------
+      match /auditLogs/{logId} {
+        allow get, list: if isOwner(wsId);
+        allow create: if isAnyActiveMember(wsId)
+          && request.resource.data.actorId == uid();
+        allow update, delete: if false;
+      }
+
+      // ---------- products ----------
+      match /products/{productId} {
+        allow get, list: if isAnyActiveMember(wsId) && hasPerm(wsId, 'productsView');
+
+        allow create: if hasPerm(wsId, 'productsManage')
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0;
+
+        // Full edit requires productsManage. The sale transaction also
+        // touches stock/licence counters for sellers who only have
+        // salesCreate - strictly limited to those numeric fields.
+        allow update: if hasPerm(wsId, 'productsManage')
+          || (hasPerm(wsId, 'salesCreate')
+              && changedKeysOnly(['stock', 'licenseCount', 'soldCount', 'lastSoldAt', 'updatedAt']));
+
+        allow delete: if hasPerm(wsId, 'productsManage');
+      }
+
+      // ---------- categories ----------
+      match /categories/{categoryId} {
+        allow get, list: if isAnyActiveMember(wsId);
+        allow create, update, delete: if hasPerm(wsId, 'categoriesManage') || isOwner(wsId);
+      }
+
+      // ---------- customers ----------
+      match /customers/{customerId} {
+        allow get, list: if isAnyActiveMember(wsId);
+
+        allow create: if hasPerm(wsId, 'customersManage');
+
+        // Sale transaction bumps aggregate stats for sellers too.
+        allow update: if hasPerm(wsId, 'customersManage')
+          || (hasPerm(wsId, 'salesCreate')
+              && changedKeysOnly(['totalSpent', 'totalTransactions']));
+
+        allow delete: if hasPerm(wsId, 'customersManage');
+      }
+
+      // ---------- stock movements (immutable ledger) ----------
+      match /stockMovements/{movementId} {
+        allow get, list: if isAnyActiveMember(wsId);
+
+        // Written atomically inside sale/adjustment transactions.
+        allow create: if isOwner(wsId)
+          || hasPerm(wsId, 'stockAdjust')
+          || hasPerm(wsId, 'productsManage')
+          || hasPerm(wsId, 'salesCreate');
+
+        allow update, delete: if false;
+      }
+
+      // ---------- sales ----------
+      match /sales/{saleId} {
+        allow get, list: if isAnyActiveMember(wsId);
+
+        allow create: if hasPerm(wsId, 'salesCreate')
+          && request.resource.data.workspaceId == wsId
+          && (isOwner(wsId) || request.resource.data.sellerId == uid())
+          && request.resource.data.items is list
+          && request.resource.data.items.size() > 0
+          && request.resource.data.grandTotal is int;
+
+        // Status transitions, payments and offline finalization. Core
+        // identity/monetary-history fields stay frozen, and only the
+        // workflow fields may ever change.
+        allow update: if (hasPerm(wsId, 'salesEditStatus') || hasPerm(wsId, 'salesRecordPayment'))
+          && request.resource.data.workspaceId == resource.data.workspaceId
+          && request.resource.data.transactionNumber == resource.data.transactionNumber
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.sellerId == resource.data.sellerId
+          && changedKeysOnly([
+            'status', 'statusHistory', 'paidAmount', 'remainingAmount',
+            'paymentStatus', 'paymentMethodId', 'paymentMethodName',
+            'updatedAt', 'completedAt', 'cancelledAt', 'countsRevenue',
+            'stockDeducted', 'offlineCreated', 'estimatedCompletionDate', 'notes'
+          ]);
+
+        // Sales history is never deleted from clients.
+        allow delete: if false;
+      }
+
+      // ---------- cash transactions ----------
+      match /cashTransactions/{cashId} {
+        allow get, list: if isAnyActiveMember(wsId) && (isOwner(wsId) || hasPerm(wsId, 'cashflowManage') || hasPerm(wsId, 'salesCreate'));
+
+        allow create: if hasPerm(wsId, 'cashflowManage')
+          || (hasPerm(wsId, 'salesCreate')
+              && request.resource.data.sourceSaleId is string);
+
+        allow update: if hasPerm(wsId, 'cashflowManage')
+          && request.resource.data.createdBy == resource.data.createdBy;
+
+        // Sale-linked records are protected from direct deletion; refunds
+        // must go through the sale lifecycle. Owners retain cleanup rights.
+        allow delete: if isOwner(wsId)
+          || (hasPerm(wsId, 'cashflowManage')
+              && (!('sourceSaleId' in resource.data)
+                  || resource.data.sourceSaleId == ''));
+      }
+
+      // ---------- payment methods ----------
+      match /paymentMethods/{methodId} {
+        allow get, list: if isAnyActiveMember(wsId);
+        allow create, update, delete: if isOwner(wsId);
+      }
+    }
+
+    // ---------- invitations ----------
+    match /invitations/{invitationId} {
+      allow get, list: if signedIn()
+        && (resource.data.ownerId == uid()
+            || resource.data.invitedEmail == userEmailLower());
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == uid()
+        && request.resource.data.invitedEmail == request.resource.data.invitedEmail.lower()
+        && request.resource.data.invitedEmail != userEmailLower()
+        && request.resource.data.role == 'EMPLOYEE'
+        && request.resource.data.status == 'PENDING'
+        && isOwner(request.resource.data.workspaceId)
+        && request.resource.data.token is string
+        && request.resource.data.token.size() >= 16;
+
+      allow update: if signedIn() && resource.data.status == 'PENDING' && (
+          // owner revokes
+          (isOwner(resource.data.workspaceId)
+            && request.resource.data.status == 'REVOKED'
+            && changedKeysOnly(['status', 'revokedAt']))
+          ||
+          // invitee rejects
+          (userEmailLower() == resource.data.invitedEmail
+            && request.resource.data.status == 'REJECTED'
+            && changedKeysOnly(['status', 'rejectedAt', 'invitedUserId']))
+          ||
+          // invitee accepts; membership creation is validated separately
+          // above using getAfter so both writes succeed or fail together.
+          (userEmailLower() == resource.data.invitedEmail
+            && request.resource.data.status == 'ACCEPTED'
+            && changedKeysOnly(['status', 'acceptedAt', 'invitedUserId']))
+        );
+
+      allow delete: if signedIn()
+        && isOwner(resource.data.workspaceId);
+    }
+
+    // ---------- deny everything else ----------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
