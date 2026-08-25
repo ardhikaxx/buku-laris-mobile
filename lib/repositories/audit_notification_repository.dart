@@ -1,3 +1,5 @@
+import '../core/constants/app_constants.dart';
+import '../models/enums.dart';
 import '../models/misc_models.dart';
 import 'base_repository.dart';
 
@@ -20,7 +22,7 @@ class AuditRepository extends BaseRepository {
           entityId: entityId,
           metadata: metadata ?? const {},
         ).toCreateMap())
-        .catchError((_) => null);
+        .then((_) {}, onError: (_) {});
   }
 
   Future<List<AuditLog>> listRecent(String workspaceId, {int limit = 50}) async {
