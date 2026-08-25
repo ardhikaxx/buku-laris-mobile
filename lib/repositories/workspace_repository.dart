@@ -75,6 +75,37 @@ class WorkspaceRepository extends BaseRepository {
     });
   }
 
+  Stream<List<PaymentMethodModel>> watchPaymentMethods(String wsId,
+      {bool onlyActive = false}) {
+    var q = sub(wsId, Collections.paymentMethods)
+        .orderBy('sortOrder') as Query<Map<String, dynamic>>;
+    if (onlyActive) q = q.where('isActive', isEqualTo: true);
+    return q.snapshots().map((s) => s.docs.map(PaymentMethodModel.fromDoc).toList());
+  }
+
+  Future<List<PaymentMethodModel>> listPaymentMethods(String wsId,
+      {bool onlyActive = false}) async {
+    var q = sub(wsId, Collections.paymentMethods)
+        .orderBy('sortOrder') as Query<Map<String, dynamic>>;
+    if (onlyActive) q = q.where('isActive', isEqualTo: true);
+    final snap = await q.get();
+    return snap.docs.map(PaymentMethodModel.fromDoc).toList();
+  }
+
+  Future<void> savePaymentMethod(
+      String wsId, PaymentMethodModel method, {String? id}) async {
+    final ref =
+        id == null || id.isEmpty ? sub(wsId, Collections.paymentMethods).doc() : sub(wsId, Collections.paymentMethods).doc(id);
+    await ref.set(method.toMap(isCreate: id == null || id.isEmpty), SetOptions(merge: true));
+  }
+
+  Future<void> setPaymentMethodActive(String wsId, String id, bool active) async {
+    await sub(wsId, Collections.paymentMethods).doc(id).update({
+      'isActive': active,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   Future<Workspace?> getById(String wsId) async {
     final doc = await workspaceDoc(wsId).get();
     if (!doc.exists || doc.data() == null) return null;
@@ -97,6 +128,7 @@ class WorkspaceRepository extends BaseRepository {
 
   Stream<int> cascadeDelete({
     required String wsId,
+    required String ownerUid,
     void Function(int deleted, int phase)? onProgress,
   }) async* {
     final subcollections = [
@@ -110,7 +142,6 @@ class WorkspaceRepository extends BaseRepository {
       Collections.paymentMethods,
       Collections.counters,
       Collections.dailySummaries,
-      Collections.members,
     ];
 
     var deleted = 0;
@@ -154,11 +185,38 @@ class WorkspaceRepository extends BaseRepository {
       onProgress?.call(deleted, -1);
     }
 
+    var moreMembers = true;
+    while (moreMembers) {
+      final snap = await sub(wsId, Collections.members).limit(AppConstants.cascadeBatchSize).get();
+      if (snap.docs.isEmpty) {
+        moreMembers = false;
+        break;
+      }
+      final others = snap.docs.where((d) => d.id != ownerUid).toList();
+      if (others.isNotEmpty) {
+        final batch = fs.batch();
+        for (final doc in others) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+      }
+      deleted += others.length;
+      onProgress?.call(deleted, -2);
+      if (snap.docs.length < AppConstants.cascadeBatchSize) moreMembers = false;
+      if (!snap.docs.any((d) => d.id != ownerUid)) moreMembers = false;
+    }
     await workspaceDoc(wsId).delete();
-    yield deleted + 1;
+    deleted++;
+
+    try {
+      await sub(wsId, Collections.members).doc(ownerUid).delete();
+      deleted++;
+    } catch (_) {}
+
+    yield deleted;
   }
 
-  List<String> _defaultCategories(Set<BusinessModel> models) {
+  List<String> _defaultCategories(List<BusinessModel> models) {
     final cats = <String>{};
     if (models.contains(BusinessModel.physicalProduct)) cats.addAll(['Umum', 'Peralatan']);
     if (models.contains(BusinessModel.digitalProduct)) cats.add('Produk Digital');
