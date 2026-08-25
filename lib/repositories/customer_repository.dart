@@ -1,3 +1,4 @@
+import '../core/constants/app_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/customer_model.dart';
@@ -61,8 +62,11 @@ class CustomerRepository extends BaseRepository {
 
   Stream<int> watchCount(String wsId) {
     return sub(wsId, Collections.customers)
-        .count()
         .snapshots()
-        .map((s) => s.count ?? 0);
+        .map((s) => s.docs.length);
+  }
+
+  Query<Map<String, dynamic>> listQuery(String wsId) {
+    return sub(wsId, Collections.customers) as Query<Map<String, dynamic>>;
   }
 }
