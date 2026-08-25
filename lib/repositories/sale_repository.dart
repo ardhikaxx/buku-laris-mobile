@@ -922,6 +922,13 @@ class SaleRepository extends BaseRepository {
     return draft.paidAmount < draft.grandTotal ? 'Pelunasan Piutang' : 'Penjualan';
   }
 
+  Future<void> updateNotes(String wsId, String saleId, String notes) async {
+    await sub(wsId, Collections.sales).doc(saleId).update({
+      'notes': notes.trim(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   bool _isNetworkError(FirebaseException e) =>
       e.code == 'unavailable' || e.code == 'network-request-failed';
 

@@ -235,6 +235,60 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
     }
   }
 
+  Future<void> _editNotes(Sale sale) async {
+    final controller = TextEditingController(text: sale.notes);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ubah Keterangan'),
+        content: TextField(
+          controller: controller,
+          textCapitalization: TextCapitalization.sentences,
+          maxLines: 3,
+          minLines: 1,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Keterangan / Catatan',
+            hintText: 'Contoh: Tambahan catatan pesanan...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final wsId = ref.read(gateProvider).activeWorkspaceId!;
+      await ref
+          .read(saleRepositoryProvider)
+          .updateNotes(wsId, sale.id, controller.text);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Keterangan berhasil diperbarui'),
+          backgroundColor: AppColors.income,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(mapToAppException(e).message),
+          backgroundColor: AppColors.expense,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final wsId = ref.watch(gateProvider).activeWorkspaceId;
@@ -284,6 +338,11 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
               ],
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.edit_note_rounded, size: 22),
+                tooltip: 'Ubah keterangan',
+                onPressed: () => _editNotes(sale),
+              ),
               IconButton(
                 icon: const Icon(Icons.share_outlined, size: 20),
                 tooltip: 'Bagikan struk',
@@ -442,8 +501,44 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                             InfoRow(
                                 label: 'Estimasi Selesai',
                                 value: dateFull(sale.estimatedCompletionDate)),
-                          if (sale.notes.isNotEmpty)
-                            InfoRow(label: 'Keterangan', value: sale.notes),
+                          InkWell(
+                            onTap: () => _editNotes(sale),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                children: [
+                                  Text('Keterangan',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w500)),
+                                  const Spacer(),
+                                  Flexible(
+                                    child: Text(
+                                      sale.notes.isEmpty
+                                          ? '+ Tambah catatan'
+                                          : sale.notes,
+                                      textAlign: TextAlign.right,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: sale.notes.isEmpty
+                                            ? AppColors.primary
+                                            : const Color(0xFF111827),
+                                        fontStyle: sale.notes.isEmpty
+                                            ? FontStyle.italic
+                                            : FontStyle.normal,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.edit_outlined,
+                                      size: 14, color: Colors.grey[400]),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
