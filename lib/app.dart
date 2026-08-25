@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +14,7 @@ class BukuLarisApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(gateProvider.select((s) => s.status), (_, __) {});
+    ref.listen(gateProvider.select((s) => s.status), (_, _) {});
     FlutterError.onError = (details) {
       Logger.e('FLUTTER ERROR: ${details.exception}', details.stack);
       FlutterError.presentError(details);
