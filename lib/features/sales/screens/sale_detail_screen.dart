@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../config/gate.dart';
@@ -261,6 +262,17 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
 
         return Scaffold(
           appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Kembali',
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  context.go('/sales');
+                }
+              },
+            ),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -431,7 +443,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                                 label: 'Estimasi Selesai',
                                 value: dateFull(sale.estimatedCompletionDate)),
                           if (sale.notes.isNotEmpty)
-                            InfoRow(label: 'Catatan', value: sale.notes),
+                            InfoRow(label: 'Keterangan', value: sale.notes),
                         ],
                       ),
                     ),

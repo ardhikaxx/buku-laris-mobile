@@ -182,6 +182,30 @@ class PosScreenState extends ConsumerState<PosScreen> {
 
   int get itemCount => qtyInCart.values.fold(0, (a, b) => a + b);
 
+  Future<void> _handleBack(BuildContext context) async {
+    if (itemCount > 0) {
+      final leave = await confirmAction(
+        context,
+        title: 'Buang keranjang?',
+        message:
+            'Ada item di keranjang yang belum diselesaikan. Yakin ingin keluar?',
+        confirmLabel: 'Keluar',
+        destructive: true,
+      );
+      if (!leave || !mounted) return;
+      setState(() {
+        qtyInCart.clear();
+        cartProducts.clear();
+      });
+    }
+    if (!mounted) return;
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      context.go('/sales');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final supportsPreOrder =
@@ -195,30 +219,16 @@ class PosScreenState extends ConsumerState<PosScreen> {
     return PopScope(
       canPop: itemCount == 0,
       onPopInvokedWithResult: (didPop, _) async {
-        if (didPop || itemCount == 0) return;
-        final navigator = Navigator.of(context);
-        final router = GoRouter.of(context);
-        final leave = await confirmAction(
-          context,
-          title: 'Buang keranjang?',
-          message:
-              'Ada item di keranjang yang belum diselesaikan. Yakin ingin keluar?',
-          confirmLabel: 'Keluar',
-          destructive: true,
-        );
-        if (!leave || !mounted) return;
-        setState(() {
-          qtyInCart.clear();
-          cartProducts.clear();
-        });
-        if (navigator.canPop()) {
-          navigator.pop();
-        } else {
-          router.go('/sales');
-        }
+        if (didPop) return;
+        await _handleBack(context);
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: 'Kembali',
+            onPressed: () => _handleBack(context),
+          ),
           title: const Text('Catat Penjualan'),
           actions: [
             Padding(
@@ -290,18 +300,33 @@ class PosScreenState extends ConsumerState<PosScreen> {
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFF111827))),
+                      if (notesController.text.isNotEmpty)
+                        Text(
+                          'Keterangan: ${notesController.text}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey[600],
+                          ),
+                        ),
                     ],
                   ),
                 ),
-                OutlinedButton(
+                FilledButton.icon(
                   onPressed:
                       itemCount == 0 ? null : () => openCartSheet(context),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(42),
-                    side: BorderSide(color: AppColors.primary),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                   ),
-                  child: const Text('Lanjutkan',
-                      style: TextStyle(fontSize: 13)),
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                  iconAlignment: IconAlignment.end,
+                  label: const Text('Lanjutkan',
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 ),
               ],
             ),
@@ -468,7 +493,7 @@ class PosScreenState extends ConsumerState<PosScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => const PosCartSheet(),
+      builder: (_) => PosCartSheet(pos: this),
     ).then((_) {
       if (mounted) setState(() {});
     });

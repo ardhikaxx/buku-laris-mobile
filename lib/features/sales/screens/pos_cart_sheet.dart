@@ -18,7 +18,9 @@ import '../../../services/logger.dart';
 import 'pos_screen.dart';
 
 class PosCartSheet extends ConsumerStatefulWidget {
-  const PosCartSheet({super.key});
+  final PosScreenState pos;
+
+  const PosCartSheet({super.key, required this.pos});
 
   @override
   ConsumerState<PosCartSheet> createState() => _PosCartSheetState();
@@ -34,9 +36,22 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
   bool _saving = false;
   String? _error;
 
+  PosScreenState get _pos => widget.pos;
+
   @override
   void initState() {
     super.initState();
+    final pos = widget.pos;
+    if (pos.discountAmount > 0) {
+      _discountController.text = number(pos.discountAmount);
+    }
+    if (pos.shippingCost > 0) {
+      _shippingController.text = number(pos.shippingCost);
+    }
+    if (pos.paidOverride >= 0) {
+      _paidController.text = number(pos.paidOverride);
+    }
+    _notesController.text = pos.notesController.text;
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadMethods());
   }
 
@@ -65,9 +80,6 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
       Logger.e('cart load payment methods failed', e);
     }
   }
-
-  PosScreenState get _pos =>
-      context.findAncestorStateOfType<PosScreenState>()!;
 
   Future<void> _pickCustomer() async {
     final result = await showDialog<Customer>(
@@ -160,6 +172,7 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
 
     pos.discountAmount = Validators.parseAmount(_discountController.text);
     pos.shippingCost = Validators.parseAmount(_shippingController.text);
+    pos.notesController.text = _notesController.text.trim();
 
     final grandTotal = pos.grandTotal;
     var paid = Validators.parseAmount(_paidController.text);
@@ -291,7 +304,15 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w800)),
                         IconButton(
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              _pos.discountAmount =
+                                  Validators.parseAmount(_discountController.text);
+                              _pos.shippingCost =
+                                  Validators.parseAmount(_shippingController.text);
+                              _pos.notesController.text =
+                                  _notesController.text.trim();
+                              Navigator.pop(context);
+                            },
                             icon: const Icon(Icons.close_rounded, size: 20)),
                       ],
                     ),
@@ -469,9 +490,17 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                     TextFormField(
                       controller: _notesController,
                       textCapitalization: TextCapitalization.sentences,
+                      maxLines: 2,
+                      minLines: 1,
                       decoration: const InputDecoration(
-                        labelText: 'Catatan (opsional)',
+                        labelText: 'Keterangan / Catatan (opsional)',
+                        hintText: 'Contoh: Titip di pos satpam, meja 3, req pedas...',
+                        prefixIcon: Icon(Icons.description_outlined, size: 20),
+                        isDense: true,
                       ),
+                      onChanged: (v) {
+                        _pos.notesController.text = v.trim();
+                      },
                     ),
                     const Divider(height: 24),
                     _row('Subtotal', money(pos.subtotal - pos.taxAmount + pos.discountAmount)),

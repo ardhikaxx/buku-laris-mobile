@@ -175,6 +175,20 @@ class _SalesListContent extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
+                  if (sale.notes.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        'Keterangan: ${sale.notes}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
                   if (sale.offlineCreated)
                     Row(children: [
                       Icon(Icons.cloud_off_rounded,
