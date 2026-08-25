@@ -95,6 +95,30 @@ class Product {
     return allowOverselling || stock >= qty;
   }
 
+  Product copyWith({int? stock, int? licenseCount}) => Product(
+        id: id,
+        name: name,
+        sku: sku,
+        barcode: barcode,
+        categoryId: categoryId,
+        type: type,
+        costPrice: costPrice,
+        sellingPrice: sellingPrice,
+        unit: unit,
+        trackStock: trackStock,
+        unlimitedStock: unlimitedStock,
+        stock: stock ?? this.stock,
+        minStock: minStock,
+        licenseCount: licenseCount ?? this.licenseCount,
+        imageUrl: imageUrl,
+        description: description,
+        isActive: isActive,
+        archived: archived,
+        soldCount: soldCount,
+        lastSoldAt: lastSoldAt,
+        createdAt: createdAt,
+      );
+
   Map<String, dynamic> toCreateMap() => {
         'name': name.trim(),
         'sku': sku.trim(),
