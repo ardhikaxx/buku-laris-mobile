@@ -50,7 +50,11 @@ String mapFirestoreError(FirebaseException e) {
     case 'unavailable':
       return 'Server tidak dapat dihubungi. Periksa koneksi internet Anda.';
     case 'failed-precondition':
-      return 'Operasi membutuhkan indeks atau kondisi yang belum terpenuhi.';
+      final detail = e.message ?? '';
+      if (detail.contains('index')) {
+        return 'Database membutuhkan indeks yang belum dibuat.\n\n$detail';
+      }
+      return 'Operasi membutuhkan indeks atau kondisi yang belum terpenuhi. $detail';
     case 'aborted':
       return 'Transaksi gagal karena konflik data. Coba lagi.';
     case 'deadline-exceeded':

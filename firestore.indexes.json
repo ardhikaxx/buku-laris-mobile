@@ -41,10 +41,47 @@
       "collectionGroup": "sales",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Filter daftar penjualan per status + urutan terbaru (tab Penjualan)."
+    },
+    {
+      "collectionGroup": "sales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "orderType", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Filter penjualan Stok Siap vs Pre-Order dengan urutan terbaru."
+    },
+    {
+      "collectionGroup": "sales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "paymentStatus", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ],
+      "why": "Filter tagihan belum lunas / sebagian (belum bayar & piutang)."
+    },
+    {
+      "collectionGroup": "sales",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "customerId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ],
       "why": "Histori transaksi per pelanggan dengan cursor pagination."
+    },
+    {
+      "collectionGroup": "sales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "orderType", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "estimatedCompletionDate", "order": "ASCENDING" }
+      ],
+      "why": "Pre-order aktif diurutkan berdasarkan estimasi selesai (dashboard & laporan jatuh tempo)."
     },
     {
       "collectionGroup": "sales",
@@ -71,7 +108,17 @@
         { "fieldPath": "type", "order": "ASCENDING" },
         { "fieldPath": "occurredAt", "order": "DESCENDING" }
       ],
-      "why": "Filter tab uang masuk/keluar + urutan tanggal + aggregate sum(amount) per periode."
+      "why": "Tab uang masuk/keluar: filter jenis + urutan tanggal + aggregate sum(amount) per periode."
+    },
+    {
+      "collectionGroup": "cashTransactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "occurredAt", "order": "DESCENDING" }
+      ],
+      "why": "Filter tambahan kategori kas pada satu jenis transaksi."
     },
     {
       "collectionGroup": "stockMovements",
@@ -83,20 +130,45 @@
       "why": "Ledger histori stok per produk, lazy loading cursor-based."
     },
     {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "archived", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "name", "order": "ASCENDING" }
+      ],
+      "why": "Pencarian prefix nama produk yang hanya mengambil item aktif (POS & katalog)."
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "archived", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "name", "order": "ASCENDING" }
+      ],
+      "why": "Filter katalog per tipe produk + urutan nama."
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "archived", "order": "ASCENDING" },
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "trackStock", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "stock", "order": "ASCENDING" }
+      ],
+      "why": "Dashboard/laporan stok menipis: produk fisik terpantau diurutkan dari stok terkecil."
+    },
+    {
       "collectionGroup": "notifications",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
+        { "fieldPath": "read", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ],
-      "why": "Urutkan notifikasi terbaru (subcollection users/{uid}/notifications) - single-field otomatis cukup, dideklarasikan eksplisit untuk kejelasan."
-    },
-    {
-      "collectionGroup": "dailySummaries",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "hasUnknownCostSales", "order": "ASCENDING" }
-      ],
-      "why": "Deteksi cepat apakah laba harus ditandai estimasi (single field, auto-index; didokumentasikan karena dipakai rule laporan)."
+      "why": "Hitung & tampilkan notifikasi belum dibaca per user."
     }
   ],
   "fieldOverrides": []
