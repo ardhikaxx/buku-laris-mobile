@@ -10,7 +10,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../models/product_model.dart';
-import '../../../repositories/sale_repository.dart';
 import '../../../services/logger.dart';
 import 'pos_cart_sheet.dart';
 
