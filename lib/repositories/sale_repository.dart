@@ -1,9 +1,11 @@
+import '../core/constants/app_constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/cash_transaction_model.dart';
 import '../models/daily_summary_model.dart';
 import '../models/enums.dart';
 import '../models/sale_model.dart';
+import '../models/stock_movement_model.dart';
 import 'audit_notification_repository.dart';
 import 'base_repository.dart';
 
@@ -407,7 +409,7 @@ class SaleRepository extends BaseRepository {
           sale.stockDeducted;
       if (restoresStock) {
         await _mutateStockForItems(txn, wsId, sale.items,
-            direction: +1,
+            direction: 1,
             reason: newStatus == SaleStatus.cancelled
                 ? StockReason.saleCancelled
                 : StockReason.manualCorrection,
