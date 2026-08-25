@@ -76,7 +76,7 @@ class AuthService {
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       Logger.e('google sign in exception', e);
       throw AppException(
-          'Login dengan Google gagal: ${e.text ?? e.code.name}', e);
+          'Login dengan Google gagal: ${e.description ?? e.code.name}', e);
     } on FirebaseAuthException catch (e) {
       Logger.e('google firebase auth failed', e);
       throw AppException(mapAuthError(e), e);
