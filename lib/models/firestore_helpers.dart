@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 String str(dynamic v, [String fallback = '']) =>
-    v is String ? v : (v?.toString() ?? fallback);
+    v == null ? fallback : v.toString();
 
-String? strOrNull(dynamic v) => v == null ? null : v.toString();
+String? strOrNull(dynamic v) => v?.toString();
 
 int intOf(dynamic v, [int fallback = 0]) {
   if (v is int) return v;
