@@ -36,7 +36,7 @@ class MoreScreen extends ConsumerWidget {
         children: [
           _profileCard(context, ref, gate),
           const SizedBox(height: 18),
-          SectionHeader('Operasional'),
+          const SectionHeader('Operasional'),
           Card(
             child: Column(
               children: [
@@ -61,7 +61,7 @@ class MoreScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 14),
-          SectionHeader('Workspace'),
+          const SectionHeader('Workspace'),
           Card(
             child: Column(
               children: [
@@ -86,7 +86,7 @@ class MoreScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 14),
-          SectionHeader('Akun'),
+          const SectionHeader('Akun'),
           Card(
             child: Column(
               children: [
@@ -128,7 +128,7 @@ class MoreScreen extends ConsumerWidget {
                       (gate.profile?.displayName.isNotEmpty ?? false)
                           ? gate.profile!.displayName[0].toUpperCase()
                           : '?',
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: AppColors.primary),

@@ -261,7 +261,7 @@ class _MembersTab extends ConsumerWidget {
 
   Future<void> _editPermissions(
       BuildContext context, WidgetRef ref, WorkspaceMember member) async {
-    var selected = Set<Permission>.from(member.permissions);
+    final selected = Set<Permission>.from(member.permissions);
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,

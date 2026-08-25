@@ -153,7 +153,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                           style: TextStyle(fontSize: 13)),
                       subtitle: Text(
                           '${dateShort(_range.start)} - ${dateShort(_range.end)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: AppColors.primaryDark)),
@@ -283,7 +283,7 @@ class _SalesReportView extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 18),
-        SectionHeader('Tren Harian'),
+        const SectionHeader('Tren Harian'),
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8, 14, 12, 6),
@@ -291,7 +291,7 @@ class _SalesReportView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        SectionHeader('Berdasarkan Metode Pembayaran'),
+        const SectionHeader('Berdasarkan Metode Pembayaran'),
         _StatList(
           rows: [
             for (final pm in report.byPaymentMethod)
@@ -304,7 +304,7 @@ class _SalesReportView extends StatelessWidget {
           emptyText: 'Belum ada data pembayaran.',
         ),
         const SizedBox(height: 16),
-        SectionHeader('Berdasarkan Kategori'),
+        const SectionHeader('Berdasarkan Kategori'),
         _StatList(
           rows: [
             for (final cat in report.byCategory)
@@ -363,8 +363,8 @@ class _LineChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: double.maxFinite,
-          getDrawingHorizontalLine: (v) => FlLine(
-              color: const Color(0xFFF3F4F6), strokeWidth: 1),
+          getDrawingHorizontalLine: (v) => const FlLine(
+              color: Color(0xFFF3F4F6), strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         titlesData: const FlTitlesData(show: false),
@@ -512,7 +512,7 @@ class _CashflowReportView extends StatelessWidget {
           color: report.net >= 0 ? AppColors.primary : AppColors.expense,
         ),
         const SizedBox(height: 18),
-        SectionHeader('Sumber Uang Masuk'),
+        const SectionHeader('Sumber Uang Masuk'),
         _StatList(
           rows: [
             for (final entry in report.incomeByCategory.entries)
@@ -525,7 +525,7 @@ class _CashflowReportView extends StatelessWidget {
           emptyText: 'Belum ada pemasukan pada periode ini.',
         ),
         const SizedBox(height: 16),
-        SectionHeader('Rincian Uang Keluar'),
+        const SectionHeader('Rincian Uang Keluar'),
         _StatList(
           color: AppColors.expense,
           rows: [
@@ -669,7 +669,7 @@ class _PreOrderReportView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 18),
-        SectionHeader('Jatuh Tempo ≤ 7 Hari'),
+        const SectionHeader('Jatuh Tempo ≤ 7 Hari'),
         if (report.dueSoon.isEmpty)
           const EmptyState(
             icon: Icons.event_available_rounded,

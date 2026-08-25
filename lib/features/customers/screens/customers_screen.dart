@@ -160,7 +160,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(compactMoney(customer.totalSpent),
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.primaryDark)),

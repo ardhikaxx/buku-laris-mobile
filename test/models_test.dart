@@ -56,21 +56,21 @@ void main() {
 
   group('Product rules', () {
     test('low stock detection only for tracked physical items', () {
-      final low = Product(
+      const low = Product(
         id: 'a',
         name: 'A',
         type: ProductType.physicalProduct,
         stock: 2,
         minStock: 5,
       );
-      final service = Product(
+      const service = Product(
         id: 'b',
         name: 'B',
         type: ProductType.service,
         stock: 0,
         minStock: 5,
       );
-      final unlimited = Product(
+      const unlimited = Product(
         id: 'c',
         name: 'C',
         type: ProductType.digitalProduct,
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('canSell blocks overselling when disabled', () {
-      final p = Product(id: 'd', name: 'D', stock: 5, minStock: 1);
+      const p = Product(id: 'd', name: 'D', stock: 5, minStock: 1);
       expect(p.canSell(3), isTrue);
       expect(p.canSell(6), isFalse);
       expect(p.canSell(6, allowOverselling: true), isTrue);
@@ -108,7 +108,7 @@ void main() {
 
   group('Customer', () {
     test('update map normalizes email', () async {
-      final map = Customer(
+      final map = const Customer(
         id: 'c1',
         name: ' Budi ',
         whatsapp: '081234567890',

@@ -173,7 +173,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                 ),
               ],
               const SizedBox(height: 18),
-              SectionHeader('Histori Transaksi'),
+              const SectionHeader('Histori Transaksi'),
               PagedListView<Sale>(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -201,7 +201,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                         style:
                             TextStyle(fontSize: 11.5, color: Colors.grey[500])),
                     trailing: Text(money(sale.grandTotal),
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: AppColors.primaryDark)),

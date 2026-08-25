@@ -435,7 +435,7 @@ class PosScreenState extends ConsumerState<PosScreen> {
                         Row(
                           children: [
                             Text(money(product.sellingPrice),
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.primaryDark)),

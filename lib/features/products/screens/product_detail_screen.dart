@@ -27,8 +27,8 @@ class ProductDetailScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(14),
+            const Padding(
+              padding: EdgeInsets.all(14),
               child: Text('Pilih alasan perubahan stok',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
             ),
@@ -213,14 +213,14 @@ class ProductDetailScreen extends ConsumerWidget {
                           StatusChip(
                               product.type.label, AppColors.primary),
                           if (!product.isActive)
-                            StatusChip('Nonaktif', Colors.grey),
+                            const StatusChip('Nonaktif', Colors.grey),
                         ],
                       ),
                       const SizedBox(height: 10),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(money(product.sellingPrice),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.primaryDark)),
@@ -302,7 +302,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 ),
               ],
               const SizedBox(height: 20),
-              SectionHeader('Histori Perubahan Stok'),
+              const SectionHeader('Histori Perubahan Stok'),
               PagedListView<StockMovement>(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),

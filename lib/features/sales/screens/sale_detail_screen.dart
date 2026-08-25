@@ -402,7 +402,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  SectionHeader('Item'),
+                  const SectionHeader('Item'),
                   Card(
                     child: Column(
                       children: [
@@ -446,7 +446,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  SectionHeader('Rincian Pembayaran'),
+                  const SectionHeader('Rincian Pembayaran'),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(14),
@@ -480,7 +480,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  SectionHeader('Informasi'),
+                  const SectionHeader('Informasi'),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(14),
@@ -547,7 +547,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  SectionHeader('Histori Status'),
+                  const SectionHeader('Histori Status'),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(14),

@@ -88,7 +88,7 @@ void main() {
       'status': 'ACTIVE',
       'createdAt': FieldValue.serverTimestamp(),
     });
-    final dayKey = '2026-08-25';
+    const dayKey = '2026-08-25';
     final summary = wsRef.collection('dailySummaries').doc(dayKey);
 
     await summary.set({

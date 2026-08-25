@@ -119,7 +119,7 @@ class _LowStockScreenState extends ConsumerState<LowStockScreen> {
                   color: item.outOfStock ? AppColors.expense : AppColors.warning),
             ),
             trailing: item.outOfStock
-                ? StatusChip('Habis', AppColors.expense)
+                ? const StatusChip('Habis', AppColors.expense)
                 : StatusChip('${item.stock}', AppColors.warning),
           ),
         );

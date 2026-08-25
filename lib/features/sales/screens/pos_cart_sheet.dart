@@ -647,9 +647,9 @@ class _CustomerPickerDialogState extends ConsumerState<_CustomerPickerDialog> {
               const SizedBox(height: 12),
               TextField(
                 controller: _searchController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Cari nama pelanggan...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  prefixIcon: Icon(Icons.search_rounded, size: 20),
                   isDense: true,
                 ),
                 onSubmitted: _search,

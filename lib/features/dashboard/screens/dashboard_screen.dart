@@ -568,7 +568,7 @@ class _RevenueChart extends StatelessWidget {
     final maxY = points.map((p) => p.revenue).fold<int>(0, max) * 1.15;
     return BarChart(
       BarChartData(
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -640,29 +640,29 @@ class _DashboardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
-        const SkeletonBox(height: 96, radius: 14),
-        const SizedBox(height: 10),
+        SkeletonBox(height: 96, radius: 14),
+        SizedBox(height: 10),
         Row(
           children: [
-            const Expanded(child: SkeletonBox(height: 84, radius: 14)),
-            const SizedBox(width: 10),
+            Expanded(child: SkeletonBox(height: 84, radius: 14)),
+            SizedBox(width: 10),
             Expanded(child: SkeletonBox(height: 84, radius: 14)),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Row(
           children: [
-            const Expanded(child: SkeletonBox(height: 84, radius: 14)),
-            const SizedBox(width: 10),
+            Expanded(child: SkeletonBox(height: 84, radius: 14)),
+            SizedBox(width: 10),
             Expanded(child: SkeletonBox(height: 84, radius: 14)),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Align(alignment: Alignment.centerLeft, child: SkeletonBox(height: 14)),
-        const SizedBox(height: 10),
-        const SkeletonBox(height: 190, radius: 14),
+        SizedBox(height: 10),
+        SkeletonBox(height: 190, radius: 14),
       ],
     );
   }

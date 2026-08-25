@@ -187,7 +187,7 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                         children: [
                                           Row(
                                             children: [
-                                              Icon(Icons.south_west_rounded,
+                                              const Icon(Icons.south_west_rounded,
                                                   size: 13,
                                                   color: AppColors.income),
                                               const SizedBox(width: 4),
@@ -224,7 +224,7 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                         children: [
                                           Row(
                                             children: [
-                                              Icon(Icons.north_east_rounded,
+                                              const Icon(Icons.north_east_rounded,
                                                   size: 13,
                                                   color: AppColors.expense),
                                               const SizedBox(width: 4),
@@ -586,7 +586,7 @@ class _CashTile extends ConsumerWidget {
                   ),
                   if (isSaleLinked) ...[
                     const Spacer(),
-                    Text(
+                    const Text(
                       'Lihat Struk \u203A',
                       style: TextStyle(
                         fontSize: 11,

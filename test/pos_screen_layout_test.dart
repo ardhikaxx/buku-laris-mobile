@@ -57,8 +57,8 @@ void main() {
   testWidgets('POS dengan produk terisi tidak melempar exception layout',
       (tester) async {
     await tester.pumpWidget(_host(products: () => [
-          Product(id: 'p1', name: 'Kopi Sachet', sellingPrice: 2000, stock: 10),
-          Product(id: 'p2', name: 'Gula Pasir', sellingPrice: 15000, stock: 3),
+          const Product(id: 'p1', name: 'Kopi Sachet', sellingPrice: 2000, stock: 10),
+          const Product(id: 'p2', name: 'Gula Pasir', sellingPrice: 15000, stock: 3),
         ]));
     await tester.pumpAndSettle();
 

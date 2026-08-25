@@ -212,10 +212,10 @@ class _SalesListContent extends ConsumerWidget {
                       ),
                     ),
                   if (sale.offlineCreated)
-                    Row(children: [
+                    const Row(children: [
                       Icon(Icons.cloud_off_rounded,
                           size: 12, color: AppColors.warning),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text('Menunggu sinkronisasi stok',
                           style:
                               TextStyle(fontSize: 11, color: AppColors.warning)),
@@ -228,7 +228,7 @@ class _SalesListContent extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(money(sale.grandTotal),
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
                         color: AppColors.primaryDark)),

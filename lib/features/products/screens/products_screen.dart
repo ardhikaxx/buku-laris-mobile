@@ -226,10 +226,10 @@ class _ProductCard extends ConsumerWidget {
                             ? const Color(0xFF111827)
                             : Colors.grey[500])),
               ),
-              if (!product.isActive) StatusChip('Nonaktif', Colors.grey),
+              if (!product.isActive) const StatusChip('Nonaktif', Colors.grey),
               if (product.isLowStock) ...[
                 const SizedBox(width: 6),
-                StatusChip('Stok menipis', AppColors.expense),
+                const StatusChip('Stok menipis', AppColors.expense),
               ],
             ],
           ),

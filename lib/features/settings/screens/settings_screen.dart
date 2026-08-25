@@ -287,7 +287,7 @@ class _BusinessModelSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var selected = Set<BusinessModel>.from(workspace.businessModels);
+    final selected = Set<BusinessModel>.from(workspace.businessModels);
 
     return Card(
       child: Padding(
@@ -624,7 +624,7 @@ class _AccountSection extends ConsumerWidget {
           backgroundColor: AppColors.primary.withValues(alpha: 0.1),
           backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
           child: user?.photoURL == null
-              ? Icon(Icons.person_outline_rounded, color: AppColors.primary)
+              ? const Icon(Icons.person_outline_rounded, color: AppColors.primary)
               : null,
         ),
         title: Text(ref.watch(gateProvider).profile?.displayName ?? '-',
@@ -633,7 +633,7 @@ class _AccountSection extends ConsumerWidget {
             style: TextStyle(fontSize: 12, color: Colors.grey[600])),
         trailing: TextButton(
           onPressed: () => _deleteAccount(context, ref),
-          child: Text('Hapus Akun',
+          child: const Text('Hapus Akun',
               style: TextStyle(fontSize: 12.5, color: AppColors.expense)),
         ),
       ),
@@ -738,11 +738,11 @@ class _DangerZoneSection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.warning_amber_rounded,
+                Icon(Icons.warning_amber_rounded,
                     color: AppColors.expense, size: 20),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text('Zona Berbahaya',
                       style: TextStyle(
