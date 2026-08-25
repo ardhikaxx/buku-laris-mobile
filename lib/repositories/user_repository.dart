@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/user_profile_model.dart';
-import '../services/logger.dart';
 import 'base_repository.dart';
 
 class UserRepository extends BaseRepository {
