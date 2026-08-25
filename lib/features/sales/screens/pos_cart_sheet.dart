@@ -70,7 +70,6 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
       context.findAncestorStateOfType<PosScreenState>()!;
 
   Future<void> _pickCustomer() async {
-    final wsId = ref.read(gateProvider).activeWorkspaceId!;
     final result = await showDialog<Customer>(
       context: context,
       builder: (_) => const _CustomerPickerDialog(),
@@ -437,7 +436,7 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<PaymentMethodModel>(
-                      value: _selectedMethod,
+                      initialValue: _selectedMethod,
                       decoration:
                           const InputDecoration(labelText: 'Metode Pembayaran'),
                       items: _methods
@@ -490,24 +489,42 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
-                  child: SizedBox(
-                    height: 48,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary),
-                      onPressed: _saving ? null : _submit,
-                      child: _saving
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2.2, color: Colors.white))
-                          : Text(
-                              isPreOrder
-                                  ? 'Buat Pre-Order • ${money(grandTotal)}'
-                                  : 'Selesaikan Penjualan • ${money(grandTotal)}',
-                              style: const TextStyle(fontSize: 14)),
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (_error != null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: Text(_error!,
+                              style: const TextStyle(
+                                  fontSize: 12.5, color: Color(0xFFB91C1C))),
+                        ),
+                      SizedBox(
+                        height: 48,
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primary),
+                          onPressed: _saving ? null : _submit,
+                          child: _saving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2.2, color: Colors.white))
+                              : Text(
+                                  isPreOrder
+                                      ? 'Buat Pre-Order • ${money(grandTotal)}'
+                                      : 'Selesaikan Penjualan • ${money(grandTotal)}',
+                                  style: const TextStyle(fontSize: 14)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
