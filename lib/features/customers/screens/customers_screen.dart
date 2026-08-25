@@ -263,6 +263,7 @@ Future<void> showCustomerForm(BuildContext context, WidgetRef ref,
                             if (ctx.mounted) Navigator.pop(ctx, true);
                           } catch (e) {
                             setSheet(() => saving = false);
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content:
