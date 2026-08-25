@@ -8,14 +8,10 @@ import '../../../core/constants/catalogs.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/debug_utils.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../core/utils/validators.dart';
 import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../models/payment_method_model.dart';
 import '../../../models/workspace_model.dart';
-import '../../../repositories/user_repository.dart';
-import '../../../services/auth_service.dart';
 import '../../../services/demo_data_service.dart';
 import '../../../services/image_service.dart';
 
@@ -223,7 +219,7 @@ class _WorkspaceSectionState extends ConsumerState<_WorkspaceSection> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
-              value: _businessType,
+              initialValue: _businessType,
               hint: const Text('Jenis usaha'),
               items: BusinessCatalogs.businessTypes
                   .map((t) => DropdownMenuItem(value: t, child: Text(t)))
@@ -251,7 +247,7 @@ class _WorkspaceSectionState extends ConsumerState<_WorkspaceSection> {
             ),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
-              value: _timezone,
+              initialValue: _timezone,
               items: BusinessCatalogs.timezones
                   .map((t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)))
                   .toList(),
