@@ -7,7 +7,6 @@ import '../repositories/dashboard_repository.dart';
 import '../repositories/invitation_repository.dart';
 import '../repositories/membership_repository.dart';
 import '../repositories/product_repository.dart';
-import '../repositories/report_repository.dart';
 import '../repositories/sale_repository.dart';
 import '../repositories/stock_repository.dart';
 import '../repositories/user_repository.dart';
