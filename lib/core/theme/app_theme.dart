@@ -107,7 +107,7 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(0xFFE5E7EB),
+        backgroundColor: const Color(0xFFCBD2D9),
         selectedColor: AppColors.primary,
         checkmarkColor: Colors.white,
         labelPadding: const EdgeInsets.symmetric(horizontal: 6),
