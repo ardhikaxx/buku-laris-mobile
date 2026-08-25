@@ -13,7 +13,7 @@ import '../../../models/enums.dart';
 import '../../shared/widgets/navigation.dart';
 import '../widgets/cash_form_sheet.dart';
 
-enum _CashTab { all, income, expense }
+enum _CashTab { income, expense }
 
 class CashflowScreen extends ConsumerStatefulWidget {
   const CashflowScreen({super.key});
@@ -23,7 +23,7 @@ class CashflowScreen extends ConsumerStatefulWidget {
 }
 
 class _CashflowScreenState extends ConsumerState<CashflowScreen> {
-  _CashTab _tab = _CashTab.all;
+  _CashTab _tab = _CashTab.income;
   DateTimeRange _range = _thisMonth();
 
   static DateTimeRange _thisMonth() {
@@ -121,11 +121,9 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                 final filteredItems = allItems.where((t) {
                   if (_tab == _CashTab.income) {
                     return t.type == CashTransactionType.income;
-                  }
-                  if (_tab == _CashTab.expense) {
+                  } else {
                     return t.type == CashTransactionType.expense;
                   }
-                  return true;
                 }).toList();
 
                 return Column(
@@ -287,27 +285,17 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          // Tab Selector
+                          // Tab Selector (2 Tabs only: Uang Masuk & Uang Keluar)
                           SegmentedButton<_CashTab>(
                             showSelectedIcon: false,
                             segments: [
                               ButtonSegment(
-                                value: _CashTab.all,
-                                label: Text(
-                                  'Semua (${allItems.length})',
-                                  style: TextStyle(
-                                      fontSize: 11.5,
-                                      color: _tab == _CashTab.all
-                                          ? Colors.white
-                                          : null),
-                                ),
-                              ),
-                              ButtonSegment(
                                 value: _CashTab.income,
                                 label: Text(
-                                  'Masuk (${allItems.where((t) => t.type == CashTransactionType.income).length})',
+                                  'Uang Masuk (${allItems.where((t) => t.type == CashTransactionType.income).length})',
                                   style: TextStyle(
-                                      fontSize: 11.5,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                       color: _tab == _CashTab.income
                                           ? Colors.white
                                           : null),
@@ -316,9 +304,10 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                               ButtonSegment(
                                 value: _CashTab.expense,
                                 label: Text(
-                                  'Keluar (${allItems.where((t) => t.type == CashTransactionType.expense).length})',
+                                  'Uang Keluar (${allItems.where((t) => t.type == CashTransactionType.expense).length})',
                                   style: TextStyle(
-                                      fontSize: 11.5,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                       color: _tab == _CashTab.expense
                                           ? Colors.white
                                           : null),
@@ -328,11 +317,9 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                             selected: {_tab},
                             style: SegmentedButton.styleFrom(
                               backgroundColor: Colors.grey.shade100,
-                              selectedBackgroundColor: switch (_tab) {
-                                _CashTab.all => AppColors.primary,
-                                _CashTab.income => AppColors.income,
-                                _CashTab.expense => AppColors.expense,
-                              },
+                              selectedBackgroundColor: _tab == _CashTab.income
+                                  ? AppColors.income
+                                  : AppColors.expense,
                             ),
                             onSelectionChanged: (selection) =>
                                 setState(() => _tab = selection.first),
@@ -345,25 +332,23 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                           ? EmptyState(
                               icon: _tab == _CashTab.income
                                   ? Icons.south_west_rounded
-                                  : (_tab == _CashTab.expense
-                                      ? Icons.north_east_rounded
-                                      : Icons.account_balance_wallet_outlined),
-                              title: 'Belum ada catatan kas',
+                                  : Icons.north_east_rounded,
+                              title: _tab == _CashTab.income
+                                  ? 'Belum ada uang masuk'
+                                  : 'Belum ada uang keluar',
                               message: _tab == _CashTab.income
-                                  ? 'Belum ada pemasukan di periode ini.'
-                                  : (_tab == _CashTab.expense
-                                      ? 'Belum ada pengeluaran di periode ini.'
-                                      : 'Belum ada mutasi kas tercatat di periode ini.'),
+                                  ? 'Belum ada catatan pemasukan di periode ini.'
+                                  : 'Belum ada catatan pengeluaran di periode ini.',
                               action: canManage
                                   ? ElevatedButton.icon(
                                       onPressed: () => CashFormSheet.show(
                                           context,
                                           isIncome:
-                                              _tab != _CashTab.expense),
+                                              _tab == _CashTab.income),
                                       icon: const Icon(Icons.add, size: 18),
-                                      label: Text(_tab == _CashTab.expense
-                                          ? 'Catat Uang Keluar'
-                                          : 'Catat Uang Masuk'))
+                                      label: Text(_tab == _CashTab.income
+                                          ? 'Catat Uang Masuk'
+                                          : 'Catat Uang Keluar'))
                                   : null,
                             )
                           : ListView.separated(
@@ -391,16 +376,20 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
       floatingActionButton: canManage
           ? FloatingActionButton.extended(
               heroTag: 'cash-fab',
-              backgroundColor: _tab == _CashTab.expense
-                  ? AppColors.expense
-                  : AppColors.primary,
+              backgroundColor: _tab == _CashTab.income
+                  ? AppColors.income
+                  : AppColors.expense,
               foregroundColor: Colors.white,
               onPressed: () => CashFormSheet.show(context,
-                  isIncome: _tab != _CashTab.expense),
+                  isIncome: _tab == _CashTab.income),
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('Catat Kas',
-                  style:
-                      TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+              label: Text(
+                _tab == _CashTab.income
+                    ? 'Catat Uang Masuk'
+                    : 'Catat Uang Keluar',
+                style: const TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w700),
+              ),
             )
           : null,
       bottomNavigationBar: const AppBottomNav(currentIndex: 3),
