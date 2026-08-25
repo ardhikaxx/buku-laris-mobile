@@ -182,7 +182,7 @@ class PosScreenState extends ConsumerState<PosScreen> {
 
   int get itemCount => qtyInCart.values.fold(0, (a, b) => a + b);
 
-  Future<void> _handleBack(BuildContext context) async {
+  Future<void> _handleBack() async {
     if (itemCount > 0) {
       final leave = await confirmAction(
         context,
@@ -220,14 +220,14 @@ class PosScreenState extends ConsumerState<PosScreen> {
       canPop: itemCount == 0,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        await _handleBack(context);
+        await _handleBack();
       },
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             tooltip: 'Kembali',
-            onPressed: () => _handleBack(context),
+            onPressed: _handleBack,
           ),
           title: const Text('Catat Penjualan'),
           actions: [

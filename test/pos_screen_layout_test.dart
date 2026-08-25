@@ -8,7 +8,6 @@ import 'package:buku_laris/features/sales/screens/pos_screen.dart';
 import 'package:buku_laris/models/enums.dart';
 import 'package:buku_laris/models/product_model.dart';
 import 'package:buku_laris/models/workspace_member_model.dart';
-import 'package:buku_laris/models/workspace_model.dart';
 import 'package:buku_laris/repositories/product_repository.dart';
 
 class FakeProductRepository extends ProductRepository {
