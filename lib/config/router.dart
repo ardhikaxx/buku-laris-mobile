@@ -69,6 +69,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(
+        path: '/',
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
