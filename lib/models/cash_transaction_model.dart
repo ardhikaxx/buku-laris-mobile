@@ -20,7 +20,7 @@ class CashTransaction {
   final DateTime? createdAt;
 
   const CashTransaction({
-    required this.id,
+    this.id = '',
     required this.workspaceId,
     required this.type,
     required this.category,
