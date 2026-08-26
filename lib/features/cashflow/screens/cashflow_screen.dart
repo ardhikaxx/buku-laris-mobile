@@ -47,6 +47,15 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
   _CashTab _tab = _CashTab.income;
   DateTimeRange _range = _thisMonth();
   String? _selectedWallet; // null = Semua Akun / Dompet
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _isSearching = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   static DateTimeRange _thisMonth() {
     final now = DateTime.now();
@@ -123,6 +132,29 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
         titleText: 'Keuangan & Arus Kas',
         subtitleText: 'Rekap mutasi kas masuk & keluar',
         actions: [
+          IconButton(
+            tooltip: _isSearching ? 'Tutup Pencarian' : 'Cari Catatan Kas',
+            icon: Icon(
+                _isSearching ? Icons.search_off_rounded : Icons.search_rounded,
+                size: 19),
+            style: IconButton.styleFrom(
+              backgroundColor: _isSearching
+                  ? Colors.white.withValues(alpha: 0.35)
+                  : Colors.white.withValues(alpha: 0.18),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.all(7),
+              minimumSize: const Size(36, 36),
+            ),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  _searchController.clear();
+                  _searchQuery = '';
+                }
+              });
+            },
+          ),
           if (canManage)
             IconButton(
               tooltip: 'Pindah Dana / Transfer Kas',
@@ -352,6 +384,24 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                         ? 'Tunai'
                         : t.paymentMethodName.trim();
                     if (wName.toLowerCase() != _selectedWallet!.toLowerCase()) {
+                      return false;
+                    }
+                  }
+
+                  // Search query filter
+                  if (_searchQuery.trim().isNotEmpty) {
+                    final q = _searchQuery.toLowerCase().trim();
+                    final matchCat = t.category.toLowerCase().contains(q);
+                    final matchDesc = t.description.toLowerCase().contains(q);
+                    final matchPm =
+                        t.paymentMethodName.toLowerCase().contains(q);
+                    final matchNotes = t.notes.toLowerCase().contains(q);
+                    final matchAmt = t.amount.toString().contains(q);
+                    if (!matchCat &&
+                        !matchDesc &&
+                        !matchPm &&
+                        !matchNotes &&
+                        !matchAmt) {
                       return false;
                     }
                   }
@@ -646,7 +696,57 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                             const SizedBox(height: 8),
 
                             // ══════════════════════════════════════════════
-                            // 3. COMPACT TAB SELECTOR (UANG MASUK & KELUAR)
+                            // 3. SEARCH BAR (JIKA DIAKTIFKAN)
+                            // ══════════════════════════════════════════════
+                            if (_isSearching) ...[
+                              Container(
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color: const Color(0xFFCBD5E1)),
+                                ),
+                                child: TextField(
+                                  controller: _searchController,
+                                  autofocus: true,
+                                  style: const TextStyle(fontSize: 12.5),
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        'Cari nama biaya, keterangan, nominal...',
+                                    hintStyle: TextStyle(
+                                        fontSize: 11.5,
+                                        color: Colors.grey[500]),
+                                    prefixIcon: const Icon(Icons.search_rounded,
+                                        size: 16, color: AppColors.primary),
+                                    suffixIcon: _searchController.text.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(
+                                                Icons.clear_rounded,
+                                                size: 15),
+                                            onPressed: () {
+                                              setState(() {
+                                                _searchController.clear();
+                                                _searchQuery = '';
+                                              });
+                                            },
+                                          )
+                                        : null,
+                                    border: InputBorder.none,
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 9),
+                                    isDense: true,
+                                  ),
+                                  onChanged: (v) =>
+                                      setState(() => _searchQuery = v),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+
+                            // ══════════════════════════════════════════════
+                            // 4. COMPACT TAB SELECTOR (UANG MASUK & KELUAR)
                             // ══════════════════════════════════════════════
                             Container(
                               height: 34,
@@ -814,27 +914,44 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: EmptyState(
-                          icon: _tab == _CashTab.income
-                              ? Icons.south_west_rounded
-                              : Icons.north_east_rounded,
-                          title: _tab == _CashTab.income
-                              ? 'Belum ada uang masuk'
-                              : 'Belum ada uang keluar',
-                          message: _selectedWallet != null
-                              ? 'Tidak ada mutasi ${_tab == _CashTab.income ? "masuk" : "keluar"} untuk akun $_selectedWallet pada periode ini.'
-                              : 'Belum ada catatan ${_tab == _CashTab.income ? "pemasukan" : "pengeluaran"} di periode ini.',
-                          action: canManage
-                              ? ElevatedButton.icon(
-                                  onPressed: () => CashFormSheet.show(
-                                    context,
-                                    isIncome: _tab == _CashTab.income,
-                                  ),
-                                  icon: const Icon(Icons.add, size: 18),
-                                  label: Text(_tab == _CashTab.income
-                                      ? 'Catat Uang Masuk'
-                                      : 'Catat Uang Keluar'),
+                          icon: _searchQuery.isNotEmpty
+                              ? Icons.search_off_rounded
+                              : (_tab == _CashTab.income
+                                  ? Icons.south_west_rounded
+                                  : Icons.north_east_rounded),
+                          title: _searchQuery.isNotEmpty
+                              ? 'Catatan tidak ditemukan'
+                              : (_tab == _CashTab.income
+                                  ? 'Belum ada uang masuk'
+                                  : 'Belum ada uang keluar'),
+                          message: _searchQuery.isNotEmpty
+                              ? 'Tidak ada catatan kas yang cocok dengan kata kunci "$_searchQuery".'
+                              : (_selectedWallet != null
+                                  ? 'Tidak ada mutasi ${_tab == _CashTab.income ? "masuk" : "keluar"} untuk akun $_selectedWallet pada periode ini.'
+                                  : 'Belum ada catatan ${_tab == _CashTab.income ? "pemasukan" : "pengeluaran"} di periode ini.'),
+                          action: _searchQuery.isNotEmpty
+                              ? OutlinedButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchController.clear();
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                  icon: const Icon(Icons.clear_rounded, size: 16),
+                                  label: const Text('Hapus Pencarian'),
                                 )
-                              : null,
+                              : (canManage
+                                  ? ElevatedButton.icon(
+                                      onPressed: () => CashFormSheet.show(
+                                        context,
+                                        isIncome: _tab == _CashTab.income,
+                                      ),
+                                      icon: const Icon(Icons.add, size: 18),
+                                      label: Text(_tab == _CashTab.income
+                                          ? 'Catat Uang Masuk'
+                                          : 'Catat Uang Keluar'),
+                                    )
+                                  : null),
                         ),
                       )
                     else
