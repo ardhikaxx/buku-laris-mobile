@@ -98,7 +98,7 @@ class QuickActionsSheet extends ConsumerWidget {
         (
           'Tambah Produk',
           Icons.add_box_outlined,
-          const Color(0xFF7C3AED),
+          AppColors.primary,
           () => context.push('/products/new')
         ),
     ];

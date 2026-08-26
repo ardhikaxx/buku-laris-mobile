@@ -105,13 +105,13 @@ enum SaleStatus {
   bool get countsRevenue => this == completed;
 
   Color get color => switch (this) {
-        draft => const Color(0xFF6B7280),
+        draft => const Color(0xFF64748B),
         pending => const Color(0xFFD97706),
         confirmed => const Color(0xFF0284C7),
-        processing => const Color(0xFF7C3AED),
-        ready => const Color(0xFF0891B2),
-        completed => const Color(0xFF059669),
-        cancelled => const Color(0xFFDC2626),
+        processing => const Color(0xFFB45309),
+        ready => const Color(0xFF0D9488),
+        completed => const Color(0xFF10B981),
+        cancelled => const Color(0xFFEF4444),
         refunded => const Color(0xFFB45309),
       };
 }
@@ -134,7 +134,7 @@ enum CashTransactionType {
   final String label;
   const CashTransactionType(this.label);
 
-  Color get color => this == income ? const Color(0xFF059669) : const Color(0xFFDC2626);
+  Color get color => this == income ? const Color(0xFF10B981) : const Color(0xFFEF4444);
 }
 
 enum StockDirection { masuk, keluar, penyesuaian }

@@ -333,7 +333,7 @@ class _SalesReportView extends StatelessWidget {
                 label: 'Digital & Jasa/Layanan',
                 value: compactMoney(report.digitalRevenue + report.serviceRevenue),
                 icon: Icons.cloud_done_outlined,
-                color: const Color(0xFF7C3AED),
+                color: AppColors.info,
               ),
             ),
           ],

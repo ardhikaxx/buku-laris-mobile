@@ -47,7 +47,7 @@ class _GlobalErrorBoundary extends StatelessWidget {
   Widget build(BuildContext context) {
     ErrorWidget.builder = (details) {
       return Material(
-        color: const Color(0xFFF6F7F9),
+        color: const Color(0xFFF8FAFC),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

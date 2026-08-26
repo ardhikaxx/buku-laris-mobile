@@ -6,6 +6,7 @@ import '../../../../config/providers.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validators.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -48,7 +49,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F9),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: const FloatingCapsuleAppBar(
         showBackButton: true,
         titleText: 'Lupa Password',
@@ -65,7 +66,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Icon(Icons.mark_email_read_outlined,
-                          size: 56, color: Color(0xFF059669)),
+                          size: 56, color: AppColors.income),
                       const SizedBox(height: 16),
                       const Text(
                         'Email terkirim!',
@@ -92,7 +93,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Icon(Icons.lock_reset_rounded,
-                            size: 48, color: Color(0xFF0F766E)),
+                            size: 48, color: AppColors.primary),
                         const SizedBox(height: 14),
                         const Text(
                           'Reset Password',
