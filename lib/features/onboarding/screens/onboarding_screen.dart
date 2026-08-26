@@ -162,6 +162,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           titleText: 'Setup Usaha',
           subtitleText: 'Langkah ${_step + 1} dari 3',
+          actions: [
+            IconButton(
+              tooltip: 'Keluar Akun',
+              icon: const Icon(Icons.logout_rounded, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.all(7),
+                minimumSize: const Size(36, 36),
+              ),
+              onPressed: () async {
+                final confirmed = await confirmAction(
+                  context,
+                  title: 'Keluar dari akun?',
+                  message: 'Anda akan keluar dari akun ini.',
+                  confirmLabel: 'Keluar',
+                  destructive: true,
+                );
+                if (confirmed) {
+                  await ref.read(authServiceProvider).signOut();
+                }
+              },
+            ),
+          ],
         ),
         body: Column(
           children: [

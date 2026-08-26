@@ -106,8 +106,7 @@ class GateController extends Notifier<GateState> {
       await _inviteSub?.cancel();
       _invitesLoaded = false;
       _inviteSub = inviteRepo
-          .listPendingForEmail(user.email!)
-          .asStream()
+          .watchPendingForEmail(user.email!)
           .listen((invites) {
         _invites = invites;
         _invitesLoaded = true;

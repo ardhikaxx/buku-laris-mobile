@@ -86,15 +86,27 @@ class InvitationRepository extends BaseRepository {
   }
 
   Future<List<Invitation>> listPendingForEmail(String email) async {
+    final cleanEmail = email.trim().toLowerCase();
     final snap = await fs
         .collection(Collections.invitations)
-        .where('invitedEmail', isEqualTo: email.toLowerCase())
-        .where('status', isEqualTo: 'PENDING')
+        .where('invitedEmail', isEqualTo: cleanEmail)
         .get();
     return snap.docs
         .map(Invitation.fromDoc)
         .where((i) => i.effectivelyPending)
         .toList();
+  }
+
+  Stream<List<Invitation>> watchPendingForEmail(String email) {
+    final cleanEmail = email.trim().toLowerCase();
+    return fs
+        .collection(Collections.invitations)
+        .where('invitedEmail', isEqualTo: cleanEmail)
+        .snapshots()
+        .map((snap) => snap.docs
+            .map(Invitation.fromDoc)
+            .where((i) => i.effectivelyPending)
+            .toList());
   }
 
   Future<List<Invitation>> listForWorkspace(String wsId) async {
