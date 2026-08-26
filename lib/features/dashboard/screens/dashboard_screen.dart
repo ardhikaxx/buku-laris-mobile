@@ -324,17 +324,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       itemBuilder: (context) => [
         const PopupMenuItem<DashboardPeriod>(
           enabled: false,
+          height: 28,
+          padding: EdgeInsets.fromLTRB(16, 6, 16, 2),
           child: Text(
             'PILIH PERIODE DASHBOARD',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10.5,
               fontWeight: FontWeight.w800,
               color: Color(0xFF94A3B8),
-              letterSpacing: 0.5,
+              letterSpacing: 0.6,
             ),
           ),
         ),
-        const PopupMenuDivider(),
+        const PopupMenuDivider(height: 1),
         PopupMenuItem<DashboardPeriod>(
           value: DashboardPeriod.today,
           child: Row(
@@ -1108,19 +1110,22 @@ class _MainNotchStatsCard extends StatelessWidget {
                                 itemBuilder: (context) => [
                                   const PopupMenuItem<DashboardPeriod>(
                                     enabled: false,
+                                    height: 26,
+                                    padding: EdgeInsets.fromLTRB(16, 6, 16, 2),
                                     child: Text(
                                       'PILIH PERIODE',
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 10.5,
                                         fontWeight: FontWeight.w800,
                                         color: Color(0xFF94A3B8),
-                                        letterSpacing: 0.5,
+                                        letterSpacing: 0.6,
                                       ),
                                     ),
                                   ),
-                                  const PopupMenuDivider(),
+                                  const PopupMenuDivider(height: 1),
                                   PopupMenuItem<DashboardPeriod>(
                                     value: DashboardPeriod.today,
+                                    height: 38,
                                     child: Row(
                                       children: [
                                         const Icon(Icons.today_rounded,
@@ -1140,6 +1145,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                   ),
                                   PopupMenuItem<DashboardPeriod>(
                                     value: DashboardPeriod.week,
+                                    height: 38,
                                     child: Row(
                                       children: [
                                         const Icon(Icons.date_range_rounded,
@@ -1159,6 +1165,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                   ),
                                   PopupMenuItem<DashboardPeriod>(
                                     value: DashboardPeriod.month,
+                                    height: 38,
                                     child: Row(
                                       children: [
                                         const Icon(Icons.calendar_month_rounded,
@@ -1178,6 +1185,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                   ),
                                   PopupMenuItem<DashboardPeriod>(
                                     value: DashboardPeriod.custom,
+                                    height: 38,
                                     child: Row(
                                       children: [
                                         const Icon(Icons.tune_rounded,
