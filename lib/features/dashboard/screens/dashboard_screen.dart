@@ -27,6 +27,13 @@ extension on DashboardPeriod {
         DashboardPeriod.month => 'Bulan Ini',
         DashboardPeriod.custom => 'Kustom',
       };
+
+  IconData get icon => switch (this) {
+        DashboardPeriod.today => Icons.today_rounded,
+        DashboardPeriod.week => Icons.date_range_rounded,
+        DashboardPeriod.month => Icons.calendar_month_rounded,
+        DashboardPeriod.custom => Icons.tune_rounded,
+      };
 }
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -92,32 +99,69 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     });
   }
 
-  void _selectPeriod(DashboardPeriod period) async {
-    if (period == DashboardPeriod.custom) {
-      final picked = await showDateRangePicker(
-        context: context,
-        firstDate: DateTime(2020),
-        lastDate: DateTime.now(),
-        initialDateRange: DateTimeRange(start: _range.start, end: _range.end),
-        locale: const Locale('id', 'ID'),
+  Future<void> _openCustomDatePicker() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(start: _range.start, end: _range.end),
+      locale: const Locale('id', 'ID'),
+      helpText: 'PILIH RENTANG TANGGAL',
+      cancelText: 'BATAL',
+      confirmText: 'TERAPKAN',
+      saveText: 'PILIH',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: AppColors.primary,
+                  onPrimary: Colors.white,
+                  surface: Colors.white,
+                  onSurface: const Color(0xFF1E293B),
+                ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked == null) return;
+    setState(() {
+      _period = DashboardPeriod.custom;
+      _range = AppDateRange(
+        start: startOfDay(picked.start),
+        end: endOfDay(picked.end),
       );
-      if (picked == null) return;
-      setState(() {
-        _period = period;
-        _range = AppDateRange(
-            start: startOfDay(picked.start), end: endOfDay(picked.end));
-      });
-    } else {
-      setState(() {
-        _period = period;
-        _range = switch (period) {
-          DashboardPeriod.today => AppDateRange.today(),
-          DashboardPeriod.week => AppDateRange.thisWeek(),
-          _ => AppDateRange.thisMonth(),
-        };
-      });
-    }
+    });
     _load(force: true);
+  }
+
+  void _selectPeriod(DashboardPeriod period) {
+    if (period == DashboardPeriod.custom) {
+      _openCustomDatePicker();
+      return;
+    }
+    setState(() {
+      _period = period;
+      _range = switch (period) {
+        DashboardPeriod.today => AppDateRange.today(),
+        DashboardPeriod.week => AppDateRange.thisWeek(),
+        _ => AppDateRange.thisMonth(),
+      };
+    });
+    _load(force: true);
+  }
+
+  String _getRangeLabel() {
+    switch (_period) {
+      case DashboardPeriod.today:
+        return 'Hari ini • ${dateShort(_range.start)}';
+      case DashboardPeriod.week:
+        return '${dateShort(_range.start)} \u2013 ${dateShort(_range.end)}';
+      case DashboardPeriod.month:
+        return monthYear(_range.start);
+      case DashboardPeriod.custom:
+        return '${dateShort(_range.start)} \u2013 ${dateShort(_range.end)}';
+    }
   }
 
   static DateTime endOfDay(DateTime dt) =>
@@ -218,22 +262,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final p in DashboardPeriod.values)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(p.label),
-                    selected: _period == p,
-                    onSelected: (_) => _selectPeriod(p),
-                  ),
-                ),
-            ],
-          ),
-        ),
+        _buildPeriodFilter(context),
         const SizedBox(height: 14),
         if (_error != null)
           ErrorStateView(error: _error!, onRetry: () => _load(force: true))
@@ -263,6 +292,150 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
           ),
       ],
+    );
+  }
+
+  Widget _buildPeriodFilter(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                for (final p in DashboardPeriod.values)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _buildPeriodChip(p),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.event_note_rounded,
+                  size: 15,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _getRangeLabel(),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF334155),
+                    ),
+                  ),
+                ),
+                if (_period == DashboardPeriod.custom)
+                  InkWell(
+                    onTap: _openCustomDatePicker,
+                    borderRadius: BorderRadius.circular(6),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.edit_calendar_rounded,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Ubah',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeriodChip(DashboardPeriod p) {
+    final isSelected = _period == p;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _selectPeriod(p),
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
+              width: isSelected ? 1.4 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.22),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                p.icon,
+                size: 15,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                p.label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF475569),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
