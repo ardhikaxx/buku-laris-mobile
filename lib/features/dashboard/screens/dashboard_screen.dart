@@ -986,7 +986,7 @@ class _MainNotchStatsCard extends StatelessWidget {
     required this.workspaceName,
   });
 
-  static const double _notchWidth = 141.0;
+  static const double _notchWidth = 135.0;
   static const double _notchHeight = 58.0;
 
   @override
@@ -995,7 +995,7 @@ class _MainNotchStatsCard extends StatelessWidget {
       notchWidth: _notchWidth,
       notchHeight: _notchHeight,
       cornerRadius: 24,
-      filletRadius: 20,
+      filletRadius: 16,
     );
 
     return SizedBox(
@@ -1209,7 +1209,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(28),
                 child: Container(
                   height: 50,
-                  padding: const EdgeInsets.fromLTRB(5, 5, 14, 5),
+                  padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A),
                     borderRadius: BorderRadius.circular(28),
@@ -1226,8 +1226,8 @@ class _MainNotchStatsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        width: 40,
-                        height: 40,
+                        width: 38,
+                        height: 38,
                         decoration: const BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -1238,11 +1238,11 @@ class _MainNotchStatsCard extends StatelessWidget {
                           size: 22,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 7),
                       const Text(
                         'Penjualan',
                         style: TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                           letterSpacing: 0.2,
