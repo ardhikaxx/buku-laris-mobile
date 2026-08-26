@@ -1240,7 +1240,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          // Middle Row: Balance Label & Amount + Transaksi on Right
+                          // Middle Row: Total Penjualan Label & Amount + Transaksi on Right
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
@@ -1249,11 +1249,12 @@ class _MainNotchStatsCard extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Balance',
+                                      'Total Penjualan',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w600,
                                         color: Colors.white.withValues(alpha: 0.85),
+                                        letterSpacing: 0.2,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -1301,14 +1302,14 @@ class _MainNotchStatsCard extends StatelessWidget {
                             ],
                           ),
                           const Spacer(),
-                          // Bottom Row: Name (Left)
+                          // Bottom Row: Nama Usaha (Left)
                           Padding(
                             padding: const EdgeInsets.only(right: _notchWidth),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Name',
+                                  'Nama Usaha',
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w500,
