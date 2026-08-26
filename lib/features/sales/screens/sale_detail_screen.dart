@@ -14,6 +14,7 @@ import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../models/payment_method_model.dart';
 import '../../../models/sale_model.dart';
+import '../../../core/utils/receipt_printer.dart';
 
 class SaleDetailScreen extends ConsumerStatefulWidget {
   final String saleId;
@@ -193,6 +194,26 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
     }
   }
 
+  Future<void> _printThermalReceipt(Sale sale, String storeName) async {
+    try {
+      final gate = ref.read(gateProvider);
+      final cashierName = gate.profile?.displayName ?? '';
+      await ReceiptPrinter.printReceipt(
+        sale: sale,
+        storeName: storeName.isEmpty ? 'BUKU LARIS POS' : storeName,
+        cashierName: cashierName,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text('Gagal mencetak struk: ${mapToAppException(e).message}'),
+          backgroundColor: AppColors.expense,
+        ));
+      }
+    }
+  }
+
   void _shareInvoice(Sale sale, String workspaceName) {
     final buffer = StringBuffer();
     buffer.writeln('=== $workspaceName ===');
@@ -331,6 +352,17 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
             subtitleText: dateTimeShort(sale.createdAt),
             actions: [
               IconButton(
+                icon: const Icon(Icons.print_rounded, size: 19),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFF8FAFC),
+                  padding: const EdgeInsets.all(7),
+                  minimumSize: const Size(36, 36),
+                ),
+                tooltip: 'Cetak Struk Thermal',
+                onPressed: () => _printThermalReceipt(sale, workspaceName),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
                 icon: const Icon(Icons.edit_note_rounded, size: 20),
                 style: IconButton.styleFrom(
                   backgroundColor: const Color(0xFFF8FAFC),
@@ -348,7 +380,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                   padding: const EdgeInsets.all(7),
                   minimumSize: const Size(36, 36),
                 ),
-                tooltip: 'Bagikan struk',
+                tooltip: 'Bagikan struk digital',
                 onPressed: () => _shareInvoice(sale, workspaceName),
               ),
             ],
@@ -541,6 +573,67 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
                                 ],
                               ),
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const SectionHeader('Struk & Cetak Nota'),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: FilledButton.icon(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(9),
+                                    ),
+                                  ),
+                                  onPressed: () => _printThermalReceipt(
+                                      sale, workspaceName),
+                                  icon: const Icon(Icons.print_rounded,
+                                      size: 18),
+                                  label: const Text(
+                                    'Cetak Struk Thermal',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton.outlined(
+                                tooltip: 'Kirim / Bagikan Struk Digital',
+                                icon: const Icon(Icons.share_outlined,
+                                    size: 18, color: AppColors.primary),
+                                style: IconButton.styleFrom(
+                                  padding: const EdgeInsets.all(12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(9),
+                                  ),
+                                  side: BorderSide(
+                                      color: AppColors.primary
+                                          .withValues(alpha: 0.3)),
+                                ),
+                                onPressed: () =>
+                                    _shareInvoice(sale, workspaceName),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Format struk kasir Bluetooth & USB (kertas 58mm / 80mm)',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey[500]),
                           ),
                         ],
                       ),
