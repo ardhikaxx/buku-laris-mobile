@@ -282,6 +282,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 canManageProducts:
                     ref.read(activeWorkspaceProvider).can(Permission.productsManage),
                 periodLabel: _period.label,
+                workspaceName:
+                    ref.watch(activeWorkspaceProvider).workspace?.name ??
+                        'Buku Laris',
               );
             },
           ),
@@ -536,6 +539,7 @@ class _DashboardContent extends StatelessWidget {
   final bool isEmployee;
   final bool canManageProducts;
   final String periodLabel;
+  final String workspaceName;
 
   const _DashboardContent({
     required this.data,
@@ -543,6 +547,7 @@ class _DashboardContent extends StatelessWidget {
     required this.isEmployee,
     required this.canManageProducts,
     required this.periodLabel,
+    required this.workspaceName,
   });
 
   @override
@@ -551,164 +556,12 @@ class _DashboardContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (isOwner) ...[
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFFB45309),
-                  Color(0xFFD97706),
-                  Color(0xFFF59E0B),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD97706).withValues(alpha: 0.32),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Stack(
-                children: [
-                  Positioned(
-                    right: -25,
-                    top: -25,
-                    child: Container(
-                      width: 130,
-                      height: 130,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.12),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 45,
-                    bottom: -35,
-                    child: Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.08),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: -30,
-                    bottom: -30,
-                    child: Container(
-                      width: 85,
-                      height: 85,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.06),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.trending_up_rounded,
-                                      color: Colors.white, size: 14),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    'Penjualan $periodLabel',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(7),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.storefront_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          compactMoney(data.periodRevenue),
-                          style: const TextStyle(
-                            fontSize: 29,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.receipt_rounded,
-                                      color: Colors.white70, size: 13),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    '${data.periodOrders} Transaksi Selesai',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          _MainNotchStatsCard(
+            data: data,
+            periodLabel: periodLabel,
+            workspaceName: workspaceName,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
@@ -1120,4 +973,410 @@ class _DashboardSkeleton extends StatelessWidget {
       ],
     );
   }
+}
+
+class _MainNotchStatsCard extends StatelessWidget {
+  final DashboardData data;
+  final String periodLabel;
+  final String workspaceName;
+
+  const _MainNotchStatsCard({
+    required this.data,
+    required this.periodLabel,
+    required this.workspaceName,
+  });
+
+  static const double _notchWidth = 146.0;
+  static const double _notchHeight = 52.0;
+
+  @override
+  Widget build(BuildContext context) {
+    const clipper = _CardNotchClipper(
+      notchWidth: _notchWidth,
+      notchHeight: _notchHeight,
+      cornerRadius: 24,
+      filletRadius: 16,
+    );
+
+    return SizedBox(
+      height: 195,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Main Card with gradient & custom notch clipper
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _CardNotchPainter(
+                clipper: clipper,
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFB45309),
+                    Color(0xFFD97706),
+                    Color(0xFFF59E0B),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shadowColor: const Color(0xFFD97706).withValues(alpha: 0.35),
+                elevation: 10,
+              ),
+              child: ClipPath(
+                clipper: clipper,
+                child: Stack(
+                  children: [
+                    // Floating decorative circles
+                    Positioned(
+                      right: -25,
+                      top: -25,
+                      child: Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.12),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 110,
+                      bottom: -40,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: -25,
+                      bottom: -25,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.06),
+                        ),
+                      ),
+                    ),
+                    // Card Content
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Top Row: Store Icon + Masked Number
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.25),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.storefront_rounded,
+                                  color: Colors.white,
+                                  size: 19,
+                                ),
+                              ),
+                              Text(
+                                '•••• •••• •••• ${data.periodOrders.toString().padLeft(4, '0')}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 2.0,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          // Middle Row: Balance Label & Amount + Period on Right
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Balance',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white.withValues(alpha: 0.85),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        compactMoney(data.periodRevenue),
+                                        style: const TextStyle(
+                                          fontSize: 27,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white,
+                                          letterSpacing: -0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4, right: 4),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      'Periode',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white.withValues(alpha: 0.8),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      periodLabel,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          // Bottom Row: Name (Left)
+                          Padding(
+                            padding: const EdgeInsets.only(right: _notchWidth),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Name',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  workspaceName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Action Button in the bottom-right cutout notch (Navigates to /sales)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            width: _notchWidth,
+            height: _notchHeight,
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.go('/sales'),
+                  borderRadius: BorderRadius.circular(26),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(26),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.28),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 26,
+                          height: 26,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.add_rounded,
+                            color: Color(0xFF0F172A),
+                            size: 17,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Penjualan',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CardNotchClipper extends CustomClipper<Path> {
+  final double notchWidth;
+  final double notchHeight;
+  final double cornerRadius;
+  final double filletRadius;
+
+  const _CardNotchClipper({
+    required this.notchWidth,
+    required this.notchHeight,
+    required this.cornerRadius,
+    required this.filletRadius,
+  });
+
+  @override
+  Path getClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+    final cr = cornerRadius;
+    final fr = filletRadius;
+    final nw = notchWidth;
+    final nh = notchHeight;
+
+    final path = Path();
+
+    // 1. Start top-left
+    path.moveTo(0, cr);
+    path.arcToPoint(Offset(cr, 0), radius: Radius.circular(cr));
+
+    // 2. Top edge
+    path.lineTo(w - cr, 0);
+    path.arcToPoint(Offset(w, cr), radius: Radius.circular(cr));
+
+    // 3. Right edge down to notch
+    path.lineTo(w, h - nh - fr);
+
+    // 4. Concave fillet into notch top
+    path.arcToPoint(
+      Offset(w - fr, h - nh),
+      radius: Radius.circular(fr),
+      clockwise: false,
+    );
+
+    // 5. Notch top horizontal line
+    path.lineTo(w - nw + fr, h - nh);
+
+    // 6. Convex corner turning down into notch left edge
+    path.arcToPoint(
+      Offset(w - nw, h - nh + fr),
+      radius: Radius.circular(fr),
+      clockwise: true,
+    );
+
+    // 7. Notch left vertical edge down
+    path.lineTo(w - nw, h - fr);
+
+    // 8. Concave fillet out to bottom edge
+    path.arcToPoint(
+      Offset(w - nw - fr, h),
+      radius: Radius.circular(fr),
+      clockwise: false,
+    );
+
+    // 9. Bottom edge left
+    path.lineTo(cr, h);
+    path.arcToPoint(Offset(0, h - cr), radius: Radius.circular(cr));
+
+    // 10. Left edge up to close
+    path.lineTo(0, cr);
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant _CardNotchClipper oldClipper) {
+    return oldClipper.notchWidth != notchWidth ||
+        oldClipper.notchHeight != notchHeight ||
+        oldClipper.cornerRadius != cornerRadius ||
+        oldClipper.filletRadius != filletRadius;
+  }
+}
+
+class _CardNotchPainter extends CustomPainter {
+  final _CardNotchClipper clipper;
+  final Gradient gradient;
+  final Color shadowColor;
+  final double elevation;
+
+  const _CardNotchPainter({
+    required this.clipper,
+    required this.gradient,
+    required this.shadowColor,
+    this.elevation = 8,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = clipper.getClip(size);
+
+    // Paint shadow
+    final shadowPaint = Paint()
+      ..color = shadowColor
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, elevation * 1.5);
+    canvas.save();
+    canvas.translate(0, elevation * 0.4);
+    canvas.drawPath(path, shadowPaint);
+    canvas.restore();
+
+    // Paint gradient fill
+    final fillPaint = Paint()
+      ..shader = gradient.createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawPath(path, fillPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CardNotchPainter oldDelegate) => true;
 }
