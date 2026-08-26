@@ -77,100 +77,117 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
           Expanded(
             child: wsId == null
                 ? const SizedBox.shrink()
-                : PagedListView<Customer>(
-                    key: ValueKey('customers-$_search'),
-                    buildQuery: () {
-                      var q = ref
-                          .read(customerRepositoryProvider)
-                          .listQuery(wsId);
-                      if (_search.isNotEmpty) {
-                        q = q.where('name', isGreaterThanOrEqualTo: _search);
-                        q = q.where('name',
-                            isLessThanOrEqualTo: '$_search\uf8ff');
+                : StreamBuilder<List<Customer>>(
+                    stream: ref
+                        .read(customerRepositoryProvider)
+                        .watchAll(wsId, search: _search),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const ListSkeleton();
                       }
-                      return q.orderBy('name');
-                    },
-                    mapper: Customer.fromDoc,
-                    emptyState: EmptyState(
-                      icon: Icons.people_outline_rounded,
-                      title: 'Belum ada pelanggan',
-                      message:
-                          'Data pelanggan membantu Anda mengenali pembeli setia dan riwayat belanjanya.',
-                      action: canManage
-                          ? ElevatedButton.icon(
-                              onPressed: () =>
-                                  showCustomerForm(context, ref),
-                              icon: const Icon(Icons.add, size: 18),
-                              label: const Text('Tambah Pelanggan'))
-                          : null,
-                    ),
-                    itemBuilder: (context, customer, index) => Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ListTile(
-                        onTap: () =>
-                            context.push('/customers/${customer.id}'),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 13, vertical: 5),
-                        leading: CircleAvatar(
-                          radius: 20,
-                          backgroundColor: colorFromString(customer.name)
-                              .withValues(alpha: 0.14),
-                          child: Text(
-                            customer.name.isNotEmpty
-                                ? customer.name[0].toUpperCase()
-                                : '?',
-                            style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                color: colorFromString(customer.name)),
-                          ),
-                        ),
-                        title: Text(customer.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w600)),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 3),
-                          child: Row(
-                            children: [
-                              if (customer.whatsapp.isNotEmpty) ...[
-                                Icon(Icons.chat_bubble_outline_rounded,
-                                    size: 12, color: Colors.grey[500]),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(customer.whatsapp,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600])),
-                                ),
-                                const SizedBox(width: 10),
-                              ],
-                              Text('${customer.totalTransactions} transaksi',
+                      if (snapshot.hasError) {
+                        return ErrorStateView(
+                          error: snapshot.error!,
+                          onRetry: () => setState(() {}),
+                        );
+                      }
+                      final customers = snapshot.data ?? [];
+                      if (customers.isEmpty) {
+                        return EmptyState(
+                          icon: Icons.people_outline_rounded,
+                          title: _search.isNotEmpty
+                              ? 'Pelanggan tidak ditemukan'
+                              : 'Belum ada pelanggan',
+                          message: _search.isNotEmpty
+                              ? 'Tidak ada pelanggan yang cocok dengan pencarian "$_search".'
+                              : 'Data pelanggan membantu Anda mengenali pembeli setia dan riwayat belanjanya.',
+                          action: canManage && _search.isEmpty
+                              ? ElevatedButton.icon(
+                                  onPressed: () =>
+                                      showCustomerForm(context, ref),
+                                  icon: const Icon(Icons.add, size: 18),
+                                  label: const Text('Tambah Pelanggan'))
+                              : null,
+                        );
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: customers.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final customer = customers[index];
+                          return Card(
+                            child: ListTile(
+                              onTap: () =>
+                                  context.push('/customers/${customer.id}'),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 13, vertical: 5),
+                              leading: CircleAvatar(
+                                radius: 20,
+                                backgroundColor: colorFromString(customer.name)
+                                    .withValues(alpha: 0.14),
+                                child: Text(
+                                  customer.name.isNotEmpty
+                                      ? customer.name[0].toUpperCase()
+                                      : '?',
                                   style: TextStyle(
-                                      fontSize: 11.5,
-                                      color: Colors.grey[500])),
-                            ],
-                          ),
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(compactMoney(customer.totalSpent),
-                                style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primaryDark)),
-                            Text('total belanja',
-                                style: TextStyle(
-                                    fontSize: 10.5, color: Colors.grey[500])),
-                          ],
-                        ),
-                      ),
-                    ),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: colorFromString(customer.name)),
+                                ),
+                              ),
+                              title: Text(customer.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600)),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 3),
+                                child: Row(
+                                  children: [
+                                    if (customer.whatsapp.isNotEmpty) ...[
+                                      Icon(Icons.chat_bubble_outline_rounded,
+                                          size: 12, color: Colors.grey[500]),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(customer.whatsapp,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[600])),
+                                      ),
+                                      const SizedBox(width: 10),
+                                    ],
+                                    Text(
+                                        '${customer.totalTransactions} transaksi',
+                                        style: TextStyle(
+                                            fontSize: 11.5,
+                                            color: Colors.grey[500])),
+                                  ],
+                                ),
+                              ),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(compactMoney(customer.totalSpent),
+                                      style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.primaryDark)),
+                                  Text('total belanja',
+                                      style: TextStyle(
+                                          fontSize: 10.5,
+                                          color: Colors.grey[500])),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
           ),
         ],

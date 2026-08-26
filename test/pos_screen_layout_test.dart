@@ -18,6 +18,22 @@ class FakeProductRepository extends ProductRepository {
   @override
   Future<List<Product>> listAll(String wsId, {int limit = 500}) async =>
       listAllImpl();
+
+  @override
+  Stream<List<Product>> watchAll(
+    String wsId, {
+    bool includeArchived = false,
+    ProductType? type,
+    String? categoryId,
+    bool onlyActiveForSelling = false,
+  }) {
+    try {
+      final list = listAllImpl();
+      return Stream.value(list);
+    } catch (e) {
+      return Stream.error(e);
+    }
+  }
 }
 
 class FakeGateController extends GateController {

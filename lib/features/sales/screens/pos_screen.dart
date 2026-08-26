@@ -43,29 +43,34 @@ class PosScreenState extends ConsumerState<PosScreen> {
   String customerWhatsapp = '';
   DateTime? estimatedDate;
   final notesController = TextEditingController();
+  List<Product> _allProducts = [];
+  StreamSubscription<List<Product>>? _productsSub;
 
   @override
   void initState() {
     super.initState();
     orderType =
         widget.initialPreOrder ? OrderType.preOrder : OrderType.readyStock;
-    WidgetsBinding.instance.addPostFrameCallback((_) => loadProducts(''));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _subscribeProducts());
   }
 
   @override
   void dispose() {
+    _productsSub?.cancel();
     _retryTimer?.cancel();
     notesController.dispose();
     super.dispose();
   }
 
-  Future<void> loadProducts(String term) async {
+  void _subscribeProducts() {
     final wsId = ref.read(gateProvider).activeWorkspaceId;
+    _productsSub?.cancel();
     if (wsId == null) {
       if (mounted) {
         setState(() {
           _loadingProducts = false;
           _products = [];
+          _allProducts = [];
         });
       }
       return;
@@ -74,46 +79,48 @@ class PosScreenState extends ConsumerState<PosScreen> {
       _loadingProducts = true;
       _loadError = null;
     });
-    try {
-      final repo = ref.read(productRepositoryProvider);
-      List<Product> results;
-      if (term.isEmpty) {
-        results = await repo.listAll(wsId, limit: 60);
-      } else {
-        results = [
-          ...await repo.searchByName(wsId, term, limit: 15),
-          ...await repo.searchByBarcodeOrSku(wsId, term),
-        ];
-      }
-      final seen = <String>{};
-      results.retainWhere((p) => p.availableForSale && seen.add(p.id));
-      if (!mounted) return;
-      _retryTimer?.cancel();
-      setState(() {
-        _products = results;
-        _loadingProducts = false;
-        _indexBuilding = false;
-      });
-    } catch (e) {
-      Logger.e('pos load products failed', e);
-      if (!mounted) return;
-      final isIndexBuilding = e.toString().contains('index');
-      setState(() {
-        _loadError = mapToAppException(e).message;
-        _loadingProducts = false;
-        _indexBuilding = isIndexBuilding;
-      });
-      if (isIndexBuilding) {
-        _retryTimer?.cancel();
-        _retryTimer = Timer.periodic(const Duration(seconds: 15), (_) {
-          if (!mounted) {
-            _retryTimer?.cancel();
-            return;
-          }
-          loadProducts(_searchTerm.trim());
+    _productsSub = ref
+        .read(productRepositoryProvider)
+        .watchAll(wsId, onlyActiveForSelling: true)
+        .listen(
+      (list) {
+        if (!mounted) return;
+        _allProducts = list;
+        _filterProducts();
+      },
+      onError: (e) {
+        Logger.e('pos load products failed', e);
+        if (!mounted) return;
+        setState(() {
+          _loadError = mapToAppException(e).message;
+          _loadingProducts = false;
         });
-      }
+      },
+    );
+  }
+
+  void _filterProducts() {
+    final term = _searchTerm.trim().toLowerCase();
+    List<Product> filtered = _allProducts;
+    if (term.isNotEmpty) {
+      filtered = filtered
+          .where((p) =>
+              p.name.toLowerCase().contains(term) ||
+              p.sku.toLowerCase().contains(term) ||
+              p.barcode.toLowerCase().contains(term))
+          .toList();
     }
+    setState(() {
+      _products = filtered;
+      _loadingProducts = false;
+      _loadError = null;
+      _indexBuilding = false;
+    });
+  }
+
+  void loadProducts(String term) {
+    _searchTerm = term;
+    _filterProducts();
   }
 
   void setOrderType(OrderType type) {
@@ -213,7 +220,7 @@ class PosScreenState extends ConsumerState<PosScreen> {
     final gateWsId = ref.watch(gateProvider).activeWorkspaceId;
     if (gateWsId != _loadedForWsId && !_loadingProducts) {
       _loadedForWsId = gateWsId;
-      WidgetsBinding.instance.addPostFrameCallback((_) => loadProducts(''));
+      WidgetsBinding.instance.addPostFrameCallback((_) => _subscribeProducts());
     }
 
     return PopScope(
@@ -266,11 +273,14 @@ class PosScreenState extends ConsumerState<PosScreen> {
                           icon: const Icon(Icons.close_rounded, size: 18),
                           onPressed: () {
                             setState(() => _searchTerm = '');
-                            loadProducts('');
+                            _filterProducts();
                           },
                         ),
                 ),
-                onChanged: (v) => _searchTerm = v,
+                onChanged: (v) {
+                  _searchTerm = v;
+                  _filterProducts();
+                },
                 onSubmitted: (v) => loadProducts(v.trim()),
               ),
             ),

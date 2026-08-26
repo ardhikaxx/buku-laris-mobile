@@ -155,105 +155,125 @@ class _SalesListContent extends ConsumerWidget {
     final wsId = ref.watch(gateProvider).activeWorkspaceId;
     if (wsId == null) return const SizedBox.shrink();
 
-    return PagedListView<Sale>(
-      buildQuery: () => ref
-          .read(saleRepositoryProvider)
-          .listQuery(wsId, status: statusFilter, orderType: orderTypeFilter),
-      mapper: Sale.fromDoc,
-      emptyState: const EmptyState(
-        icon: Icons.receipt_long_outlined,
-        title: 'Belum ada penjualan',
-        message:
-            'Transaksi yang Anda buat akan muncul di sini. Tekan tombol Jual untuk mencatat penjualan pertama.',
-      ),
-      itemBuilder: (context, sale, index) => Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Card(
-          child: ListTile(
-            onTap: () => context.push('/sales/${sale.id}'),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            title: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    sale.transactionNumber,
-                    style: const TextStyle(
-                        fontSize: 13.5, fontWeight: FontWeight.w700),
-                  ),
-                ),
-                StatusChip(_saleStatusLabel(sale.status), sale.status.color),
-              ],
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${sale.customerName.isEmpty ? 'Tanpa pelanggan' : sale.customerName}'
-                    ' • ${sale.items.length} item • ${dateTimeShort(sale.createdAt)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                  if (sale.notes.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
+    return StreamBuilder<List<Sale>>(
+      stream: ref.read(saleRepositoryProvider).watchAll(
+            wsId,
+            status: statusFilter,
+            orderType: orderTypeFilter,
+          ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const ListSkeleton(itemCount: 6);
+        }
+        if (snapshot.hasError) {
+          return ErrorStateView(
+            error: snapshot.error!,
+            onRetry: () {},
+          );
+        }
+        final sales = snapshot.data ?? [];
+        if (sales.isEmpty) {
+          return const EmptyState(
+            icon: Icons.receipt_long_outlined,
+            title: 'Belum ada penjualan',
+            message:
+                'Transaksi yang Anda buat akan muncul di sini. Tekan tombol Jual untuk mencatat penjualan pertama.',
+          );
+        }
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: sales.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final sale = sales[index];
+            return Card(
+              child: ListTile(
+                onTap: () => context.push('/sales/${sale.id}'),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                title: Row(
+                  children: [
+                    Expanded(
                       child: Text(
-                        'Keterangan: ${sale.notes}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey[700],
-                        ),
+                        sale.transactionNumber,
+                        style: const TextStyle(
+                            fontSize: 13.5, fontWeight: FontWeight.w700),
                       ),
                     ),
-                  if (sale.offlineCreated)
-                    const Row(children: [
-                      Icon(Icons.cloud_off_rounded,
-                          size: 12, color: AppColors.warning),
-                      SizedBox(width: 4),
-                      Text('Menunggu sinkronisasi stok',
-                          style:
-                              TextStyle(fontSize: 11, color: AppColors.warning)),
-                    ]),
-                ],
-              ),
-            ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(money(sale.grandTotal),
-                    style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primaryDark)),
-                const SizedBox(height: 2),
-                Text(
-                  switch (sale.paymentStatus) {
-                    PaymentStatus.paid => 'Lunas',
-                    PaymentStatus.partial =>
-                      'Sisa ${compactMoney(sale.remainingAmount)}',
-                    PaymentStatus.unpaid => 'Belum bayar',
-                    PaymentStatus.refunded => 'Refund',
-                  },
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    color: sale.paymentStatus == PaymentStatus.paid
-                        ? AppColors.income
-                        : AppColors.warning,
+                    StatusChip(_saleStatusLabel(sale.status), sale.status.color),
+                  ],
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${sale.customerName.isEmpty ? 'Tanpa pelanggan' : sale.customerName}'
+                        ' • ${sale.items.length} item • ${dateTimeShort(sale.createdAt)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                      if (sale.notes.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            'Keterangan: ${sale.notes}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ),
+                      if (sale.offlineCreated)
+                        const Row(children: [
+                          Icon(Icons.cloud_off_rounded,
+                              size: 12, color: AppColors.warning),
+                          SizedBox(width: 4),
+                          Text('Menunggu sinkronisasi stok',
+                              style: TextStyle(
+                                  fontSize: 11, color: AppColors.warning)),
+                        ]),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(money(sale.grandTotal),
+                        style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primaryDark)),
+                    const SizedBox(height: 2),
+                    Text(
+                      switch (sale.paymentStatus) {
+                        PaymentStatus.paid => 'Lunas',
+                        PaymentStatus.partial =>
+                          'Sisa ${compactMoney(sale.remainingAmount)}',
+                        PaymentStatus.unpaid => 'Belum bayar',
+                        PaymentStatus.refunded => 'Refund',
+                      },
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: sale.paymentStatus == PaymentStatus.paid
+                            ? AppColors.income
+                            : AppColors.warning,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

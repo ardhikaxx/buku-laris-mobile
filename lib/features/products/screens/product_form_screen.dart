@@ -257,7 +257,15 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     padding: const EdgeInsets.all(12),
                     minimumSize: const Size(48, 48),
                   ),
-                  onPressed: () => context.push('/categories'),
+                  onPressed: () async {
+                    await context.push('/categories');
+                    final wsId = ref.read(gateProvider).activeWorkspaceId;
+                    if (wsId != null) {
+                      final cats =
+                          await ref.read(categoryRepositoryProvider).list(wsId);
+                      if (mounted) setState(() => _categories = cats);
+                    }
+                  },
                   icon: const Icon(Icons.style_rounded,
                       size: 20, color: AppColors.primary),
                 ),

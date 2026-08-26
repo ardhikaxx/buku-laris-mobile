@@ -615,6 +615,26 @@ class SaleRepository extends BaseRepository {
         .map((s) => s.docs.map(Sale.fromDoc).toList());
   }
 
+  Stream<List<Sale>> watchAll(
+    String wsId, {
+    SaleStatus? status,
+    OrderType? orderType,
+    String? customerId,
+    int limit = 100,
+  }) {
+    var q = sub(wsId, Collections.sales) as Query<Map<String, dynamic>>;
+    if (status != null) q = q.where('status', isEqualTo: status.name);
+    if (orderType != null) q = q.where('orderType', isEqualTo: orderType.name);
+    if (customerId != null && customerId.isNotEmpty) {
+      q = q.where('customerId', isEqualTo: customerId);
+    }
+    return q
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((s) => s.docs.map(Sale.fromDoc).toList());
+  }
+
   Query<Map<String, dynamic>> listQuery(
     String wsId, {
     SaleStatus? status,

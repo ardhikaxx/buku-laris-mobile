@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,11 +42,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Future<DashboardData>? _future;
   Object? _error;
   String? _loadedForWsId;
+  StreamSubscription? _realtimeSub;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _load();
+      _subscribeRealtime();
+    });
+  }
+
+  @override
+  void dispose() {
+    _realtimeSub?.cancel();
+    super.dispose();
+  }
+
+  void _subscribeRealtime() {
+    final wsId = ref.read(gateProvider).activeWorkspaceId;
+    _realtimeSub?.cancel();
+    if (wsId == null) return;
+    _realtimeSub = FirebaseFirestore.instance
+        .collection('workspaces')
+        .doc(wsId)
+        .collection('dailySummaries')
+        .snapshots()
+        .listen((_) {
+      if (mounted) _load(force: true);
+    });
   }
 
   void _load({bool force = false}) {

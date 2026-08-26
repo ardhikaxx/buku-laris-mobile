@@ -60,6 +60,23 @@ class CustomerRepository extends BaseRepository {
     return snap.docs.map(Customer.fromDoc).toList();
   }
 
+  Stream<List<Customer>> watchAll(String wsId, {String? search}) {
+    return sub(wsId, Collections.customers).snapshots().map((s) {
+      var list = s.docs.map(Customer.fromDoc).toList();
+      if (search != null && search.trim().isNotEmpty) {
+        final term = search.trim().toLowerCase();
+        list = list
+            .where((c) =>
+                c.name.toLowerCase().contains(term) ||
+                c.whatsapp.toLowerCase().contains(term) ||
+                c.email.toLowerCase().contains(term))
+            .toList();
+      }
+      list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      return list;
+    });
+  }
+
   Stream<int> watchCount(String wsId) {
     return sub(wsId, Collections.customers)
         .snapshots()
