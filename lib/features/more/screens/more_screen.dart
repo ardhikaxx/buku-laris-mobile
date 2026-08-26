@@ -78,7 +78,7 @@ class MoreScreen extends ConsumerWidget {
                     onTap: () => context.push('/settings'),
                   ),
                 _MenuTile(
-                  icon: Icons.category_outlined,
+                  icon: Icons.sell_rounded,
                   label: 'Kategori Produk',
                   onTap: () => context.push('/categories'),
                 ),

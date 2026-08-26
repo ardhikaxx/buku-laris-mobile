@@ -236,7 +236,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   child: DropdownButtonFormField<String>(
                     isExpanded: true,
                     initialValue: _categoryId,
-                    decoration: const InputDecoration(labelText: 'Kategori'),
+                    decoration: const InputDecoration(
+                      labelText: 'Kategori',
+                      prefixIcon: Icon(Icons.sell_rounded, size: 18),
+                    ),
                     hint: const Text('Tanpa kategori'),
                     items: _categories
                         .map((c) => DropdownMenuItem(
@@ -245,10 +248,18 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     onChanged: (v) => setState(() => _categoryId = v),
                   ),
                 ),
+                const SizedBox(width: 8),
                 IconButton(
                   tooltip: 'Kelola kategori',
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFFF8FAFC),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    padding: const EdgeInsets.all(12),
+                    minimumSize: const Size(48, 48),
+                  ),
                   onPressed: () => context.push('/categories'),
-                  icon: const Icon(Icons.category_outlined, size: 20),
+                  icon: const Icon(Icons.style_rounded,
+                      size: 20, color: AppColors.primary),
                 ),
               ],
             ),

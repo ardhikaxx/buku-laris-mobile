@@ -204,10 +204,11 @@ class _ProductCard extends ConsumerWidget {
             ),
             child: Icon(
               switch (product.type) {
-                ProductType.physicalProduct => Icons.inventory_2_outlined,
-                ProductType.digitalProduct => Icons.cloud_outlined,
-                ProductType.service => Icons.handyman_outlined,
-                ProductType.otherService => Icons.spa_outlined,
+                ProductType.physicalProduct => Icons.inventory_2_rounded,
+                ProductType.digitalProduct => Icons.cloud_download_rounded,
+                ProductType.service => Icons.handyman_rounded,
+                ProductType.otherService =>
+                  Icons.miscellaneous_services_rounded,
               },
               color: AppColors.primary,
               size: 21,

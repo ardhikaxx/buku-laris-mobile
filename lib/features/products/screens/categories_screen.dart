@@ -29,22 +29,40 @@ class CategoriesScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(existing == null ? 'Kategori Baru' : 'Ubah Kategori',
-                  style: const TextStyle(
-                      fontSize: 15.5, fontWeight: FontWeight.w800)),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.sell_rounded,
+                        size: 20, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(existing == null ? 'Kategori Baru' : 'Ubah Kategori',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w800)),
+                ],
+              ),
               const SizedBox(height: 14),
               TextField(
                 controller: nameController,
                 autofocus: existing == null,
                 textCapitalization: TextCapitalization.words,
-                decoration:
-                    const InputDecoration(labelText: 'Nama kategori *'),
+                decoration: const InputDecoration(
+                  labelText: 'Nama kategori *',
+                  prefixIcon: Icon(Icons.sell_rounded, size: 18),
+                ),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: descController,
                 decoration: const InputDecoration(
-                    labelText: 'Deskripsi (opsional)'),
+                  labelText: 'Deskripsi (opsional)',
+                  prefixIcon: Icon(Icons.description_outlined, size: 18),
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton(
@@ -124,6 +142,12 @@ class CategoriesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: FloatingCapsuleAppBar(
         showBackButton: true,
+        leading: CircleAvatar(
+          radius: 19,
+          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          child: const Icon(Icons.sell_rounded,
+              color: AppColors.primary, size: 20),
+        ),
         titleText: 'Kategori Produk',
         subtitleText: 'Pengelompokan jenis barang toko',
         actions: [
@@ -159,7 +183,7 @@ class CategoriesScreen extends ConsumerWidget {
           final cats = snapshot.data ?? [];
           if (cats.isEmpty) {
             return const EmptyState(
-              icon: Icons.category_outlined,
+              icon: Icons.sell_outlined,
               title: 'Belum ada kategori',
               message:
                   'Kelompokkan produk Anda dengan kategori agar lebih mudah dikelola.',
@@ -174,13 +198,19 @@ class CategoriesScreen extends ConsumerWidget {
               return Card(
                 child: ListTile(
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                  leading: CircleAvatar(
-                    radius: 18,
-                    backgroundColor:
-                        colorFromString(cat.name).withValues(alpha: 0.13),
-                    child: Icon(Icons.label_outline_rounded,
-                        size: 18, color: colorFromString(cat.name)),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: colorFromString(cat.name).withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.sell_rounded,
+                      size: 20,
+                      color: colorFromString(cat.name),
+                    ),
                   ),
                   title: Text(cat.name,
                       style: const TextStyle(

@@ -200,7 +200,10 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 initialValue: _category,
-                decoration: const InputDecoration(labelText: 'Kategori'),
+                decoration: const InputDecoration(
+                  labelText: 'Kategori',
+                  prefixIcon: Icon(Icons.sell_rounded, size: 18),
+                ),
                 items: allCategories
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                     .toList(),
