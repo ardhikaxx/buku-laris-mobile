@@ -195,6 +195,7 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
   }
 
   Future<void> _printThermalReceipt(Sale sale, String storeName) async {
+    setState(() => _busy = true);
     try {
       final gate = ref.read(gateProvider);
       final cashierName = gate.profile?.displayName ?? '';
@@ -205,12 +206,14 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
       );
     } catch (e) {
       if (mounted) {
+        final msg = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content:
-              Text('Gagal mencetak struk: ${mapToAppException(e).message}'),
+          content: Text('Gagal mencetak struk: $msg'),
           backgroundColor: AppColors.expense,
         ));
       }
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 

@@ -4,37 +4,64 @@ import 'package:printing/printing.dart';
 
 import '../../models/enums.dart';
 import '../../models/sale_model.dart';
+import '../../services/logger.dart';
 import 'formatters.dart';
 
 class ReceiptPrinter {
   ReceiptPrinter._();
 
-  /// Mencetak atau menampilkan pratinjau struk thermal (58mm / 80mm)
+  /// Mencetak atau menampilkan dialog cetak struk thermal (58mm / 80mm)
   static Future<void> printReceipt({
     required Sale sale,
     required String storeName,
     String? cashierName,
     bool is80mm = false,
   }) async {
-    final doc = pw.Document();
+    try {
+      final doc = pw.Document();
 
-    final pageFormat = is80mm ? PdfPageFormat.roll80 : PdfPageFormat.roll57;
-    final fontSizeSmall = is80mm ? 8.5 : 7.0;
-    final fontSizeNormal = is80mm ? 10.0 : 8.5;
-    final fontSizeTitle = is80mm ? 14.0 : 12.0;
+      // Gunakan ukuran roll thermal standard: 58mm (2.28 in) atau 80mm (3.14 in)
+      final rollWidth = (is80mm ? 80.0 : 58.0) * PdfPageFormat.mm;
+      final pageFormat = PdfPageFormat(
+        rollWidth,
+        double.infinity,
+        marginLeft: 4 * PdfPageFormat.mm,
+        marginRight: 4 * PdfPageFormat.mm,
+        marginTop: 6 * PdfPageFormat.mm,
+        marginBottom: 8 * PdfPageFormat.mm,
+      );
 
-    doc.addPage(
-      pw.Page(
-        pageFormat: pageFormat,
-        margin: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-            children: [
-              // Header Toko
+      final fontSizeSmall = is80mm ? 8.5 : 7.0;
+      final fontSizeNormal = is80mm ? 10.0 : 8.0;
+      final fontSizeTitle = is80mm ? 13.0 : 11.0;
+
+      // Coba load font yang mendukung unicode, jika offline fallback ke standard
+      pw.Font fontRegular;
+      pw.Font fontBold;
+      try {
+        fontRegular = await PdfGoogleFonts.robotoMonoRegular();
+        fontBold = await PdfGoogleFonts.robotoMonoBold();
+      } catch (_) {
+        fontRegular = pw.Font.courier();
+        fontBold = pw.Font.courierBold();
+      }
+
+      final theme = pw.ThemeData.withFont(
+        base: fontRegular,
+        bold: fontBold,
+      );
+
+      doc.addPage(
+        pw.MultiPage(
+          pageFormat: pageFormat,
+          maxPages: 10,
+          theme: theme,
+          build: (pw.Context context) {
+            return [
+              // Header Nama Toko
               pw.Center(
                 child: pw.Text(
-                  storeName.toUpperCase(),
+                  storeName.toUpperCase().trim(),
                   style: pw.TextStyle(
                     fontSize: fontSizeTitle,
                     fontWeight: pw.FontWeight.bold,
@@ -42,22 +69,22 @@ class ReceiptPrinter {
                   textAlign: pw.TextAlign.center,
                 ),
               ),
-              pw.SizedBox(height: 3),
+              pw.SizedBox(height: 2),
               _pwDivider(),
 
-              // Info Transaksi
+              // Metadata Transaksi
               _pwRow('No. Struk', sale.transactionNumber, fontSizeSmall),
               _pwRow('Tanggal', dateTimeShort(sale.createdAt), fontSizeSmall),
               if (cashierName != null && cashierName.trim().isNotEmpty)
-                _pwRow('Kasir', cashierName, fontSizeSmall),
+                _pwRow('Kasir', cashierName.trim(), fontSizeSmall),
               if (sale.customerName.trim().isNotEmpty)
-                _pwRow('Pelanggan', sale.customerName, fontSizeSmall),
+                _pwRow('Pelanggan', sale.customerName.trim(), fontSizeSmall),
               if (sale.notes.trim().isNotEmpty)
-                _pwRow('Catatan', sale.notes, fontSizeSmall),
+                _pwRow('Catatan', sale.notes.trim(), fontSizeSmall),
 
               _pwDivider(),
 
-              // Rincian Item Belanja
+              // Daftar Item Belanja
               for (final item in sale.items) ...[
                 pw.Text(
                   item.productName,
@@ -70,7 +97,7 @@ class ReceiptPrinter {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
                     pw.Text(
-                      '  x ',
+                      '${number(item.qty)} ${item.unit} x ${money(item.unitPrice)}',
                       style: pw.TextStyle(fontSize: fontSizeSmall),
                     ),
                     pw.Text(
@@ -87,15 +114,16 @@ class ReceiptPrinter {
 
               _pwDivider(),
 
-              // Rincian Nominal
+              // Subtotal & Kalkulasi
               if (sale.discountAmount > 0)
-                _pwRow('Diskon', '-', fontSizeSmall),
+                _pwRow('Diskon', '-${money(sale.discountAmount)}', fontSizeSmall),
               if (sale.taxAmount > 0)
                 _pwRow('Pajak', money(sale.taxAmount), fontSizeSmall),
               if (sale.shippingCost > 0)
                 _pwRow('Ongkir', money(sale.shippingCost), fontSizeSmall),
 
-              // Total Utama
+              // Total Tagihan
+              pw.SizedBox(height: 2),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
@@ -117,17 +145,31 @@ class ReceiptPrinter {
               ),
               pw.SizedBox(height: 2),
 
-              _pwRow('Metode', sale.paymentMethodName.isEmpty ? 'Tunai' : sale.paymentMethodName, fontSizeSmall),
+              _pwRow(
+                'Metode',
+                sale.paymentMethodName.isEmpty ? 'Tunai' : sale.paymentMethodName,
+                fontSizeSmall,
+              ),
               _pwRow('Dibayar', money(sale.paidAmount), fontSizeSmall),
 
               if (sale.paidAmount > sale.grandTotal)
-                _pwRow('Kembalian', money(sale.paidAmount - sale.grandTotal), fontSizeNormal, bold: true)
+                _pwRow(
+                  'Kembalian',
+                  money(sale.paidAmount - sale.grandTotal),
+                  fontSizeNormal,
+                  bold: true,
+                )
               else if (sale.remainingAmount > 0)
-                _pwRow('Sisa Tagihan', money(sale.remainingAmount), fontSizeNormal, bold: true),
+                _pwRow(
+                  'Sisa Tagihan',
+                  money(sale.remainingAmount),
+                  fontSizeNormal,
+                  bold: true,
+                ),
 
               _pwDivider(),
 
-              // Footer Struk
+              // Footer Status & Ucapan
               pw.Center(
                 child: pw.Text(
                   sale.paymentStatus == PaymentStatus.paid ||
@@ -149,25 +191,30 @@ class ReceiptPrinter {
                 ),
               ),
               pw.SizedBox(height: 6),
-            ],
-          );
-        },
-      ),
-    );
+            ];
+          },
+        ),
+      );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => doc.save(),
-      name: 'Struk_',
-    );
+      final pdfBytes = await doc.save();
+
+      await Printing.layoutPdf(
+        name: 'Struk_${sale.transactionNumber}',
+        onLayout: (PdfPageFormat format) async => pdfBytes,
+      );
+    } catch (e) {
+      Logger.e('Print receipt failed', e);
+      rethrow;
+    }
   }
 
   static pw.Widget _pwDivider() {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      padding: const pw.EdgeInsets.symmetric(vertical: 3),
       child: pw.Text(
-        '------------------------------------------------',
+        '------------------------------------------',
         maxLines: 1,
-        style: const pw.TextStyle(fontSize: 7),
+        style: const pw.TextStyle(fontSize: 6.5),
         textAlign: pw.TextAlign.center,
       ),
     );
