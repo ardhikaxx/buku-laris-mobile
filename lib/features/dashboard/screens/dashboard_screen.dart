@@ -551,63 +551,164 @@ class _DashboardContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (isOwner) ...[
-          Card(
-            color: AppColors.primary,
-            elevation: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF0F766E),
+                  Color(0xFF0D9488),
+                  Color(0xFF14B8A6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0D9488).withValues(alpha: 0.28),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.trending_up_rounded,
-                          color: Colors.white70, size: 18),
-                      const SizedBox(width: 6),
-                      Text('Penjualan $periodLabel',
-                          style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600)),
-                    ],
+                  Positioned(
+                    right: -25,
+                    top: -25,
+                    child: Container(
+                      width: 130,
+                      height: 130,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(compactMoney(data.periodRevenue),
-                      style: const TextStyle(
-                          fontSize: 27,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white)),
-                  Text(
-                    '${data.periodOrders} transaksi selesai',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  Positioned(
+                    right: 45,
+                    bottom: -35,
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: -30,
+                    bottom: -30,
+                    child: Container(
+                      width: 85,
+                      height: 85,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.04),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.25),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.trending_up_rounded,
+                                      color: Colors.white, size: 14),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    'Penjualan $periodLabel',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.storefront_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          compactMoney(data.periodRevenue),
+                          style: const TextStyle(
+                            fontSize: 29,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.receipt_rounded,
+                                      color: Colors.white70, size: 13),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    '${data.periodOrders} Transaksi Selesai',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: StatCard(
-                  label: 'Penjualan Hari Ini',
-                  value: compactMoney(data.todayRevenue),
-                  icon: Icons.today_rounded,
-                  color: AppColors.info,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: StatCard(
-                  label: 'Penjualan Bulan Ini',
-                  value: compactMoney(data.monthRevenue),
-                  icon: Icons.calendar_month_rounded,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -660,40 +761,89 @@ class _DashboardContent extends StatelessWidget {
           ),
           const SizedBox(height: 18),
         ] else ...[
-          Card(
-            color: AppColors.primary,
-            elevation: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF0F766E),
+                  Color(0xFF0D9488),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0D9488).withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Pesanan Berjalan',
-                            style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 6),
-                        Text('${data.activeOrders} pesanan',
-                            style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white)),
-                      ],
+                  Positioned(
+                    right: -20,
+                    top: -20,
+                    child: Container(
+                      width: 110,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
                     ),
                   ),
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(13),
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 9, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Pesanan Berjalan',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                '${data.activeOrders} Pesanan',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.pending_actions_rounded,
+                              color: Colors.white, size: 24),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.pending_actions_rounded,
-                        color: Colors.white, size: 24),
                   ),
                 ],
               ),
@@ -946,8 +1096,8 @@ class _DashboardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        SkeletonBox(height: 96, radius: 14),
-        SizedBox(height: 10),
+        SkeletonBox(height: 140, radius: 20),
+        SizedBox(height: 12),
         Row(
           children: [
             Expanded(child: SkeletonBox(height: 84, radius: 14)),
