@@ -986,20 +986,20 @@ class _MainNotchStatsCard extends StatelessWidget {
     required this.workspaceName,
   });
 
-  static const double _notchWidth = 152.0;
-  static const double _notchHeight = 56.0;
+  static const double _notchWidth = 162.0;
+  static const double _notchHeight = 62.0;
 
   @override
   Widget build(BuildContext context) {
     const clipper = _CardNotchClipper(
       notchWidth: _notchWidth,
       notchHeight: _notchHeight,
-      cornerRadius: 24,
-      filletRadius: 20,
+      cornerRadius: 26,
+      filletRadius: 32,
     );
 
     return SizedBox(
-      height: 195,
+      height: 205,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -1029,8 +1029,8 @@ class _MainNotchStatsCard extends StatelessWidget {
                       right: -25,
                       top: -25,
                       child: Container(
-                        width: 130,
-                        height: 130,
+                        width: 140,
+                        height: 140,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.12),
@@ -1041,8 +1041,8 @@ class _MainNotchStatsCard extends StatelessWidget {
                       left: 110,
                       bottom: -40,
                       child: Container(
-                        width: 100,
-                        height: 100,
+                        width: 110,
+                        height: 110,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.08),
@@ -1053,8 +1053,8 @@ class _MainNotchStatsCard extends StatelessWidget {
                       left: -25,
                       bottom: -25,
                       child: Container(
-                        width: 80,
-                        height: 80,
+                        width: 85,
+                        height: 85,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withValues(alpha: 0.06),
@@ -1063,7 +1063,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                     ),
                     // Card Content
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1073,11 +1073,11 @@ class _MainNotchStatsCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
-                                width: 34,
-                                height: 34,
+                                width: 36,
+                                height: 36,
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(11),
                                   border: Border.all(
                                     color: Colors.white.withValues(alpha: 0.25),
                                     width: 1,
@@ -1086,21 +1086,21 @@ class _MainNotchStatsCard extends StatelessWidget {
                                 child: const Icon(
                                   Icons.storefront_rounded,
                                   color: Colors.white,
-                                  size: 19,
+                                  size: 20,
                                 ),
                               ),
                               Text(
                                 '•••• •••• •••• ${data.periodOrders.toString().padLeft(4, '0')}',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.5,
                                   fontWeight: FontWeight.w700,
-                                  letterSpacing: 2.0,
+                                  letterSpacing: 2.2,
                                   color: Colors.white.withValues(alpha: 0.85),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 16),
                           // Middle Row: Balance Label & Amount + Period on Right
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1124,7 +1124,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                       child: Text(
                                         compactMoney(data.periodRevenue),
                                         style: const TextStyle(
-                                          fontSize: 27,
+                                          fontSize: 29,
                                           fontWeight: FontWeight.w900,
                                           color: Colors.white,
                                           letterSpacing: -0.5,
@@ -1142,7 +1142,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                     Text(
                                       'Periode',
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 11.5,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.white.withValues(alpha: 0.8),
                                       ),
@@ -1151,7 +1151,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                     Text(
                                       periodLabel,
                                       style: const TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 13.5,
                                         fontWeight: FontWeight.w800,
                                         color: Colors.white,
                                       ),
@@ -1171,7 +1171,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                 Text(
                                   'Name',
                                   style: TextStyle(
-                                    fontSize: 10.5,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white.withValues(alpha: 0.8),
                                   ),
@@ -1182,7 +1182,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
-                                    fontSize: 13.5,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w800,
                                     color: Colors.white,
                                   ),
@@ -1202,58 +1202,53 @@ class _MainNotchStatsCard extends StatelessWidget {
           Positioned(
             right: 0,
             bottom: 0,
-            width: _notchWidth,
-            height: _notchHeight,
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => context.go('/sales'),
-                  borderRadius: BorderRadius.circular(28),
-                  child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => context.go('/sales'),
+                borderRadius: BorderRadius.circular(28),
+                child: Container(
+                  height: 52,
+                  padding: const EdgeInsets.fromLTRB(6, 6, 16, 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.add_rounded,
-                            color: Color(0xFF0F172A),
-                            size: 18,
-                          ),
+                        child: const Icon(
+                          Icons.add_rounded,
+                          color: Color(0xFF0F172A),
+                          size: 24,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Penjualan',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.2,
-                          ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Penjualan',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1306,7 +1301,7 @@ class _CardNotchClipper extends CustomClipper<Path> {
     // 5. Notch roof horizontal edge leftwards
     path.lineTo(w - nw + fr, h - nh);
 
-    // 6. Notch inner concave fillet (curves around top-left of the button)
+    // 6. Notch inner concave fillet (curves smoothly around top-left of the button)
     path.arcToPoint(
       Offset(w - nw, h - nh + fr),
       radius: Radius.circular(fr),
