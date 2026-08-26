@@ -114,7 +114,7 @@ class MoreScreen extends ConsumerWidget {
           const SizedBox(height: 24),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
     );
   }
 

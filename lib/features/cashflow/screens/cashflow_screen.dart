@@ -45,7 +45,6 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
 
     return Scaffold(
       appBar: FloatingCapsuleAppBar(
-        showBackButton: true,
         leading: CircleAvatar(
           radius: 19,
           backgroundColor: AppColors.income.withValues(alpha: 0.12),

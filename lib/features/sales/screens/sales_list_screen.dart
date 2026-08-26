@@ -117,6 +117,17 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
           ),
         ],
       ),
+      floatingActionButton: canCreate
+          ? FloatingActionButton.extended(
+              heroTag: 'sales-fab',
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              onPressed: () => context.push('/sales/new'),
+              icon: const Icon(Icons.add_shopping_cart_rounded, size: 20),
+              label: const Text('Jual',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            )
+          : null,
       bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }
