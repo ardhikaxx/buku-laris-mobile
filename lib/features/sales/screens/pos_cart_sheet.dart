@@ -66,19 +66,138 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
 
   Future<void> _loadMethods() async {
     final wsId = ref.read(gateProvider).activeWorkspaceId;
-    if (wsId == null) return;
+    final defaults = DefaultPaymentMethods.defaults();
+    if (wsId == null) {
+      setState(() {
+        _methods = defaults;
+        _selectedMethod = defaults.first;
+      });
+      return;
+    }
     try {
       final methods = await ref
           .read(workspaceRepositoryProvider)
           .listPaymentMethods(wsId, onlyActive: true);
       if (!mounted) return;
       setState(() {
-        _methods = methods;
-        if (methods.isNotEmpty) _selectedMethod = methods.first;
+        if (methods.isEmpty) {
+          _methods = defaults;
+        } else {
+          _methods = methods;
+        }
+        _selectedMethod = _methods.firstWhere(
+          (m) => m.type == 'CASH' || m.name.toLowerCase().contains('tunai'),
+          orElse: () => _methods.first,
+        );
       });
     } catch (e) {
       Logger.e('cart load payment methods failed', e);
+      if (mounted) {
+        setState(() {
+          _methods = defaults;
+          _selectedMethod = defaults.first;
+        });
+      }
     }
+  }
+
+  IconData _paymentMethodIcon(String type, String name) {
+    final t = type.toUpperCase();
+    final n = name.toLowerCase();
+    if (t == 'CASH' || n.contains('tunai') || n.contains('cash')) {
+      return Icons.payments_rounded;
+    }
+    if (t == 'BANK_TRANSFER' || n.contains('transfer') || n.contains('bank')) {
+      return Icons.account_balance_rounded;
+    }
+    if (t == 'QRIS' || n.contains('qris')) {
+      return Icons.qr_code_2_rounded;
+    }
+    if (t == 'EWALLET' ||
+        n.contains('gopay') ||
+        n.contains('ovo') ||
+        n.contains('dana') ||
+        n.contains('shopee')) {
+      return Icons.wallet_rounded;
+    }
+    if (t == 'CARD' ||
+        n.contains('debit') ||
+        n.contains('kredit') ||
+        n.contains('kartu')) {
+      return Icons.credit_card_rounded;
+    }
+    return Icons.payment_rounded;
+  }
+
+  List<int> _getQuickAmounts(int total) {
+    if (total <= 0) return [10000, 20000, 50000, 100000];
+    final set = <int>{};
+    set.add(total);
+    final roundUp10k = ((total / 10000).ceil()) * 10000;
+    if (roundUp10k > total) set.add(roundUp10k);
+    final roundUp50k = ((total / 50000).ceil()) * 50000;
+    if (roundUp50k > total) set.add(roundUp50k);
+    final roundUp100k = ((total / 100000).ceil()) * 100000;
+    if (roundUp100k > total) set.add(roundUp100k);
+    for (final nom in [10000, 20000, 50000, 100000, 200000, 500000]) {
+      if (nom > total && set.length < 5) set.add(nom);
+    }
+    final list = set.toList()..sort();
+    return list;
+  }
+
+  Widget _buildPaymentMethodChip(PaymentMethodModel m) {
+    final isSelected = _selectedMethod?.id == m.id ||
+        (_selectedMethod?.name == m.name) ||
+        (_selectedMethod == null &&
+            (m.type == 'CASH' || m.name.toLowerCase() == 'tunai'));
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => setState(() => _selectedMethod = m),
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
+              width: isSelected ? 1.5 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.22),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _paymentMethodIcon(m.type, m.name),
+                size: 16,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                m.name,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF334155),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _pickCustomer() async {
@@ -458,19 +577,37 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    DropdownButtonFormField<PaymentMethodModel>(
-                      isExpanded: true,
-                      initialValue: _selectedMethod,
-                      decoration:
-                          const InputDecoration(labelText: 'Metode Pembayaran'),
-                      items: _methods
-                          .map((m) => DropdownMenuItem(
-                              value: m, child: Text(m.name)))
-                          .toList(),
-                      onChanged: (m) => setState(() => _selectedMethod = m),
+                    const SizedBox(height: 12),
+                    const Row(
+                      children: [
+                        Icon(Icons.payments_rounded,
+                            size: 17, color: AppColors.primary),
+                        SizedBox(width: 6),
+                        Text(
+                          'Metode Pembayaran',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          for (final m in _methods)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: _buildPaymentMethodChip(m),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
                     TextFormField(
                       controller: _paidController,
                       keyboardType: TextInputType.number,
@@ -478,16 +615,159 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                       decoration: InputDecoration(
                         labelText: isPreOrder
                             ? 'Uang Muka / DP (opsional)'
-                            : 'Dibayar (kosongkan = lunas)',
+                            : 'Nominal Pembayaran / Uang Diterima',
                         prefixText: 'Rp ',
+                        hintText: number(grandTotal),
                         suffixIcon: TextButton(
-                          onPressed: () =>
-                              setState(() => _paidController.text = number(grandTotal)),
-                          child: const Text('Lunas',
-                              style: TextStyle(fontSize: 12)),
+                          onPressed: () => setState(
+                              () => _paidController.text = number(grandTotal)),
+                          child: const Text('Uang Pas',
+                              style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w700)),
                         ),
                       ),
                       onChanged: (_) => setState(() {}),
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          for (final amount in _getQuickAmounts(grandTotal))
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ActionChip(
+                                label: Text(
+                                  amount == grandTotal
+                                      ? 'Uang Pas (${compactMoney(amount)})'
+                                      : compactMoney(amount),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: amount == grandTotal
+                                        ? FontWeight.w700
+                                        : FontWeight.w600,
+                                    color: amount == grandTotal
+                                        ? AppColors.primaryDark
+                                        : const Color(0xFF334155),
+                                  ),
+                                ),
+                                backgroundColor: amount == grandTotal
+                                    ? const Color(0xFFF0FDF4)
+                                    : const Color(0xFFF8FAFC),
+                                side: BorderSide(
+                                  color: amount == grandTotal
+                                      ? const Color(0xFF86EFAC)
+                                      : const Color(0xFFE2E8F0),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 0),
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () {
+                                  setState(() {
+                                    _paidController.text = number(amount);
+                                  });
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Builder(
+                      builder: (context) {
+                        final enteredAmount =
+                            Validators.parseAmount(_paidController.text);
+                        if (enteredAmount > grandTotal) {
+                          final change = enteredAmount - grandTotal;
+                          return Container(
+                            margin: const EdgeInsets.only(top: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0FDF4),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: const Color(0xFF86EFAC), width: 1.2),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.income
+                                        .withValues(alpha: 0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                      Icons.currency_exchange_rounded,
+                                      color: AppColors.income,
+                                      size: 20),
+                                ),
+                                const SizedBox(width: 10),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Kembalian',
+                                          style: TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF166534))),
+                                      Text('Uang kembali ke pelanggan',
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: Color(0xFF15803D))),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  money(change),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.income,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else if (enteredAmount > 0 &&
+                            enteredAmount < grandTotal) {
+                          final remaining = grandTotal - enteredAmount;
+                          return Container(
+                            margin: const EdgeInsets.only(top: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFBEB),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: const Color(0xFFFCD34D)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Sisa Tagihan (Belum Lunas)',
+                                    style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF92400E))),
+                                Text(
+                                  money(remaining),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.warning,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
