@@ -78,30 +78,33 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       if (!mounted) return;
       setState(() {
         _categories = cats;
-        if (existing != null) {
-          _nameController.text = existing.name;
-          _skuController.text = existing.sku;
-          _barcodeController.text = existing.barcode;
-          if (existing.costPrice != null) {
-            _costController.text = number(existing.costPrice);
+        final prod = existing;
+        if (prod != null) {
+          _nameController.text = prod.name;
+          _skuController.text = prod.sku;
+          _barcodeController.text = prod.barcode;
+          if (prod.costPrice != null) {
+            _costController.text = number(prod.costPrice);
           }
-          _priceController.text = number(existing.sellingPrice);
-          if (existing.type.tracksStock && !existing.unlimitedStock) {
-            _stockController.text = number(existing.stock);
+          _priceController.text = number(prod.sellingPrice);
+          if (prod.type.tracksStock && !prod.unlimitedStock) {
+            _stockController.text = number(prod.stock);
           }
-          if (existing.licenseCount != null && existing.type == ProductType.digitalProduct) {
-            _licenseController.text = number(existing.licenseCount);
+          if (prod.licenseCount != null &&
+              prod.type == ProductType.digitalProduct) {
+            _licenseController.text = number(prod.licenseCount);
           }
-          _minStockController.text = number(existing.minStock);
-          _descController.text = existing.description;
-          _type = existing.type;
-          _categoryId = existing.categoryId.isEmpty ? null : existing.categoryId;
-          _unit = existing.unit;
-          _trackStock = existing.trackStock;
-          _unlimitedStock = existing.unlimitedStock;
-          _isActive = existing.isActive;
+          _minStockController.text = number(prod.minStock);
+          _descController.text = prod.description;
+          _type = prod.type;
+          final hasCategory = cats.any((c) => c.id == prod.categoryId);
+          _categoryId = hasCategory ? prod.categoryId : null;
+          _unit = prod.unit;
+          _trackStock = prod.trackStock;
+          _unlimitedStock = prod.unlimitedStock;
+          _isActive = prod.isActive;
           _hadInitialStock = true;
-        } else if (cats.isNotEmpty) {
+        } else {
           _categoryId = null;
         }
         _loading = false;
@@ -261,7 +264,15 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     if (wsId != null) {
                       final cats =
                           await ref.read(categoryRepositoryProvider).list(wsId);
-                      if (mounted) setState(() => _categories = cats);
+                      if (mounted) {
+                        setState(() {
+                          _categories = cats;
+                          if (_categoryId != null &&
+                              !cats.any((c) => c.id == _categoryId)) {
+                            _categoryId = null;
+                          }
+                        });
+                      }
                     }
                   },
                   icon: const Icon(Icons.style_rounded,
@@ -443,7 +454,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(16, 6, 16, Platform.isIOS ? 4 : 12),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
           child: FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: _saving ? null : _save,
