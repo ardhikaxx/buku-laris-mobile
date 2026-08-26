@@ -1287,49 +1287,43 @@ class _CardNotchClipper extends CustomClipper<Path> {
 
     final path = Path();
 
-    // 1. Start top-left
+    // 1. Start on left edge at (0, cr)
     path.moveTo(0, cr);
-    path.arcToPoint(Offset(cr, 0), radius: Radius.circular(cr));
 
-    // 2. Top edge
+    // 2. Top-left corner
+    path.quadraticBezierTo(0, 0, cr, 0);
+
+    // 3. Top horizontal edge
     path.lineTo(w - cr, 0);
-    path.arcToPoint(Offset(w, cr), radius: Radius.circular(cr));
 
-    // 3. Right edge down to notch
+    // 4. Top-right corner
+    path.quadraticBezierTo(w, 0, w, cr);
+
+    // 5. Right vertical edge down to notch fillet
     path.lineTo(w, h - nh - fr);
 
-    // 4. Concave fillet into notch top
-    path.arcToPoint(
-      Offset(w - fr, h - nh),
-      radius: Radius.circular(fr),
-      clockwise: false,
-    );
+    // 6. Notch top-right concave fillet (curving left into notch roof)
+    path.quadraticBezierTo(w, h - nh, w - fr, h - nh);
 
-    // 5. Notch top horizontal line
+    // 7. Notch roof horizontal edge leftwards
     path.lineTo(w - nw + fr, h - nh);
 
-    // 6. Convex corner turning down into notch left edge
-    path.arcToPoint(
-      Offset(w - nw, h - nh + fr),
-      radius: Radius.circular(fr),
-      clockwise: true,
-    );
+    // 8. Notch corner (curving downwards into notch left wall)
+    path.quadraticBezierTo(w - nw, h - nh, w - nw, h - nh + fr);
 
-    // 7. Notch left vertical edge down
+    // 9. Notch left wall vertical edge downwards
     path.lineTo(w - nw, h - fr);
 
-    // 8. Concave fillet out to bottom edge
-    path.arcToPoint(
-      Offset(w - nw - fr, h),
-      radius: Radius.circular(fr),
-      clockwise: false,
-    );
+    // 10. Notch bottom-left concave fillet (curving left into card bottom edge)
+    path.quadraticBezierTo(w - nw, h, w - nw - fr, h);
 
-    // 9. Bottom edge left
+    // 11. Bottom horizontal edge leftwards
     path.lineTo(cr, h);
-    path.arcToPoint(Offset(0, h - cr), radius: Radius.circular(cr));
 
-    // 10. Left edge up to close
+    // 12. Bottom-left corner
+    path.quadraticBezierTo(0, h, 0, h - cr);
+
+    // 13. Left vertical edge up to close
     path.lineTo(0, cr);
     path.close();
 
