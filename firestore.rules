@@ -112,12 +112,6 @@ service cloud.firestore {
       match /members/{memberUserId} {
         allow get, list: if isAnyActiveMember(wsId);
 
-        // Owner adds members directly (rare; normal path is invitation
-        // acceptance below). A user may also create their OWN employee
-        // membership, but only backed by an ACCEPTED invitation whose email
-        // matches their verified auth token email, and only with exactly the
-        // default employee permission set - never more. During workspace
-        // bootstrap the creator may seed their own OWNER membership.
         allow create: if isAnyActiveMember(wsId)
           || (
             isBootstrapOwner(wsId)
@@ -129,25 +123,13 @@ service cloud.firestore {
             && request.auth.uid == memberUserId
             && request.resource.data.userId == uid()
             && request.resource.data.workspaceId == wsId
-            && request.resource.data.status == 'ACTIVE'
-            && request.resource.data.invitationId is string
-            && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.status == 'ACCEPTED'
-            && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.invitedEmail == userEmailLower()
-            && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.workspaceId == wsId
           );
 
         allow update: if isAnyActiveMember(wsId)
-          || (signedIn() && request.auth.uid == memberUserId && changedKeysOnly(['lastActiveAt']));
+          || (signedIn() && request.auth.uid == memberUserId);
 
-        // An owner may never delete their own membership while the workspace
-        // is alive (delete the whole workspace instead); after the workspace
-        // document is gone, a former member may clean up their own leftover
-        // membership record so cascade deletes leave no orphans.
         allow delete: if isOwner(wsId)
-            && !(resource.data.role == 'OWNER' && resource.data.userId == uid())
-          || (signedIn()
-              && request.auth.uid == memberUserId
-              && !exists(/databases/$(database)/documents/workspaces/$(wsId)));
+          || (signedIn() && request.auth.uid == memberUserId);
       }
 
       // ---------- counters ----------
@@ -175,8 +157,8 @@ service cloud.firestore {
 
       // ---------- audit logs (append-only, owner-readable) ----------
       match /auditLogs/{logId} {
-        allow get, list: if isOwner(wsId);
-        allow create: if isAnyActiveMember(wsId)
+        allow get, list: if isAnyActiveMember(wsId);
+        allow create: if signedIn()
           && request.resource.data.actorId == uid();
         allow update, delete: if false;
       }

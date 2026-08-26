@@ -148,7 +148,7 @@ class InvitationRepository extends BaseRepository {
 
     await fs.runTransaction((txn) async {
       txn.update(inviteRef, {
-        'status': InvitationStatus.accepted.name,
+        'status': 'ACCEPTED',
         'acceptedAt': now,
         'invitedUserId': user.uid,
         'updatedAt': now,
@@ -189,7 +189,7 @@ class InvitationRepository extends BaseRepository {
     required UserProfile user,
   }) async {
     await fs.collection(Collections.invitations).doc(invitation.id).update({
-      'status': InvitationStatus.rejected.name,
+      'status': 'REJECTED',
       'rejectedAt': FieldValue.serverTimestamp(),
       'invitedUserId': user.uid,
     });
@@ -213,7 +213,7 @@ class InvitationRepository extends BaseRepository {
       throw RepoException('Hanya undangan yang masih menunggu yang dapat dibatalkan.');
     }
     await fs.collection(Collections.invitations).doc(invitation.id).update({
-      'status': InvitationStatus.revoked.name,
+      'status': 'REVOKED',
       'revokedAt': FieldValue.serverTimestamp(),
     });
     _audit.log(
