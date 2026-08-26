@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -10,54 +12,44 @@ import 'formatters.dart';
 class ReceiptPrinter {
   ReceiptPrinter._();
 
-  /// Mencetak atau menampilkan dialog cetak struk thermal (58mm / 80mm)
-  static Future<void> printReceipt({
+  /// Menghasilkan bytes PDF struk thermal (58mm / 80mm)
+  static Future<Uint8List> generateReceiptPdf({
     required Sale sale,
     required String storeName,
     String? cashierName,
     bool is80mm = false,
   }) async {
+    final doc = pw.Document();
+
+    final pageFormat = is80mm ? PdfPageFormat.roll80 : PdfPageFormat.roll57;
+    final fontSizeSmall = is80mm ? 8.5 : 7.0;
+    final fontSizeNormal = is80mm ? 10.0 : 8.0;
+    final fontSizeTitle = is80mm ? 13.0 : 11.0;
+
+    pw.Font fontRegular;
+    pw.Font fontBold;
     try {
-      final doc = pw.Document();
+      fontRegular = await PdfGoogleFonts.robotoMonoRegular();
+      fontBold = await PdfGoogleFonts.robotoMonoBold();
+    } catch (_) {
+      fontRegular = pw.Font.courier();
+      fontBold = pw.Font.courierBold();
+    }
 
-      // Gunakan ukuran roll thermal standard: 58mm (2.28 in) atau 80mm (3.14 in)
-      final rollWidth = (is80mm ? 80.0 : 58.0) * PdfPageFormat.mm;
-      final pageFormat = PdfPageFormat(
-        rollWidth,
-        double.infinity,
-        marginLeft: 4 * PdfPageFormat.mm,
-        marginRight: 4 * PdfPageFormat.mm,
-        marginTop: 6 * PdfPageFormat.mm,
-        marginBottom: 8 * PdfPageFormat.mm,
-      );
+    final theme = pw.ThemeData.withFont(
+      base: fontRegular,
+      bold: fontBold,
+    );
 
-      final fontSizeSmall = is80mm ? 8.5 : 7.0;
-      final fontSizeNormal = is80mm ? 10.0 : 8.0;
-      final fontSizeTitle = is80mm ? 13.0 : 11.0;
-
-      // Coba load font yang mendukung unicode, jika offline fallback ke standard
-      pw.Font fontRegular;
-      pw.Font fontBold;
-      try {
-        fontRegular = await PdfGoogleFonts.robotoMonoRegular();
-        fontBold = await PdfGoogleFonts.robotoMonoBold();
-      } catch (_) {
-        fontRegular = pw.Font.courier();
-        fontBold = pw.Font.courierBold();
-      }
-
-      final theme = pw.ThemeData.withFont(
-        base: fontRegular,
-        bold: fontBold,
-      );
-
-      doc.addPage(
-        pw.MultiPage(
-          pageFormat: pageFormat,
-          maxPages: 10,
-          theme: theme,
-          build: (pw.Context context) {
-            return [
+    doc.addPage(
+      pw.Page(
+        pageFormat: pageFormat,
+        theme: theme,
+        build: (pw.Context context) {
+          return pw.Column(
+            mainAxisSize: pw.MainAxisSize.min,
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
               // Header Nama Toko
               pw.Center(
                 child: pw.Text(
@@ -191,12 +183,29 @@ class ReceiptPrinter {
                 ),
               ),
               pw.SizedBox(height: 6),
-            ];
-          },
-        ),
-      );
+            ],
+          );
+        },
+      ),
+    );
 
-      final pdfBytes = await doc.save();
+    return doc.save();
+  }
+
+  /// Mencetak atau menampilkan dialog cetak struk thermal (58mm / 80mm)
+  static Future<void> printReceipt({
+    required Sale sale,
+    required String storeName,
+    String? cashierName,
+    bool is80mm = false,
+  }) async {
+    try {
+      final pdfBytes = await generateReceiptPdf(
+        sale: sale,
+        storeName: storeName,
+        cashierName: cashierName,
+        is80mm: is80mm,
+      );
 
       await Printing.layoutPdf(
         name: 'Struk_${sale.transactionNumber}',
