@@ -350,40 +350,6 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
             },
             titleText: sale.transactionNumber,
             subtitleText: dateTimeShort(sale.createdAt),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.print_rounded, size: 19),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFF8FAFC),
-                  padding: const EdgeInsets.all(7),
-                  minimumSize: const Size(36, 36),
-                ),
-                tooltip: 'Cetak Struk Thermal',
-                onPressed: () => _printThermalReceipt(sale, workspaceName),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.edit_note_rounded, size: 20),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFF8FAFC),
-                  padding: const EdgeInsets.all(7),
-                  minimumSize: const Size(36, 36),
-                ),
-                tooltip: 'Ubah keterangan',
-                onPressed: () => _editNotes(sale),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.share_outlined, size: 19),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFF8FAFC),
-                  padding: const EdgeInsets.all(7),
-                  minimumSize: const Size(36, 36),
-                ),
-                tooltip: 'Bagikan struk digital',
-                onPressed: () => _shareInvoice(sale, workspaceName),
-              ),
-            ],
           ),
           body: Stack(
             children: [
