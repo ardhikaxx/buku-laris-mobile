@@ -204,6 +204,38 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
         storeName: storeName.isEmpty ? 'BUKU LARIS POS' : storeName,
         cashierName: cashierName,
       );
+    } on MissingPluginException {
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.restart_alt_rounded, color: AppColors.primary),
+                SizedBox(width: 8),
+                Text('Perlu Restart Aplikasi', style: TextStyle(fontSize: 16)),
+              ],
+            ),
+            content: const Text(
+              'Modul printer baru saja ditambahkan ke proyek.\n\n'
+              'Flutter memerlukan Full Restart (Hentikan/Stop lalu Run ulang aplikasi) agar library printer native Android dapat dimuat.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _shareInvoice(sale, storeName);
+                },
+                child: const Text('Salin Struk Teks'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Mengerti'),
+              ),
+            ],
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         final msg = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
