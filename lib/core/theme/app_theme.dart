@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Bank Jago Signature Palette (Warm Vibrant Amber & Gold Ochre)
-  static const primary = Color(0xFFD97706);
-  static const primaryDark = Color(0xFFB45309);
-  static const primaryLight = Color(0xFFF59E0B);
-  static const accent = Color(0xFFF59E0B);
+  // Bank BRI Signature Palette (Corporate Royal Blue & Signature Orange Accent)
+  static const primary = Color(0xFF00529C);
+  static const primaryDark = Color(0xFF003D75);
+  static const primaryLight = Color(0xFF0066AE);
+  static const accent = Color(0xFFF37021);
 
   // Financial Cashflow & Status Indicators
   static const income = Color(0xFF10B981);
   static const expense = Color(0xFFEF4444);
   static const warning = Color(0xFFF59E0B);
-  static const info = Color(0xFF0284C7);
+  static const info = Color(0xFF00529C);
 
   static const surfaceCard = Colors.white;
 }
@@ -25,6 +25,7 @@ class AppTheme {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       primary: AppColors.primary,
+      secondary: AppColors.accent,
       brightness: Brightness.light,
     );
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
@@ -140,20 +141,20 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         height: 64,
         backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFFFEF3C7),
+        indicatorColor: const Color(0xFFE6F0FA),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
             fontSize: 11,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? AppColors.primaryDark : const Color(0xFF64748B),
+            color: selected ? AppColors.primary : const Color(0xFF64748B),
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: 23,
-            color: selected ? AppColors.primaryDark : const Color(0xFF64748B),
+            color: selected ? AppColors.primary : const Color(0xFF64748B),
           );
         }),
       ),

@@ -1020,14 +1020,14 @@ class _MainNotchStatsCard extends StatelessWidget {
                 clipper: clipper,
                 gradient: const LinearGradient(
                   colors: [
-                    Color(0xFF7E22CE), // Deep Royal Purple
-                    Color(0xFF8B31E3), // Electric Violet
-                    Color(0xFF9333EA), // Bright Purple
+                    Color(0xFF003D75), // Bank BRI Deep Navy Blue
+                    Color(0xFF00529C), // Bank BRI Royal Blue
+                    Color(0xFF0066AE), // Bank BRI Vibrant Blue
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                shadowColor: const Color(0xFF8B31E3).withValues(alpha: 0.38),
+                shadowColor: const Color(0xFF00529C).withValues(alpha: 0.38),
                 elevation: 10,
               ),
               child: ClipPath(
