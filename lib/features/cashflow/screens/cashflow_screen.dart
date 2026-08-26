@@ -234,10 +234,12 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                   return t.occurredAt.isBefore(_range.start);
                 }).toList();
 
-                final startingIncome = priorActiveTxns
+                final priorOperationalTxns =
+                    priorActiveTxns.where((t) => t.sourceType != 'TRANSFER');
+                final startingIncome = priorOperationalTxns
                     .where((t) => t.type == CashTransactionType.income)
                     .fold(0, (acc, t) => acc + t.amount);
-                final startingExpense = priorActiveTxns
+                final startingExpense = priorOperationalTxns
                     .where((t) => t.type == CashTransactionType.expense)
                     .fold(0, (acc, t) => acc + t.amount);
                 final startingBalance = startingIncome - startingExpense;
@@ -258,10 +260,13 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                   return true;
                 }).toList();
 
-                final periodIncome = periodActiveTxns
+                // Perhitungan Kas Masuk & Kas Keluar Murni Bisnis (Tanpa Mutasi Internal Antar Dompet)
+                final periodOperationalTxns =
+                    periodActiveTxns.where((t) => t.sourceType != 'TRANSFER');
+                final periodIncome = periodOperationalTxns
                     .where((t) => t.type == CashTransactionType.income)
                     .fold(0, (acc, t) => acc + t.amount);
-                final periodExpense = periodActiveTxns
+                final periodExpense = periodOperationalTxns
                     .where((t) => t.type == CashTransactionType.expense)
                     .fold(0, (acc, t) => acc + t.amount);
                 final netChange = periodIncome - periodExpense;
@@ -336,6 +341,11 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                     return false;
                   }
 
+                  // Jika melihat semua dompet, jangan duplikasi mutasi transfer di tab pendapatan/pengeluaran umum
+                  if (_selectedWallet == null && t.sourceType == 'TRANSFER') {
+                    return false;
+                  }
+
                   // Wallet filter
                   if (_selectedWallet != null) {
                     final wName = t.paymentMethodName.trim().isEmpty
@@ -350,10 +360,14 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                 }).toList();
 
                 final incomeCount = periodTxns
-                    .where((t) => t.type == CashTransactionType.income)
+                    .where((t) =>
+                        t.type == CashTransactionType.income &&
+                        (_selectedWallet != null || t.sourceType != 'TRANSFER'))
                     .length;
                 final expenseCount = periodTxns
-                    .where((t) => t.type == CashTransactionType.expense)
+                    .where((t) =>
+                        t.type == CashTransactionType.expense &&
+                        (_selectedWallet != null || t.sourceType != 'TRANSFER'))
                     .length;
 
                 return CustomScrollView(

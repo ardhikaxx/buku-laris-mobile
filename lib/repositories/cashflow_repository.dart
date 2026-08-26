@@ -173,9 +173,11 @@ class CashflowRepository extends BaseRepository {
       for (final doc in snap.docs) {
         final d = doc.data();
         final sourceSaleId = d['sourceSaleId'] as String?;
+        final sourceType = d['sourceType'] as String?;
         final isVoided = d['isVoided'] == true || d['isRefunded'] == true;
 
         if (isVoided) continue;
+        if (sourceType == 'TRANSFER') continue;
         if (sourceSaleId != null && refundedSaleIds.contains(sourceSaleId)) {
           // Exclude transactions from refunded/cancelled sales
           continue;
