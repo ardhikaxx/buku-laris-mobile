@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -188,7 +186,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         bottomNavigationBar: SafeArea(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 8, 20, Platform.isIOS ? 4 : 12),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

@@ -99,7 +99,7 @@ class MoreScreen extends ConsumerWidget {
               children: [
                 _MenuTile(
                   icon: Icons.logout_rounded,
-                  label: 'Keluar (Logout)',
+                  label: 'Keluar Akun',
                   danger: true,
                   onTap: () => _logout(context, ref),
                 ),
@@ -107,6 +107,50 @@ class MoreScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Buku Laris v1.0.0',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Aplikasi Kasir & Pembukuan UMKM',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
         ],
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 4),
