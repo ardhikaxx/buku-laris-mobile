@@ -1171,6 +1171,16 @@ class _CashTile extends ConsumerWidget {
                       await ref
                           .read(cashflowRepositoryProvider)
                           .delete(txnModel);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(
+                            isTransfer
+                                ? 'Pindah dana berhasil dibatalkan. Saldo kedua akun telah dikembalikan.'
+                                : 'Catatan kas berhasil dihapus. Saldo kas telah dikembalikan ke posisi semula.',
+                          ),
+                          backgroundColor: AppColors.primary,
+                        ));
+                      }
                     } catch (e) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

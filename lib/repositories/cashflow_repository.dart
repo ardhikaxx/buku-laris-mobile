@@ -116,6 +116,31 @@ class CashflowRepository extends BaseRepository {
       throw RepoException(
           'Catatan kas yang terhubung ke transaksi penjualan tidak dapat dihapus langsung. Batalkan atau refund transaksi penjualannya.');
     }
+
+    // Jika catatan merupakan bagian dari Pindah Dana / Transfer, hapus juga transaksi pasangannya
+    if (txnModel.sourceType == 'TRANSFER') {
+      try {
+        final twinSnap = await sub(txnModel.workspaceId, Collections.cashTransactions)
+            .where('sourceType', isEqualTo: 'TRANSFER')
+            .where('amount', isEqualTo: txnModel.amount)
+            .get();
+        for (final doc in twinSnap.docs) {
+          if (doc.id == txnModel.id) continue;
+          final t = CashTransaction.fromDoc(doc);
+          if (t.type != txnModel.type &&
+              t.occurredAt.difference(txnModel.occurredAt).inMinutes.abs() <= 5) {
+            await sub(txnModel.workspaceId, Collections.cashTransactions)
+                .doc(t.id)
+                .delete();
+            await _bumpDailySummary(txnModel.workspaceId, t.occurredAt,
+                income: t.type == CashTransactionType.income ? -t.amount : 0,
+                expense: t.type == CashTransactionType.expense ? -t.amount : 0);
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+
     await sub(txnModel.workspaceId, Collections.cashTransactions)
         .doc(txnModel.id)
         .delete();
