@@ -318,23 +318,25 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                     SliverToBoxAdapter(
                       child: Container(
                         color: Colors.white,
-                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                        padding: const EdgeInsets.fromLTRB(14, 6, 14, 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // ══════════════════════════════════════════════
-                            // 1. KARTU REKAP SALDO AWAL, MUTASI & SALDO AKHIR
+                            // 1. KARTU REKAP SALDO AWAL, MUTASI & SALDO AKHIR (COMPACT)
                             // ══════════════════════════════════════════════
                             Container(
-                              padding: const EdgeInsets.all(14),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 9),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF8FAFC),
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(10),
                                 border:
                                     Border.all(color: const Color(0xFFE2E8F0)),
                               ),
                               child: Column(
                                 children: [
+                                  // Header Row
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -342,12 +344,13 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                       Row(
                                         children: [
                                           Icon(Icons.calendar_today_rounded,
-                                              size: 13, color: Colors.grey[600]),
-                                          const SizedBox(width: 5),
+                                              size: 12,
+                                              color: Colors.grey[600]),
+                                          const SizedBox(width: 4),
                                           Text(
-                                            'Periode: ${dateShort(_range.start)} - ${dateShort(_range.end)}',
+                                            '${dateShort(_range.start)} - ${dateShort(_range.end)}',
                                             style: TextStyle(
-                                              fontSize: 11.5,
+                                              fontSize: 11,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.grey[700],
                                             ),
@@ -357,14 +360,14 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                       Text(
                                         '${periodTxns.length} Catatan',
                                         style: const TextStyle(
-                                          fontSize: 11.5,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.w700,
                                           color: AppColors.primary,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const Divider(height: 16),
+                                  const Divider(height: 12),
 
                                   // Baris 1: Saldo Awal, Mutasi Bersih, Saldo Akhir
                                   Row(
@@ -375,27 +378,19 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Row(
-                                              children: [
-                                                Icon(Icons.history_rounded,
-                                                    size: 13,
-                                                    color: Colors.grey[600]),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Saldo Awal',
-                                                  style: TextStyle(
-                                                    fontSize: 10.5,
-                                                    color: Colors.grey[600],
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
+                                            Text(
+                                              'Saldo Awal',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey[600],
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                             ),
-                                            const SizedBox(height: 3),
+                                            const SizedBox(height: 1),
                                             Text(
                                               money(startingBalance),
                                               style: TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.w700,
                                                 color: Colors.grey[800],
                                               ),
@@ -405,7 +400,7 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                       ),
                                       Container(
                                         width: 1,
-                                        height: 32,
+                                        height: 24,
                                         color: Colors.grey[300],
                                       ),
                                       const SizedBox(width: 8),
@@ -416,29 +411,19 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Row(
-                                              children: [
-                                                Icon(Icons.swap_vert_rounded,
-                                                    size: 13,
-                                                    color: netChange >= 0
-                                                        ? AppColors.income
-                                                        : AppColors.expense),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Mutasi Kas',
-                                                  style: TextStyle(
-                                                    fontSize: 10.5,
-                                                    color: Colors.grey[600],
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
+                                            Text(
+                                              'Mutasi Kas',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey[600],
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                             ),
-                                            const SizedBox(height: 3),
+                                            const SizedBox(height: 1),
                                             Text(
                                               '${netChange >= 0 ? '+' : ''}${money(netChange)}',
                                               style: TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.w700,
                                                 color: netChange >= 0
                                                     ? AppColors.income
@@ -450,7 +435,7 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                       ),
                                       Container(
                                         width: 1,
-                                        height: 32,
+                                        height: 24,
                                         color: Colors.grey[300],
                                       ),
                                       const SizedBox(width: 8),
@@ -461,29 +446,19 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Row(
-                                              children: [
-                                                const Icon(
-                                                    Icons
-                                                        .account_balance_wallet_rounded,
-                                                    size: 13,
-                                                    color: AppColors.primary),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  'Saldo Akhir',
-                                                  style: TextStyle(
-                                                    fontSize: 10.5,
-                                                    color: Colors.grey[600],
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
+                                            const Text(
+                                              'Saldo Akhir',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                             ),
-                                            const SizedBox(height: 3),
+                                            const SizedBox(height: 1),
                                             Text(
                                               money(endingBalance),
                                               style: const TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 12.5,
                                                 fontWeight: FontWeight.w800,
                                                 color: AppColors.primary,
                                               ),
@@ -494,13 +469,14 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                     ],
                                   ),
 
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 6),
+                                  // Detail Masuk & Keluar Mini Row
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 7),
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
                                           color: const Color(0xFFE2E8F0)),
                                     ),
@@ -508,24 +484,22 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceAround,
                                       children: [
-                                        // Detail Masuk
                                         Row(
                                           children: [
-                                            const Icon(
-                                                Icons.south_west_rounded,
-                                                size: 13,
+                                            const Icon(Icons.south_west_rounded,
+                                                size: 11,
                                                 color: AppColors.income),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 3),
                                             Text(
                                               'Masuk: ',
                                               style: TextStyle(
-                                                  fontSize: 11,
+                                                  fontSize: 10,
                                                   color: Colors.grey[600]),
                                             ),
                                             Text(
                                               money(periodIncome),
                                               style: const TextStyle(
-                                                fontSize: 11.5,
+                                                fontSize: 10.5,
                                                 fontWeight: FontWeight.w700,
                                                 color: AppColors.income,
                                               ),
@@ -534,26 +508,24 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                         ),
                                         Container(
                                             width: 1,
-                                            height: 14,
+                                            height: 10,
                                             color: Colors.grey[300]),
-                                        // Detail Keluar
                                         Row(
                                           children: [
-                                            const Icon(
-                                                Icons.north_east_rounded,
-                                                size: 13,
+                                            const Icon(Icons.north_east_rounded,
+                                                size: 11,
                                                 color: AppColors.expense),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 3),
                                             Text(
                                               'Keluar: ',
                                               style: TextStyle(
-                                                  fontSize: 11,
+                                                  fontSize: 10,
                                                   color: Colors.grey[600]),
                                             ),
                                             Text(
                                               money(periodExpense),
                                               style: const TextStyle(
-                                                fontSize: 11.5,
+                                                fontSize: 10.5,
                                                 fontWeight: FontWeight.w700,
                                                 color: AppColors.expense,
                                               ),
@@ -567,91 +539,33 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                               ),
                             ),
 
-                            const SizedBox(height: 14),
-
-                            // ══════════════════════════════════════════════
-                            // 2. REKAP KAS PER AKUN / DOMPET (MULTI-WALLET)
-                            // ══════════════════════════════════════════════
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Row(
-                                  children: [
-                                    Icon(
-                                        Icons.account_balance_wallet_outlined,
-                                        size: 15,
-                                        color: AppColors.primary),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'Rekap per Akun / Dompet',
-                                      style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF1E293B),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_selectedWallet != null)
-                                  InkWell(
-                                    borderRadius: BorderRadius.circular(6),
-                                    onTap: () =>
-                                        setState(() => _selectedWallet = null),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 2),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            'Tampilkan Semua',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.primary,
-                                            ),
-                                          ),
-                                          SizedBox(width: 2),
-                                          Icon(Icons.close_rounded,
-                                              size: 13,
-                                              color: AppColors.primary),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
                             const SizedBox(height: 8),
 
-                            // Horizontal scroll of Wallet Cards
+                            // ══════════════════════════════════════════════
+                            // 2. REKAP KAS PER AKUN / DOMPET (COMPACT PILLS)
+                            // ══════════════════════════════════════════════
                             SizedBox(
-                              height: 86,
+                              height: 34,
                               child: ListView(
                                 scrollDirection: Axis.horizontal,
                                 children: [
-                                  // Kartu 'Semua Akun'
-                                  _buildWalletCard(
+                                  // Pill 'Semua Akun'
+                                  _buildWalletPill(
                                     name: 'Semua Akun',
                                     endingBalance: endingBalance,
-                                    periodIncome: periodIncome,
-                                    periodExpense: periodExpense,
-                                    icon: Icons.all_inclusive_rounded,
-                                    color: AppColors.primaryDark,
+                                    icon: Icons.account_balance_wallet_rounded,
                                     isSelected: _selectedWallet == null,
                                     onTap: () =>
                                         setState(() => _selectedWallet = null),
                                   ),
-                                  const SizedBox(width: 8),
-                                  // Kartu tiap wallet
+                                  const SizedBox(width: 6),
+                                  // Pill tiap dompet
                                   ...walletSummaries.map((w) => Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 8),
-                                        child: _buildWalletCard(
+                                        padding: const EdgeInsets.only(right: 6),
+                                        child: _buildWalletPill(
                                           name: w.name,
                                           endingBalance: w.endingBalance,
-                                          periodIncome: w.periodIncome,
-                                          periodExpense: w.periodExpense,
                                           icon: w.icon,
-                                          color: w.color,
                                           isSelected: _selectedWallet
                                                   ?.toLowerCase() ==
                                               w.name.toLowerCase(),
@@ -672,50 +586,133 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                               ),
                             ),
 
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 8),
 
                             // ══════════════════════════════════════════════
-                            // 3. TAB SELECTOR
+                            // 3. COMPACT TAB SELECTOR (UANG MASUK & KELUAR)
                             // ══════════════════════════════════════════════
-                            SegmentedButton<_CashTab>(
-                              showSelectedIcon: false,
-                              segments: [
-                                ButtonSegment(
-                                  value: _CashTab.income,
-                                  label: Text(
-                                    'Uang Masuk ($incomeCount)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: _tab == _CashTab.income
-                                          ? Colors.white
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                                ButtonSegment(
-                                  value: _CashTab.expense,
-                                  label: Text(
-                                    'Uang Keluar ($expenseCount)',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: _tab == _CashTab.expense
-                                          ? Colors.white
-                                          : null,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              selected: {_tab},
-                              style: SegmentedButton.styleFrom(
-                                backgroundColor: Colors.grey.shade100,
-                                selectedBackgroundColor: _tab == _CashTab.income
-                                    ? AppColors.income
-                                    : AppColors.expense,
+                            Container(
+                              height: 34,
+                              padding: const EdgeInsets.all(2.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              onSelectionChanged: (selection) =>
-                                  setState(() => _tab = selection.first),
+                              child: Row(
+                                children: [
+                                  // Tab Uang Masuk
+                                  Expanded(
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(6),
+                                      onTap: () => setState(
+                                          () => _tab = _CashTab.income),
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 150),
+                                        decoration: BoxDecoration(
+                                          color: _tab == _CashTab.income
+                                              ? AppColors.income
+                                              : Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          boxShadow: _tab == _CashTab.income
+                                              ? [
+                                                  BoxShadow(
+                                                    color: AppColors.income
+                                                        .withValues(alpha: 0.3),
+                                                    blurRadius: 3,
+                                                    offset: const Offset(0, 1),
+                                                  )
+                                                ]
+                                              : null,
+                                        ),
+                                        child: Center(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.south_west_rounded,
+                                                size: 13,
+                                                color: _tab == _CashTab.income
+                                                    ? Colors.white
+                                                    : Colors.grey[600],
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Uang Masuk ($incomeCount)',
+                                                style: TextStyle(
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: _tab == _CashTab.income
+                                                      ? Colors.white
+                                                      : Colors.grey[700],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  // Tab Uang Keluar
+                                  Expanded(
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(6),
+                                      onTap: () => setState(
+                                          () => _tab = _CashTab.expense),
+                                      child: AnimatedContainer(
+                                        duration:
+                                            const Duration(milliseconds: 150),
+                                        decoration: BoxDecoration(
+                                          color: _tab == _CashTab.expense
+                                              ? AppColors.expense
+                                              : Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          boxShadow: _tab == _CashTab.expense
+                                              ? [
+                                                  BoxShadow(
+                                                    color: AppColors.expense
+                                                        .withValues(alpha: 0.3),
+                                                    blurRadius: 3,
+                                                    offset: const Offset(0, 1),
+                                                  )
+                                                ]
+                                              : null,
+                                        ),
+                                        child: Center(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.north_east_rounded,
+                                                size: 13,
+                                                color: _tab == _CashTab.expense
+                                                    ? Colors.white
+                                                    : Colors.grey[600],
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Uang Keluar ($expenseCount)',
+                                                style: TextStyle(
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: _tab == _CashTab.expense
+                                                      ? Colors.white
+                                                      : Colors.grey[700],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -727,18 +724,18 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                       SliverToBoxAdapter(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
+                              horizontal: 14, vertical: 5),
                           color: AppColors.primary.withValues(alpha: 0.08),
                           child: Row(
                             children: [
                               const Icon(Icons.filter_alt_rounded,
-                                  size: 14, color: AppColors.primary),
-                              const SizedBox(width: 6),
+                                  size: 13, color: AppColors.primary),
+                              const SizedBox(width: 5),
                               Expanded(
                                 child: Text(
-                                  'Menampilkan mutasi akun: $_selectedWallet',
+                                  'Filter Akun: $_selectedWallet',
                                   style: const TextStyle(
-                                    fontSize: 11.5,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.primary,
                                   ),
@@ -748,7 +745,7 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                                 onTap: () =>
                                     setState(() => _selectedWallet = null),
                                 child: const Icon(Icons.cancel_rounded,
-                                    size: 16, color: AppColors.primary),
+                                    size: 15, color: AppColors.primary),
                               ),
                             ],
                           ),
@@ -785,7 +782,7 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                       )
                     else
                       SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                        padding: const EdgeInsets.fromLTRB(14, 6, 14, 100),
                         sliver: SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
@@ -793,7 +790,7 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
                               final isVoided = txn.sourceSaleId.isNotEmpty &&
                                   refundedSaleIds.contains(txn.sourceSaleId);
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.only(bottom: 6),
                                 child: _CashTile(
                                   txnModel: txn,
                                   canManage: canManage,
@@ -832,86 +829,56 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
     );
   }
 
-  Widget _buildWalletCard({
+  Widget _buildWalletPill({
     required String name,
     required int endingBalance,
-    required int periodIncome,
-    required int periodExpense,
     required IconData icon,
-    required Color color,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 146,
-        padding: const EdgeInsets.all(10),
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? color.withValues(alpha: 0.08)
+              ? AppColors.primary
               : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.8 : 1,
+            color: isSelected
+                ? AppColors.primary
+                : const Color(0xFFCBD5E1),
+            width: isSelected ? 1.4 : 1,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor: color.withValues(alpha: 0.15),
-                  child: Icon(icon, size: 13, color: color),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                      color: isSelected ? color : const Color(0xFF1E293B),
-                    ),
-                  ),
-                ),
-              ],
+            Icon(
+              icon,
+              size: 13,
+              color: isSelected ? Colors.white : AppColors.primary,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  money(endingBalance),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: endingBalance >= 0
-                        ? const Color(0xFF0F172A)
-                        : AppColors.expense,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  '+${compactMoney(periodIncome)} / -${compactMoney(periodExpense)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
+            const SizedBox(width: 5),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? Colors.white : const Color(0xFF334155),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              money(endingBalance),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: isSelected ? Colors.white : AppColors.primaryDark,
+              ),
             ),
           ],
         ),
@@ -942,7 +909,7 @@ class _CashTile extends ConsumerWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         side: BorderSide(
           color: isRefundedOrVoided
               ? Colors.grey.shade300
@@ -953,14 +920,14 @@ class _CashTile extends ConsumerWidget {
       ),
       child: ListTile(
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         onTap: () {
           if (isSaleLinked) {
             context.push('/sales/${txnModel.sourceSaleId}');
           }
         },
         leading: CircleAvatar(
-          radius: 20,
+          radius: 18,
           backgroundColor: isRefundedOrVoided
               ? Colors.grey.shade200
               : (isIncome
@@ -975,7 +942,7 @@ class _CashTile extends ConsumerWidget {
             color: isRefundedOrVoided
                 ? Colors.grey.shade600
                 : (isIncome ? AppColors.income : AppColors.expense),
-            size: 20,
+            size: 18,
           ),
         ),
         title: Row(
@@ -989,7 +956,7 @@ class _CashTile extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: isRefundedOrVoided
                             ? Colors.grey[600]
@@ -1001,28 +968,28 @@ class _CashTile extends ConsumerWidget {
                     ),
                   ),
                   if (isRefundedOrVoided) ...[
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 1.5),
+                          horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        isRefundEntry ? 'REFUND' : 'BATAL/REFUND',
+                        isRefundEntry ? 'REFUND' : 'BATAL',
                         style: TextStyle(
-                          fontSize: 9.5,
+                          fontSize: 9,
                           fontWeight: FontWeight.w800,
                           color: Colors.grey[700],
                         ),
                       ),
                     ),
                   ] else if (isSaleLinked) ...[
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 5),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 1.5),
+                          horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -1030,7 +997,7 @@ class _CashTile extends ConsumerWidget {
                       child: const Text(
                         'PENJUALAN',
                         style: TextStyle(
-                          fontSize: 9.5,
+                          fontSize: 9,
                           fontWeight: FontWeight.w800,
                           color: AppColors.primary,
                         ),
@@ -1040,11 +1007,11 @@ class _CashTile extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Text(
               '${isIncome ? '+' : '-'}${money(txnModel.amount)}',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w800,
                 color: isRefundedOrVoided
                     ? Colors.grey[500]
@@ -1057,17 +1024,17 @@ class _CashTile extends ConsumerWidget {
           ],
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.only(top: 2),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (isRefundedOrVoided)
                 Text(
                   isRefundEntry
-                      ? 'Dana kas telah dikembalikan ke pelanggan (tidak dihitung di kas)'
-                      : 'Transaksi dibatalkan / refund (tidak dihitung di Uang Masuk)',
+                      ? 'Dana kas telah dikembalikan ke pelanggan'
+                      : 'Transaksi dibatalkan / refund',
                   style: TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 11,
                     fontStyle: FontStyle.italic,
                     color: Colors.orange[800],
                   ),
@@ -1077,30 +1044,30 @@ class _CashTile extends ConsumerWidget {
                   txnModel.description,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                  style: TextStyle(fontSize: 11.5, color: Colors.grey[700]),
                 ),
               const SizedBox(height: 2),
               Row(
                 children: [
                   if (txnModel.paymentMethodName.isNotEmpty) ...[
                     Icon(Icons.credit_card_rounded,
-                        size: 12, color: Colors.grey[500]),
+                        size: 11, color: Colors.grey[500]),
                     const SizedBox(width: 3),
                     Text(
                       '${txnModel.paymentMethodName} \u2022 ',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 10.5, color: Colors.grey[500]),
                     ),
                   ],
                   Text(
                     dateTimeShort(txnModel.occurredAt),
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 10.5, color: Colors.grey[500]),
                   ),
                   if (isSaleLinked) ...[
                     const Spacer(),
                     const Text(
                       'Lihat Struk \u203A',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,
                       ),
@@ -1114,7 +1081,7 @@ class _CashTile extends ConsumerWidget {
         trailing: canManage && !isSaleLinked
             ? PopupMenuButton<String>(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.more_vert_rounded, size: 18),
+                icon: const Icon(Icons.more_vert_rounded, size: 17),
                 onSelected: (value) async {
                   if (value == 'edit') {
                     await CashFormSheet.show(context,
