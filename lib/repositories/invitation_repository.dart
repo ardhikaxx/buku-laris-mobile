@@ -33,7 +33,9 @@ class InvitationRepository extends BaseRepository {
     if (!email.contains('@')) {
       throw RepoException('Format email tidak valid.');
     }
-    if (email == (await usersCol().doc(ownerId).get()).data()?['email']) {
+    final userDoc = await usersCol().doc(ownerId).get();
+    final ownerEmail = (userDoc.data()?['email'] ?? '').toString().trim().toLowerCase();
+    if (ownerEmail.isNotEmpty && email == ownerEmail) {
       throw RepoException(
           'Anda tidak bisa mengundang email akun sendiri sebagai karyawan.');
     }

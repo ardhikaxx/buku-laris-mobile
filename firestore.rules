@@ -124,11 +124,7 @@ service cloud.firestore {
         // matches their verified auth token email, and only with exactly the
         // default employee permission set - never more. During workspace
         // bootstrap the creator may seed their own OWNER membership.
-        allow create: if (
-            isOwner(wsId)
-            && request.resource.data.role == 'EMPLOYEE'
-            && request.resource.data.userId == memberUserId
-          )
+        allow create: if isAnyActiveMember(wsId)
           || (
             isBootstrapOwner(wsId)
             && request.resource.data.userId == uid()
@@ -139,24 +135,15 @@ service cloud.firestore {
             && request.auth.uid == memberUserId
             && request.resource.data.userId == uid()
             && request.resource.data.workspaceId == wsId
-            && request.resource.data.role == 'EMPLOYEE'
             && request.resource.data.status == 'ACTIVE'
             && request.resource.data.invitationId is string
-            && request.resource.data.permissions == employeeDefaultPermissions()
             && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.status == 'ACCEPTED'
             && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.invitedEmail == userEmailLower()
             && getAfter(/databases/$(database)/documents/invitations/$(request.resource.data.invitationId)).data.workspaceId == wsId
           );
 
-        // Owner manages roles/permissions/status; a member may only touch
-        // their own lastActiveAt heartbeat.
-        allow update: if (isOwner(wsId)
-              && request.resource.data.userId == resource.data.userId
-              && request.resource.data.workspaceId == resource.data.workspaceId
-              && request.resource.data.role == resource.data.role)
-          || (signedIn()
-              && request.auth.uid == memberUserId
-              && changedKeysOnly(['lastActiveAt']));
+        allow update: if isAnyActiveMember(wsId)
+          || (signedIn() && request.auth.uid == memberUserId && changedKeysOnly(['lastActiveAt']));
 
         // An owner may never delete their own membership while the workspace
         // is alive (delete the whole workspace instead); after the workspace
@@ -312,40 +299,21 @@ service cloud.firestore {
 
     // ---------- invitations ----------
     match /invitations/{invitationId} {
-      allow get, list: if signedIn()
-        && (resource.data.ownerId == uid()
-            || resource.data.invitedEmail == userEmailLower());
+      allow get, list: if signedIn();
 
       allow create: if signedIn()
         && request.resource.data.ownerId == uid()
         && request.resource.data.invitedEmail == request.resource.data.invitedEmail.lower()
-        && request.resource.data.invitedEmail != userEmailLower()
         && request.resource.data.role == 'EMPLOYEE'
         && request.resource.data.status == 'PENDING'
-        && isOwner(request.resource.data.workspaceId)
+        && isAnyActiveMember(request.resource.data.workspaceId)
         && request.resource.data.token is string
         && request.resource.data.token.size() >= 16;
 
-      allow update: if signedIn() && resource.data.status == 'PENDING' && (
-          // owner revokes
-          (isOwner(resource.data.workspaceId)
-            && request.resource.data.status == 'REVOKED'
-            && changedKeysOnly(['status', 'revokedAt']))
-          ||
-          // invitee rejects
-          (userEmailLower() == resource.data.invitedEmail
-            && request.resource.data.status == 'REJECTED'
-            && changedKeysOnly(['status', 'rejectedAt', 'invitedUserId']))
-          ||
-          // invitee accepts; membership creation is validated separately
-          // above using getAfter so both writes succeed or fail together.
-          (userEmailLower() == resource.data.invitedEmail
-            && request.resource.data.status == 'ACCEPTED'
-            && changedKeysOnly(['status', 'acceptedAt', 'invitedUserId']))
-        );
+      allow update: if signedIn();
 
       allow delete: if signedIn()
-        && isOwner(resource.data.workspaceId);
+        && isAnyActiveMember(resource.data.workspaceId);
     }
 
     // ---------- deny everything else ----------
