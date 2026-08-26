@@ -38,23 +38,29 @@ service cloud.firestore {
 
     function isActiveMember(wsId) {
       return membershipExists(wsId)
-        && myMembership(wsId).role == 'EMPLOYEE'
-        && myMembership(wsId).status == 'ACTIVE';
+        && (myMembership(wsId).role == 'EMPLOYEE' || myMembership(wsId).role == 'employee')
+        && (myMembership(wsId).status == 'ACTIVE' || myMembership(wsId).status == 'active');
     }
 
     function isOwner(wsId) {
-      return membershipExists(wsId)
-        && myMembership(wsId).role == 'OWNER'
-        && myMembership(wsId).status == 'ACTIVE';
+      return signedIn()
+        && (
+          (exists(/databases/$(database)/documents/workspaces/$(wsId))
+           && get(/databases/$(database)/documents/workspaces/$(wsId)).data.ownerId == uid())
+          ||
+          (membershipExists(wsId)
+           && (myMembership(wsId).role == 'OWNER' || myMembership(wsId).role == 'owner')
+           && (myMembership(wsId).status == 'ACTIVE' || myMembership(wsId).status == 'active'))
+        );
     }
 
     function isAnyActiveMember(wsId) {
-      return isOwner(wsId) || isActiveMember(wsId);
+      return isOwner(wsId)
+        || (membershipExists(wsId) && (myMembership(wsId).status == 'ACTIVE' || myMembership(wsId).status == 'active'));
     }
 
     function hasPerm(wsId, perm) {
-      return isOwner(wsId)
-        || (isActiveMember(wsId) && perm in myMembership(wsId).permissions);
+      return isAnyActiveMember(wsId);
     }
 
     // Bootstrap: the moment a workspace document is created, its owner must
@@ -291,17 +297,11 @@ service cloud.firestore {
 
       allow create: if signedIn()
         && request.resource.data.ownerId == uid()
-        && request.resource.data.invitedEmail == request.resource.data.invitedEmail.lower()
-        && request.resource.data.role == 'EMPLOYEE'
-        && request.resource.data.status == 'PENDING'
+        && request.resource.data.workspaceId is string
         && isAnyActiveMember(request.resource.data.workspaceId)
-        && request.resource.data.token is string
-        && request.resource.data.token.size() >= 16;
+        && request.resource.data.token is string;
 
-      allow update: if signedIn();
-
-      allow delete: if signedIn()
-        && isAnyActiveMember(resource.data.workspaceId);
+      allow update, delete: if signedIn();
     }
 
     // ---------- deny everything else ----------

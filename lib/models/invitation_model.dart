@@ -49,8 +49,10 @@ class Invitation {
       invitedEmail: str(d['invitedEmail']).toLowerCase(),
       invitedUserId: strOrNull(d['invitedUserId']),
       role: str(d['role'], 'EMPLOYEE'),
-      status:
-          enumFromName(InvitationStatus.values, d['status'], InvitationStatus.pending),
+      status: enumFromName(
+          InvitationStatus.values,
+          d['status']?.toString().toLowerCase(),
+          InvitationStatus.pending),
       token: str(d['token']),
       createdAt: dtFromTs(d['createdAt']),
       expiresAt: dtFromTs(d['expiresAt']),
@@ -73,8 +75,8 @@ class Invitation {
         'ownerName': ownerName,
         'invitedEmail': invitedEmail.toLowerCase(),
         'invitedUserId': invitedUserId,
-        'role': role,
-        'status': status.name,
+        'role': 'EMPLOYEE',
+        'status': 'PENDING',
         'token': token,
         'createdAt': FieldValue.serverTimestamp(),
         'expiresAt': expiresAt == null
