@@ -986,8 +986,8 @@ class _MainNotchStatsCard extends StatelessWidget {
     required this.workspaceName,
   });
 
-  static const double _notchWidth = 146.0;
-  static const double _notchHeight = 52.0;
+  static const double _notchWidth = 152.0;
+  static const double _notchHeight = 56.0;
 
   @override
   Widget build(BuildContext context) {
@@ -995,7 +995,7 @@ class _MainNotchStatsCard extends StatelessWidget {
       notchWidth: _notchWidth,
       notchHeight: _notchHeight,
       cornerRadius: 24,
-      filletRadius: 16,
+      filletRadius: 20,
     );
 
     return SizedBox(
@@ -1210,15 +1210,16 @@ class _MainNotchStatsCard extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => context.go('/sales'),
-                  borderRadius: BorderRadius.circular(26),
+                  borderRadius: BorderRadius.circular(28),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A),
-                      borderRadius: BorderRadius.circular(26),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.28),
+                          color: Colors.black.withValues(alpha: 0.35),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1226,10 +1227,11 @@ class _MainNotchStatsCard extends StatelessWidget {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          width: 26,
-                          height: 26,
+                          width: 28,
+                          height: 28,
                           decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
@@ -1237,14 +1239,14 @@ class _MainNotchStatsCard extends StatelessWidget {
                           child: const Icon(
                             Icons.add_rounded,
                             color: Color(0xFF0F172A),
-                            size: 17,
+                            size: 18,
                           ),
                         ),
                         const SizedBox(width: 8),
                         const Text(
                           'Penjualan',
                           style: TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
                             letterSpacing: 0.2,
@@ -1287,43 +1289,41 @@ class _CardNotchClipper extends CustomClipper<Path> {
 
     final path = Path();
 
-    // 1. Start on left edge at (0, cr)
+    // 1. Start top-left
     path.moveTo(0, cr);
-
-    // 2. Top-left corner
     path.quadraticBezierTo(0, 0, cr, 0);
 
-    // 3. Top horizontal edge
+    // 2. Top horizontal edge
     path.lineTo(w - cr, 0);
-
-    // 4. Top-right corner
     path.quadraticBezierTo(w, 0, w, cr);
 
-    // 5. Right vertical edge down to notch fillet
-    path.lineTo(w, h - nh - fr);
+    // 3. Right vertical edge down to notch roof (stops above notch)
+    path.lineTo(w, h - nh - cr);
 
-    // 6. Notch top-right concave fillet (curving left into notch roof)
-    path.quadraticBezierTo(w, h - nh, w - fr, h - nh);
+    // 4. Notch top-right outer corner (convex curve turning left into notch roof)
+    path.quadraticBezierTo(w, h - nh, w - cr, h - nh);
 
-    // 7. Notch roof horizontal edge leftwards
+    // 5. Notch roof horizontal edge leftwards
     path.lineTo(w - nw + fr, h - nh);
 
-    // 8. Notch corner (curving downwards into notch left wall)
-    path.quadraticBezierTo(w - nw, h - nh, w - nw, h - nh + fr);
+    // 6. Notch inner concave fillet (curves around top-left of the button)
+    path.arcToPoint(
+      Offset(w - nw, h - nh + fr),
+      radius: Radius.circular(fr),
+      clockwise: false,
+    );
 
-    // 9. Notch left wall vertical edge downwards
-    path.lineTo(w - nw, h - fr);
+    // 7. Notch left wall vertical edge downwards
+    path.lineTo(w - nw, h - cr);
 
-    // 10. Notch bottom-left concave fillet (curving left into card bottom edge)
-    path.quadraticBezierTo(w - nw, h, w - nw - fr, h);
+    // 8. Notch bottom-left outer corner (convex curve turning into card bottom edge)
+    path.quadraticBezierTo(w - nw, h, w - nw - cr, h);
 
-    // 11. Bottom horizontal edge leftwards
+    // 9. Bottom horizontal edge leftwards
     path.lineTo(cr, h);
-
-    // 12. Bottom-left corner
     path.quadraticBezierTo(0, h, 0, h - cr);
 
-    // 13. Left vertical edge up to close
+    // 10. Left vertical edge up to close
     path.lineTo(0, cr);
     path.close();
 
