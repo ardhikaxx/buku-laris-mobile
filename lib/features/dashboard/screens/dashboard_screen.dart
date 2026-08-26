@@ -305,27 +305,49 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ],
       ),
       padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          Expanded(child: _buildPeriodDropdown()),
-          if (isCustomOrNotDefault) ...[
-            const SizedBox(width: 8),
-            ActionChip(
-              avatar: const Icon(Icons.clear_all_rounded,
-                  size: 15, color: AppColors.expense),
-              label: const Text('Reset',
-                  style: TextStyle(
-                      fontSize: 11.5,
-                      color: AppColors.expense,
-                      fontWeight: FontWeight.w700)),
-              backgroundColor: const Color(0xFFFEF2F2),
-              side: const BorderSide(color: Color(0xFFFECACA)),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-              visualDensity: VisualDensity.compact,
-              onPressed: () => _selectPeriod(DashboardPeriod.month),
-            ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: _buildPeriodDropdown()),
+            if (isCustomOrNotDefault) ...[
+              const SizedBox(width: 8),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _selectPeriod(DashboardPeriod.month),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: const Color(0xFFFECACA), width: 1.2),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.clear_all_rounded,
+                            size: 16, color: AppColors.expense),
+                        SizedBox(width: 5),
+                        Text(
+                          'Reset',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.expense,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
