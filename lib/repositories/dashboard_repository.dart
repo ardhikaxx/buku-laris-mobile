@@ -5,6 +5,7 @@ import '../core/utils/formatters.dart';
 import '../models/daily_summary_model.dart';
 import '../models/enums.dart';
 import '../models/product_model.dart';
+import '../models/sale_model.dart';
 import '../services/logger.dart';
 import 'base_repository.dart';
 import 'cashflow_repository.dart';
@@ -254,25 +255,12 @@ class DashboardRepository extends BaseRepository {
         final key = DailySummary.dayKey(dt);
         if (dailyMap.containsKey(key)) {
           final existing = dailyMap[key]!;
-          final grandTotal = (d['grandTotal'] as num?)?.toInt() ?? 0;
-          final items = d['items'] as List<dynamic>? ?? [];
-          var saleCost = 0;
-          for (final item in items) {
-            if (item is Map<String, dynamic>) {
-              final cost = item['costPrice'] as num?;
-              final qty = (item['quantity'] as num?)?.toInt() ?? 1;
-              if (cost != null && cost > 0) {
-                saleCost += (cost.toInt() * qty);
-              }
-            }
-          }
-          final shipping = (d['shippingCost'] as num?)?.toInt() ?? 0;
-          final profit = grandTotal - shipping - saleCost;
+          final sale = Sale.fromDoc(doc);
           dailyMap[key] = DailyPoint(
             day: existing.day,
-            revenue: existing.revenue + grandTotal,
+            revenue: existing.revenue + sale.grandTotal,
             orders: existing.orders + 1,
-            profit: existing.profit + profit,
+            profit: existing.profit + sale.estimatedProfit,
           );
         }
       }
@@ -289,13 +277,8 @@ class DashboardRepository extends BaseRepository {
       for (final doc in snap.docs) {
         final d = doc.data();
         if (!_isValidSaleForRevenue(d)) continue;
-        final items = d['items'] as List<dynamic>? ?? [];
-        for (final item in items) {
-          if (item is Map<String, dynamic>) {
-            final cost = item['costPrice'] as num?;
-            if (cost == null || cost <= 0) return true;
-          }
-        }
+        final sale = Sale.fromDoc(doc);
+        if (sale.hasUnknownCosts) return true;
       }
       return false;
     } catch (_) {
@@ -319,22 +302,11 @@ class DashboardRepository extends BaseRepository {
           final ms = ts.millisecondsSinceEpoch;
           if (ms < fromMs || ms > toMs) continue;
         }
-        final items = d['items'] as List<dynamic>? ?? [];
-        var saleCost = 0;
-        for (final item in items) {
-          if (item is Map<String, dynamic>) {
-            final cost = item['costPrice'] as num?;
-            final qty = (item['quantity'] as num?)?.toInt() ?? 1;
-            if (cost != null && cost > 0) {
-              saleCost += (cost.toInt() * qty);
-            } else {
-              hasUnknown = true;
-            }
-          }
+        final sale = Sale.fromDoc(doc);
+        profit += sale.estimatedProfit;
+        if (sale.hasUnknownCosts) {
+          hasUnknown = true;
         }
-        final grandTotal = (d['grandTotal'] as num?)?.toInt() ?? 0;
-        final shipping = (d['shippingCost'] as num?)?.toInt() ?? 0;
-        profit += (grandTotal - shipping - saleCost);
       }
       return (profit, hasUnknown);
     } catch (_) {

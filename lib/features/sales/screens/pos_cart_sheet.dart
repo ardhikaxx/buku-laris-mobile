@@ -198,6 +198,9 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
             'Pengaturan workspace mewajibkan data pelanggan pada setiap transaksi.');
       }
 
+      final catList = await ref.read(categoryRepositoryProvider).list(wsId);
+      final catMap = {for (final c in catList) c.id: c.name};
+
       final draft = SaleDraft(
         orderType: pos.orderType,
         items: [
@@ -207,7 +210,7 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
               productName: p.name,
               type: p.type,
               categoryId: p.categoryId,
-              categoryName: '',
+              categoryName: catMap[p.categoryId] ?? '',
               qty: pos.qtyInCart[p.id] ?? 0,
               unit: p.unit,
               unitPrice: p.sellingPrice,
