@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const primary = Color(0xFF0F766E);
-  static const primaryDark = Color(0xFF115E59);
+  // Bank Jago Signature Palette (Warm Vibrant Amber & Gold Ochre)
+  static const primary = Color(0xFFD97706);
+  static const primaryDark = Color(0xFFB45309);
+  static const primaryLight = Color(0xFFF59E0B);
   static const accent = Color(0xFFF59E0B);
 
-  static const income = Color(0xFF059669);
-  static const expense = Color(0xFFDC2626);
-  static const warning = Color(0xFFD97706);
+  // Financial Cashflow & Status Indicators
+  static const income = Color(0xFF10B981);
+  static const expense = Color(0xFFEF4444);
+  static const warning = Color(0xFFF59E0B);
   static const info = Color(0xFF0284C7);
 
   static const surfaceCard = Colors.white;
@@ -21,21 +24,22 @@ class AppTheme {
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
+      primary: AppColors.primary,
       brightness: Brightness.light,
     );
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
     return base.copyWith(
-      scaffoldBackgroundColor: const Color(0xFFF6F7F9),
+      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF111827),
+        foregroundColor: Color(0xFF1E293B),
         elevation: 0,
         scrolledUnderElevation: 0.5,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF111827),
+          color: Color(0xFF1E293B),
         ),
       ),
       cardTheme: CardThemeData(
@@ -44,12 +48,12 @@ class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFF3F4F6),
+        fillColor: const Color(0xFFF8FAFC),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -57,29 +61,29 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFDC2626)),
+          borderSide: const BorderSide(color: Color(0xFFEF4444)),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.4),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
         ),
-        hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFF475569)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           minimumSize: const Size(64, 48),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
         ),
@@ -88,7 +92,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           minimumSize: const Size(64, 48),
-          side: const BorderSide(color: Color(0xFFD1D5DB)),
+          side: const BorderSide(color: Color(0xFFCBD5E1)),
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -101,13 +105,15 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
           minimumSize: const Size(64, 48),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(0xFFCBD2D9),
+        backgroundColor: const Color(0xFFE2E8F0),
         selectedColor: AppColors.primary,
         checkmarkColor: Colors.white,
         labelPadding: const EdgeInsets.symmetric(horizontal: 6),
@@ -117,7 +123,7 @@ class AppTheme {
           return TextStyle(
             fontSize: 13,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? Colors.white : const Color(0xFF374151),
+            color: selected ? Colors.white : const Color(0xFF334155),
           );
         }),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -129,25 +135,25 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      dividerTheme: const DividerThemeData(color: Color(0xFFE5E7EB), thickness: 1, space: 1),
+      dividerTheme: const DividerThemeData(color: Color(0xFFE2E8F0), thickness: 1, space: 1),
       listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 16)),
       navigationBarTheme: NavigationBarThemeData(
         height: 64,
         backgroundColor: Colors.white,
-        indicatorColor: scheme.primaryContainer,
+        indicatorColor: const Color(0xFFFEF3C7),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
             fontSize: 11,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? AppColors.primary : const Color(0xFF6B7280),
+            color: selected ? AppColors.primaryDark : const Color(0xFF64748B),
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: 23,
-            color: selected ? AppColors.primary : const Color(0xFF6B7280),
+            color: selected ? AppColors.primaryDark : const Color(0xFF64748B),
           );
         }),
       ),
@@ -162,14 +168,14 @@ class AppTheme {
         titleTextStyle: const TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF111827),
+          color: Color(0xFF1E293B),
         ),
       ),
       tabBarTheme: const TabBarThemeData(
         labelColor: AppColors.primary,
-        unselectedLabelColor: Color(0xFF6B7280),
+        unselectedLabelColor: Color(0xFF64748B),
         indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: Color(0xFFE5E7EB),
+        dividerColor: Color(0xFFE2E8F0),
       ),
     );
   }

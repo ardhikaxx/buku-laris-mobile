@@ -556,16 +556,16 @@ class _DashboardContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               gradient: const LinearGradient(
                 colors: [
-                  Color(0xFF0F766E),
-                  Color(0xFF0D9488),
-                  Color(0xFF14B8A6),
+                  Color(0xFFB45309),
+                  Color(0xFFD97706),
+                  Color(0xFFF59E0B),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0D9488).withValues(alpha: 0.28),
+                  color: const Color(0xFFD97706).withValues(alpha: 0.32),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -583,7 +583,7 @@ class _DashboardContent extends StatelessWidget {
                       height: 130,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.08),
+                        color: Colors.white.withValues(alpha: 0.12),
                       ),
                     ),
                   ),
@@ -595,7 +595,7 @@ class _DashboardContent extends StatelessWidget {
                       height: 90,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: Colors.white.withValues(alpha: 0.08),
                       ),
                     ),
                   ),
@@ -607,7 +607,7 @@ class _DashboardContent extends StatelessWidget {
                       height: 85,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.04),
+                        color: Colors.white.withValues(alpha: 0.06),
                       ),
                     ),
                   ),
@@ -623,10 +623,10 @@ class _DashboardContent extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.25),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
@@ -651,7 +651,7 @@ class _DashboardContent extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
+                                color: Colors.white.withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(
@@ -679,7 +679,7 @@ class _DashboardContent extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.14),
+                                color: Colors.black.withValues(alpha: 0.18),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
@@ -766,15 +766,15 @@ class _DashboardContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               gradient: const LinearGradient(
                 colors: [
-                  Color(0xFF0F766E),
-                  Color(0xFF0D9488),
+                  Color(0xFFB45309),
+                  Color(0xFFD97706),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF0D9488).withValues(alpha: 0.25),
+                  color: const Color(0xFFD97706).withValues(alpha: 0.28),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -792,7 +792,7 @@ class _DashboardContent extends StatelessWidget {
                       height: 110,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.08),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -808,7 +808,7 @@ class _DashboardContent extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 9, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.16),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: const Text(
@@ -836,7 +836,7 @@ class _DashboardContent extends StatelessWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
+                            color: Colors.white.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Icon(Icons.pending_actions_rounded,
@@ -853,7 +853,7 @@ class _DashboardContent extends StatelessWidget {
         ],
         if (data.periodOrders == 0 && data.productCount == 0) ...[
           Card(
-            color: const Color(0xFFF0FDFA),
+            color: const Color(0xFFFFFBEB),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -861,11 +861,11 @@ class _DashboardContent extends StatelessWidget {
                   const Icon(Icons.rocket_launch_outlined,
                       size: 34, color: AppColors.primary),
                   const SizedBox(height: 8),
-                  Text('Mulai dari sini!',
+                  const Text('Mulai dari sini!',
                       style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
-                          color: Colors.teal[900])),
+                          color: Color(0xFF78350F))),
                   const SizedBox(height: 6),
                   Text(
                     'Usaha Anda baru dibuat sehingga semua angka masih nol. '
