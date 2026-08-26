@@ -165,15 +165,6 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           ),
         ],
       ),
-      floatingActionButton: canManage
-          ? FloatingActionButton(
-              heroTag: 'products-fab',
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              onPressed: () => context.push('/products/new'),
-              child: const Icon(Icons.add),
-            )
-          : null,
       bottomNavigationBar: const AppBottomNav(currentIndex: 2),
     );
   }

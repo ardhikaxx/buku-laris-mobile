@@ -19,6 +19,7 @@ class MoreScreen extends ConsumerWidget {
     final isOwner = gate.myMembership?.isOwner ?? false;
     final canReports = isOwner || state.can(Permission.reportsSalesView);
     final canCustomers = isOwner || state.can(Permission.customersManage);
+    final canCashflow = isOwner || state.can(Permission.cashflowManage);
 
     return Scaffold(
       appBar: FloatingCapsuleAppBar(
@@ -40,6 +41,12 @@ class MoreScreen extends ConsumerWidget {
           Card(
             child: Column(
               children: [
+                if (canCashflow)
+                  _MenuTile(
+                    icon: Icons.account_balance_wallet_outlined,
+                    label: 'Keuangan & Arus Kas',
+                    onTap: () => context.push('/finance'),
+                  ),
                 if (canCustomers)
                   _MenuTile(
                     icon: Icons.people_outline_rounded,
@@ -107,7 +114,7 @@ class MoreScreen extends ConsumerWidget {
           const SizedBox(height: 24),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 4),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 3),
     );
   }
 
