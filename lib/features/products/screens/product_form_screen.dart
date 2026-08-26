@@ -219,17 +219,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            SegmentedButton<ProductType>(
-              selected: {_type},
-              showSelectedIcon: false,
-              style: SegmentedButton.styleFrom(textStyle: const TextStyle(fontSize: 11)),
-              segments: [
-                for (final t in ProductType.values)
-                  ButtonSegment(value: t, label: Text(t.label)),
-              ],
-              onSelectionChanged: (selection) =>
-                  setState(() => _type = selection.first),
-            ),
+            _buildProductTypeSelector(),
             const SizedBox(height: 16),
             TextFormField(
               controller: _nameController,
@@ -452,4 +442,109 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       ),
     );
   }
+
+  Widget _buildProductTypeSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.category_rounded,
+                  size: 16, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                'Tipe Produk / Layanan',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (final t in ProductType.values) ...[
+                Expanded(
+                  child: _buildTypeOption(
+                    type: t,
+                    isSelected: _type == t,
+                    onTap: () => setState(() => _type = t),
+                  ),
+                ),
+                if (t != ProductType.values.last) const SizedBox(width: 8),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypeOption({
+    required ProductType type,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final icon = switch (type) {
+      ProductType.physicalProduct => Icons.inventory_2_rounded,
+      ProductType.digitalProduct => Icons.cloud_download_rounded,
+      ProductType.service => Icons.handyman_rounded,
+      ProductType.otherService => Icons.miscellaneous_services_rounded,
+    };
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.08)
+                : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected ? AppColors.primary : Colors.grey[600],
+              ),
+              const SizedBox(height: 5),
+              Text(
+                type.label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  color:
+                      isSelected ? AppColors.primary : const Color(0xFF334155),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+
