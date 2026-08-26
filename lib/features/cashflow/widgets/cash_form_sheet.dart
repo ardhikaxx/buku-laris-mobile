@@ -11,6 +11,8 @@ import '../../../../core/utils/validators.dart';
 import '../../../../models/cash_transaction_model.dart';
 import '../../../../models/enums.dart';
 
+import '../../../../models/payment_method_model.dart';
+
 class CashFormSheet extends ConsumerStatefulWidget {
   final bool isIncome;
   final CashTransaction? existing;
@@ -41,6 +43,8 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
   late final TextEditingController _noteController;
   late String _category;
   late DateTime _date;
+  List<PaymentMethodModel> _paymentMethods = [];
+  PaymentMethodModel? _selectedMethod;
   bool _saving = false;
   String? _error;
 
@@ -58,6 +62,43 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
     _descController = TextEditingController(text: existing?.description ?? '');
     _noteController = TextEditingController(text: existing?.notes ?? '');
     _date = existing?.occurredAt ?? DateTime.now();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadMethods());
+  }
+
+  Future<void> _loadMethods() async {
+    final wsId = ref.read(gateProvider).activeWorkspaceId;
+    if (wsId == null) return;
+    try {
+      final list = await ref
+          .read(workspaceRepositoryProvider)
+          .listPaymentMethods(wsId, onlyActive: true);
+      final active = list.isEmpty ? DefaultPaymentMethods.defaults() : list;
+      if (mounted) {
+        setState(() {
+          _paymentMethods = active;
+          if (widget.existing != null &&
+              widget.existing!.paymentMethodName.isNotEmpty) {
+            _selectedMethod = active.firstWhere(
+              (m) =>
+                  m.name == widget.existing!.paymentMethodName ||
+                  (m.id.isNotEmpty && m.id == widget.existing!.paymentMethodId),
+              orElse: () => active.first,
+            );
+          } else {
+            _selectedMethod = active.first;
+          }
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        final defs = DefaultPaymentMethods.defaults();
+        setState(() {
+          _paymentMethods = defs;
+          _selectedMethod = defs.first;
+        });
+      }
+    }
   }
 
   @override
@@ -93,8 +134,8 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
             category: _category,
             amount: amount,
             occurredAt: _date,
-            paymentMethodId: widget.existing!.paymentMethodId,
-            paymentMethodName: widget.existing!.paymentMethodName,
+            paymentMethodId: _selectedMethod?.id ?? widget.existing!.paymentMethodId,
+            paymentMethodName: _selectedMethod?.name ?? widget.existing!.paymentMethodName,
             sourceSaleId: widget.existing!.sourceSaleId,
             sourceType: widget.existing!.sourceType,
             description: _descController.text,
@@ -113,6 +154,8 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
             category: _category,
             amount: amount,
             occurredAt: _date,
+            paymentMethodId: _selectedMethod?.id ?? '',
+            paymentMethodName: _selectedMethod?.name ?? 'Tunai',
             description: _descController.text,
             notes: _noteController.text,
             createdBy: user.uid,
@@ -126,7 +169,11 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
               action: widget.isIncome ? 'cash.income_added' : 'cash.expense_added',
               entityType: 'cashTransaction',
               entityId: '',
-              metadata: {'amount': amount, 'category': _category},
+              metadata: {
+                'amount': amount,
+                'category': _category,
+                'paymentMethod': _selectedMethod?.name ?? 'Tunai',
+              },
             );
       }
       if (mounted) Navigator.of(context).pop(true);
@@ -210,6 +257,41 @@ class _CashFormSheetState extends ConsumerState<CashFormSheet> {
                 onChanged: (v) => setState(() => _category = v ?? _category),
               ),
               const SizedBox(height: 12),
+              if (_paymentMethods.isNotEmpty) ...[
+                DropdownButtonFormField<PaymentMethodModel>(
+                  isExpanded: true,
+                  initialValue: _selectedMethod,
+                  decoration: const InputDecoration(
+                    labelText: 'Akun / Dompet Kas',
+                    prefixIcon:
+                        Icon(Icons.account_balance_wallet_rounded, size: 18),
+                  ),
+                  items: _paymentMethods
+                      .map((m) => DropdownMenuItem(
+                            value: m,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  m.type == 'CASH'
+                                      ? Icons.payments_rounded
+                                      : (m.type == 'BANK_TRANSFER'
+                                          ? Icons.account_balance_rounded
+                                          : (m.type == 'QRIS'
+                                              ? Icons.qr_code_2_rounded
+                                              : Icons.phone_android_rounded)),
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(m.name),
+                              ],
+                            ),
+                          ))
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedMethod = v),
+                ),
+                const SizedBox(height: 12),
+              ],
               InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () async {
