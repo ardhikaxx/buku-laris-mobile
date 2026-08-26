@@ -33,12 +33,17 @@ class DefaultPermissions {
   static const Set<Permission> employeeDefault = {
     Permission.dashboardView,
     Permission.productsView,
+    Permission.productsManage,
+    Permission.categoriesManage,
+    Permission.stockAdjust,
+    Permission.preorderManage,
     Permission.salesCreate,
     Permission.salesEditStatus,
     Permission.salesRecordPayment,
     Permission.customersManage,
+    Permission.cashflowManage,
     Permission.reportsSalesView,
-    Permission.preorderManage,
+    Permission.reportsFinanceView,
   };
 }
 

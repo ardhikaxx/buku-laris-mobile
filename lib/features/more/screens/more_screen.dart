@@ -72,18 +72,16 @@ class MoreScreen extends ConsumerWidget {
           Card(
             child: Column(
               children: [
-                if (isOwner)
-                  _MenuTile(
-                    icon: Icons.group_add_outlined,
-                    label: 'Karyawan & Undangan',
-                    onTap: () => context.push('/employees'),
-                  ),
-                if (isOwner)
-                  _MenuTile(
-                    icon: Icons.settings_outlined,
-                    label: 'Pengaturan Usaha',
-                    onTap: () => context.push('/settings'),
-                  ),
+                _MenuTile(
+                  icon: Icons.group_add_outlined,
+                  label: 'Karyawan & Undangan',
+                  onTap: () => context.push('/employees'),
+                ),
+                _MenuTile(
+                  icon: Icons.settings_outlined,
+                  label: 'Pengaturan Usaha',
+                  onTap: () => context.push('/settings'),
+                ),
                 _MenuTile(
                   icon: Icons.sell_rounded,
                   label: 'Kategori Produk',

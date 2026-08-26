@@ -83,7 +83,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (wsId == null) return;
     if (!force && _loadedForWsId == wsId && _future != null && _error == null) return;
     _loadedForWsId = wsId;
-    final includeFinance = state.member?.isOwner ?? false;
+    final includeFinance = state.member?.isActive ?? false;
     setState(() {
       _error = null;
       _future = ref
