@@ -51,12 +51,9 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
     final now = DateTime.now();
     return DateTimeRange(
       start: startOfMonth(now),
-      end: now.add(const Duration(minutes: 1)),
+      end: DateTime(now.year, now.month, now.day, 23, 59, 59),
     );
   }
-
-  static DateTime endOfDay(DateTime dt) =>
-      DateTime(dt.year, dt.month, dt.day, 23, 59, 59);
 
   IconData _resolveWalletIcon(String name) {
     final lower = name.toLowerCase();
@@ -135,18 +132,51 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
               minimumSize: const Size(36, 36),
             ),
             onPressed: () async {
+              final now = DateTime.now();
+              final today = DateTime(now.year, now.month, now.day);
+              final maxDate = DateTime(now.year + 2, 12, 31);
+              final safeStart =
+                  _range.start.isAfter(maxDate) ? today : _range.start;
+              var safeEnd = _range.end.isAfter(maxDate) ? maxDate : _range.end;
+              if (safeEnd.isBefore(safeStart)) {
+                safeEnd = safeStart;
+              }
+              final initialRange = DateTimeRange(
+                start: DateTime(safeStart.year, safeStart.month, safeStart.day),
+                end: DateTime(safeEnd.year, safeEnd.month, safeEnd.day),
+              );
+
               final picked = await showDateRangePicker(
                 context: context,
                 firstDate: DateTime(2020),
-                lastDate: DateTime.now(),
-                initialDateRange: _range,
+                lastDate: maxDate,
+                initialDateRange: initialRange,
                 locale: const Locale('id', 'ID'),
+                helpText: 'PILIH RENTANG TANGGAL',
+                cancelText: 'BATAL',
+                confirmText: 'TERAPKAN',
+                saveText: 'PILIH',
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: Theme.of(context).colorScheme.copyWith(
+                            primary: AppColors.primary,
+                            onPrimary: Colors.white,
+                            surface: Colors.white,
+                            onSurface: const Color(0xFF1E293B),
+                          ),
+                    ),
+                    child: child!,
+                  );
+                },
               );
               if (picked != null) {
                 setState(() {
                   _range = DateTimeRange(
-                    start: picked.start,
-                    end: endOfDay(picked.end),
+                    start: DateTime(picked.start.year, picked.start.month,
+                        picked.start.day, 0, 0, 0),
+                    end: DateTime(picked.end.year, picked.end.month,
+                        picked.end.day, 23, 59, 59),
                   );
                 });
               }

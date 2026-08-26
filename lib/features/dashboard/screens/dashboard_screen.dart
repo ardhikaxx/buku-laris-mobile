@@ -93,11 +93,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _openCustomDatePicker() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final maxDate = DateTime(now.year + 2, 12, 31);
+    final safeStart = _range.start.isAfter(maxDate) ? today : _range.start;
+    var safeEnd = _range.end.isAfter(maxDate) ? maxDate : _range.end;
+    if (safeEnd.isBefore(safeStart)) {
+      safeEnd = safeStart;
+    }
+    final initialRange = DateTimeRange(
+      start: DateTime(safeStart.year, safeStart.month, safeStart.day),
+      end: DateTime(safeEnd.year, safeEnd.month, safeEnd.day),
+    );
+
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      initialDateRange: DateTimeRange(start: _range.start, end: _range.end),
+      lastDate: maxDate,
+      initialDateRange: initialRange,
       locale: const Locale('id', 'ID'),
       helpText: 'PILIH RENTANG TANGGAL',
       cancelText: 'BATAL',
