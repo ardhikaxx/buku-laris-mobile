@@ -8,12 +8,11 @@ import '../models/enums.dart';
 import '../models/invitation_model.dart';
 import '../models/user_profile_model.dart';
 import '../models/workspace_member_model.dart';
-import 'audit_notification_repository.dart';
+import 'audit_repository.dart';
 import 'base_repository.dart';
 
 class InvitationRepository extends BaseRepository {
   final AuditRepository _audit = AuditRepository();
-  final NotificationRepository _notifications = NotificationRepository();
 
   String _generateToken() {
     final random = Random.secure();
@@ -169,21 +168,6 @@ class InvitationRepository extends BaseRepository {
       entityId: invitation.id,
       metadata: {'invitedEmail': invitation.invitedEmail},
     );
-
-    await _notifications.pushToUser(
-      invitation.ownerId,
-      title: 'Undangan diterima',
-      body: '${user.displayName} (${user.email}) telah bergabung ke ${invitation.workspaceName}.',
-      type: NotificationType.system,
-      workspaceId: invitation.workspaceId,
-    );
-    await _notifications.pushToUser(
-      user.uid,
-      title: 'Selamat bergabung!',
-      body: 'Anda kini menjadi karyawan di ${invitation.workspaceName}.',
-      type: NotificationType.system,
-      workspaceId: invitation.workspaceId,
-    );
   }
 
   Future<void> rejectInvitation({
@@ -203,14 +187,6 @@ class InvitationRepository extends BaseRepository {
       entityType: 'invitation',
       entityId: invitation.id,
       metadata: {'invitedEmail': invitation.invitedEmail},
-    );
-    await _notifications.pushToUser(
-      invitation.ownerId,
-      title: 'Undangan ditolak',
-      body:
-          '${user.displayName} (${user.email}) menolak undangan ke ${invitation.workspaceName}.',
-      type: NotificationType.system,
-      workspaceId: invitation.workspaceId,
     );
   }
 

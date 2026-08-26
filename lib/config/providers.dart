@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../repositories/audit_notification_repository.dart';
+import '../repositories/audit_repository.dart';
 import '../repositories/cashflow_repository.dart';
 import '../repositories/customer_repository.dart';
 import '../repositories/dashboard_repository.dart';
@@ -47,9 +47,6 @@ final cashflowRepositoryProvider =
 
 final dashboardRepositoryProvider =
     Provider<DashboardRepository>((ref) => DashboardRepository());
-
-final notificationRepositoryProvider =
-    Provider<NotificationRepository>((ref) => NotificationRepository());
 
 final auditRepositoryProvider =
     Provider<AuditRepository>((ref) => AuditRepository());

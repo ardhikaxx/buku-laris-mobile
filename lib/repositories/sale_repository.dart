@@ -6,7 +6,7 @@ import '../models/daily_summary_model.dart';
 import '../models/enums.dart';
 import '../models/sale_model.dart';
 import '../models/stock_movement_model.dart';
-import 'audit_notification_repository.dart';
+import 'audit_repository.dart';
 import 'base_repository.dart';
 
 class SaleDraft {

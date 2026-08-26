@@ -15,7 +15,6 @@ class Collections {
   static const counters = 'counters';
   static const dailySummaries = 'dailySummaries';
   static const auditLogs = 'auditLogs';
-  static const notifications = 'notifications';
 
   static String workspaceDoc(String wsId) => '$workspaces/$wsId';
 

@@ -98,11 +98,6 @@ class MoreScreen extends ConsumerWidget {
             child: Column(
               children: [
                 _MenuTile(
-                  icon: Icons.notifications_outlined,
-                  label: 'Notifikasi',
-                  onTap: () => context.push('/notifications'),
-                ),
-                _MenuTile(
                   icon: Icons.logout_rounded,
                   label: 'Keluar (Logout)',
                   danger: true,

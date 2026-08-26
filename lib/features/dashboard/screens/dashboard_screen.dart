@@ -13,7 +13,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../repositories/dashboard_repository.dart';
-import '../../../services/connectivity_service.dart';
 import '../../shared/widgets/navigation.dart';
 
 enum DashboardPeriod { today, week, month, custom }
@@ -189,41 +188,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         subtitleText:
             '${member?.role.label ?? ''} \u2022 ${gate.profile?.displayName ?? ''}',
         actions: [
-          IconButton(
-            icon: Stack(
-              children: [
-                const Icon(Icons.notifications_outlined, size: 21),
-                ValueListenableBuilder<bool>(
-                  valueListenable: ConnectivityService.instance.isOnline,
-                  builder: (context, offline, _) => offline
-                      ? Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: AppColors.accent,
-                              shape: BoxShape.circle,
-                              border:
-                                  Border.all(color: Colors.white, width: 1.5),
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.18),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.all(7),
-              minimumSize: const Size(36, 36),
-            ),
-            onPressed: () => context.push('/notifications'),
-          ),
-          if (isOwner) ...[
-            const SizedBox(width: 4),
+          if (isOwner)
             IconButton(
               icon: const Icon(Icons.settings_outlined, size: 20),
               style: IconButton.styleFrom(
@@ -234,7 +199,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
               onPressed: () => context.push('/settings'),
             ),
-          ],
         ],
       ),
       body: RefreshIndicator(

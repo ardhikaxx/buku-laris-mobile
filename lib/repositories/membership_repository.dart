@@ -3,12 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/enums.dart';
 import '../models/workspace_member_model.dart';
-import 'audit_notification_repository.dart';
+import 'audit_repository.dart';
 import 'base_repository.dart';
 
 class MembershipRepository extends BaseRepository {
   final AuditRepository _audit = AuditRepository();
-  final NotificationRepository _notifications = NotificationRepository();
 
   Stream<List<WorkspaceMember>> watchMembers(String wsId) {
     return sub(wsId, Collections.members)
@@ -46,14 +45,6 @@ class MembershipRepository extends BaseRepository {
       entityType: 'member',
       entityId: member.userId,
       metadata: {'permissions': permissions.map((p) => p.name).toList()},
-    );
-    await _notifications.pushToUser(
-      member.userId,
-      title: 'Hak akses diperbarui',
-      body:
-          'Hak akses Anda di $workspaceName telah diperbarui oleh pemilik usaha.',
-      type: NotificationType.system,
-      workspaceId: wsId,
     );
   }
 
@@ -112,14 +103,6 @@ class MembershipRepository extends BaseRepository {
       entityType: 'member',
       entityId: member.userId,
       metadata: {'email': member.email},
-    );
-    await _notifications.pushToUser(
-      member.userId,
-      title: 'Anda dikeluarkan dari workspace',
-      body:
-          'Akun Anda telah dikeluarkan dari $workspaceName oleh pemilik usaha. Akun tetap dapat digunakan dan Anda dapat membuat usaha sendiri.',
-      type: NotificationType.system,
-      workspaceId: wsId,
     );
   }
 

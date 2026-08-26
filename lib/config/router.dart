@@ -13,7 +13,6 @@ import '../features/employees/screens/employees_screen.dart';
 import '../features/inventory/screens/low_stock_screen.dart';
 import '../features/invitations/screens/invitation_screen.dart';
 import '../features/more/screens/more_screen.dart';
-import '../features/notifications/screens/notifications_screen.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
 import '../features/products/screens/categories_screen.dart';
 import '../features/products/screens/product_detail_screen.dart';
@@ -180,10 +179,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: '/notifications',
-        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
   );

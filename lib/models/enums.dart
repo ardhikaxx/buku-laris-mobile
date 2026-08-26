@@ -168,14 +168,3 @@ enum StockReason {
   bool get increasesStock =>
       this == initialStock || this == restock || this == customerReturn;
 }
-
-enum NotificationType {
-  invitation('Undangan'),
-  system('Sistem'),
-  lowStock('Stok Menipis'),
-  preorderDue('Pre-Order Jatuh Tempo'),
-  paymentUnpaid('Pembayaran Belum Lunas');
-
-  final String label;
-  const NotificationType(this.label);
-}
