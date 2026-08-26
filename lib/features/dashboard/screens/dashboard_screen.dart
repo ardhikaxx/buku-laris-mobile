@@ -304,100 +304,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      padding: const EdgeInsets.all(10),
+      child: Row(
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                _buildPeriodDropdown(),
-                const SizedBox(width: 8),
-                for (final p in DashboardPeriod.values)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: _buildPeriodChip(p),
-                  ),
-                if (isCustomOrNotDefault) ...[
-                  const SizedBox(width: 4),
-                  ActionChip(
-                    avatar: const Icon(Icons.clear_all_rounded,
-                        size: 14, color: AppColors.expense),
-                    label: const Text('Reset',
-                        style: TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.expense,
-                            fontWeight: FontWeight.w700)),
-                    backgroundColor: const Color(0xFFFEF2F2),
-                    side: const BorderSide(color: Color(0xFFFECACA)),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () => _selectPeriod(DashboardPeriod.month),
-                  ),
-                ],
-              ],
+          Expanded(child: _buildPeriodDropdown()),
+          if (isCustomOrNotDefault) ...[
+            const SizedBox(width: 8),
+            ActionChip(
+              avatar: const Icon(Icons.clear_all_rounded,
+                  size: 15, color: AppColors.expense),
+              label: const Text('Reset',
+                  style: TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.expense,
+                      fontWeight: FontWeight.w700)),
+              backgroundColor: const Color(0xFFFEF2F2),
+              side: const BorderSide(color: Color(0xFFFECACA)),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => _selectPeriod(DashboardPeriod.month),
             ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.calendar_today_rounded,
-                  size: 15,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _getRangeLabel(),
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF334155),
-                    ),
-                  ),
-                ),
-                if (_period == DashboardPeriod.custom)
-                  InkWell(
-                    onTap: _openCustomDatePicker,
-                    borderRadius: BorderRadius.circular(6),
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.edit_calendar_rounded,
-                            size: 14,
-                            color: AppColors.primary,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Ubah Tanggal',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -408,7 +335,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return PopupMenuButton<DashboardPeriod>(
       tooltip: 'Pilih Periode Dashboard',
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      offset: const Offset(0, 42),
+      offset: const Offset(0, 48),
       onSelected: (period) => _selectPeriod(period),
       itemBuilder: (context) => [
         const PopupMenuItem<DashboardPeriod>(
@@ -531,12 +458,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ],
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isCustomOrNotDefault
-              ? AppColors.primary.withValues(alpha: 0.12)
+              ? AppColors.primary.withValues(alpha: 0.1)
               : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isCustomOrNotDefault
                 ? AppColors.primary
@@ -545,35 +472,62 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.filter_alt_rounded,
-              size: 15,
-              color: isCustomOrNotDefault
-                  ? AppColors.primary
-                  : const Color(0xFF64748B),
-            ),
-            const SizedBox(width: 5),
-            Text(
-              'Periode: ${_period.label}',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isCustomOrNotDefault
-                    ? FontWeight.w700
-                    : FontWeight.w600,
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
                 color: isCustomOrNotDefault
-                    ? AppColors.primaryDark
-                    : const Color(0xFF334155),
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _period.icon,
+                size: 16,
+                color: isCustomOrNotDefault
+                    ? AppColors.primary
+                    : const Color(0xFF64748B),
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Periode: ${_period.label}',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: isCustomOrNotDefault
+                          ? FontWeight.w800
+                          : FontWeight.w700,
+                      color: isCustomOrNotDefault
+                          ? AppColors.primaryDark
+                          : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    _getRangeLabel(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isCustomOrNotDefault
+                          ? AppColors.primary
+                          : const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             if (isCustomOrNotDefault)
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _selectPeriod(DashboardPeriod.month),
                 child: Container(
-                  padding: const EdgeInsets.all(2),
+                  padding: const EdgeInsets.all(4),
+                  margin: const EdgeInsets.only(left: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.22),
                     shape: BoxShape.circle,
@@ -588,75 +542,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             else
               const Icon(
                 Icons.arrow_drop_down_rounded,
-                size: 18,
+                size: 22,
                 color: Color(0xFF94A3B8),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPeriodChip(DashboardPeriod p) {
-    final isSelected = _period == p;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _selectPeriod(p),
-        borderRadius: BorderRadius.circular(10),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.12)
-                : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
-              width: isSelected ? 1.5 : 1.0,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                p.icon,
-                size: 14,
-                color: isSelected ? AppColors.primary : const Color(0xFF64748B),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                p.label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  color: isSelected
-                      ? AppColors.primaryDark
-                      : const Color(0xFF475569),
-                ),
-              ),
-              if (isSelected && p != DashboardPeriod.month) ...[
-                const SizedBox(width: 4),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _selectPeriod(DashboardPeriod.month),
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.22),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.close_rounded,
-                      size: 12,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
         ),
       ),
     );
