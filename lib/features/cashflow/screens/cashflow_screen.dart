@@ -47,9 +47,9 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
       appBar: FloatingCapsuleAppBar(
         leading: CircleAvatar(
           radius: 19,
-          backgroundColor: AppColors.income.withValues(alpha: 0.12),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
           child: const Icon(Icons.account_balance_wallet_rounded,
-              color: AppColors.income, size: 20),
+              color: Colors.white, size: 20),
         ),
         titleText: 'Keuangan & Arus Kas',
         subtitleText: 'Rekap mutasi kas masuk & keluar',
@@ -58,7 +58,8 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
             tooltip: 'Filter Tanggal',
             icon: const Icon(Icons.date_range_rounded, size: 19),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFFF8FAFC),
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.all(7),
               minimumSize: const Size(36, 36),
             ),

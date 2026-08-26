@@ -181,9 +181,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       appBar: FloatingCapsuleAppBar(
         leading: CircleAvatar(
           radius: 19,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
           child: const Icon(Icons.storefront_rounded,
-              color: AppColors.primary, size: 20),
+              color: Colors.white, size: 20),
         ),
         titleText: workspace?.name ?? 'Buku Laris',
         subtitleText:
@@ -203,7 +203,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: AppColors.expense,
+                              color: AppColors.accent,
                               shape: BoxShape.circle,
                               border:
                                   Border.all(color: Colors.white, width: 1.5),
@@ -215,7 +215,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ],
             ),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFFF8FAFC),
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.all(7),
               minimumSize: const Size(36, 36),
             ),
@@ -226,7 +227,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             IconButton(
               icon: const Icon(Icons.settings_outlined, size: 20),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFF8FAFC),
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.all(7),
                 minimumSize: const Size(36, 36),
               ),

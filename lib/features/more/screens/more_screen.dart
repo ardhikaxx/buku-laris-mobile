@@ -25,9 +25,9 @@ class MoreScreen extends ConsumerWidget {
       appBar: FloatingCapsuleAppBar(
         leading: CircleAvatar(
           radius: 19,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
           child: const Icon(Icons.widgets_rounded,
-              color: AppColors.primary, size: 20),
+              color: Colors.white, size: 20),
         ),
         titleText: state.workspace?.name ?? 'Buku Laris',
         subtitleText: 'Menu operasional & pengaturan',

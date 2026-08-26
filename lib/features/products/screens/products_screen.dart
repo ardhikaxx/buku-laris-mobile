@@ -32,9 +32,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       appBar: FloatingCapsuleAppBar(
         leading: CircleAvatar(
           radius: 19,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
           child: const Icon(Icons.inventory_2_rounded,
-              color: AppColors.primary, size: 20),
+              color: Colors.white, size: 20),
         ),
         titleText: 'Katalog Produk',
         subtitleText: 'Kelola stok, harga modal & jual',
@@ -43,7 +43,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             IconButton(
               icon: const Icon(Icons.add, size: 20),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFF8FAFC),
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.all(7),
                 minimumSize: const Size(36, 36),
               ),

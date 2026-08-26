@@ -37,7 +37,8 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
             IconButton(
               icon: const Icon(Icons.person_add_alt_rounded, size: 20),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFF8FAFC),
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.all(7),
                 minimumSize: const Size(36, 36),
               ),

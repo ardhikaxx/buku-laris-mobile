@@ -32,7 +32,11 @@ class NotificationsScreen extends ConsumerWidget {
               if (unread == 0) return const SizedBox.shrink();
               return TextButton(
                 onPressed: () => repo.markAllRead(uid),
-                child: const Text('Baca Semua', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                child: const Text('Baca Semua',
+                    style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
               );
             },
           ),

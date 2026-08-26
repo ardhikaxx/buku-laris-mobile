@@ -32,15 +32,17 @@ class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: const Color(0xFFF8FAFC),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF1E293B),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         centerTitle: false,
+        iconTheme: IconThemeData(color: Colors.white),
+        actionsIconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF1E293B),
+          color: Colors.white,
         ),
       ),
       cardTheme: CardThemeData(

@@ -33,9 +33,9 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
       appBar: FloatingCapsuleAppBar(
         leading: CircleAvatar(
           radius: 19,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
           child: const Icon(Icons.people_alt_rounded,
-              color: AppColors.primary, size: 20),
+              color: Colors.white, size: 20),
         ),
         titleText: 'Data Pelanggan',
         subtitleText: 'Daftar kontak & riwayat belanja',
@@ -44,7 +44,8 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
             IconButton(
               icon: const Icon(Icons.person_add_alt_1_rounded, size: 20),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFF8FAFC),
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.all(7),
                 minimumSize: const Size(36, 36),
               ),

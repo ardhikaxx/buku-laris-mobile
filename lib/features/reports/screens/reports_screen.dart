@@ -96,7 +96,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             tooltip: 'Pilih Periode',
             icon: const Icon(Icons.date_range_rounded, size: 19),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFFF8FAFC),
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.all(7),
               minimumSize: const Size(36, 36),
             ),
