@@ -43,15 +43,38 @@ class PaymentMethodModel {
         if (isCreate) 'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! PaymentMethodModel) return false;
+    if (id.isNotEmpty && other.id.isNotEmpty) {
+      return id == other.id;
+    }
+    return name.toLowerCase().trim() == other.name.toLowerCase().trim() &&
+        type.toUpperCase() == other.type.toUpperCase();
+  }
+
+  @override
+  int get hashCode => id.isNotEmpty
+      ? id.hashCode
+      : Object.hash(name.toLowerCase().trim(), type.toUpperCase());
 }
 
 class DefaultPaymentMethods {
   DefaultPaymentMethods._();
 
   static List<PaymentMethodModel> defaults() => [
-        const PaymentMethodModel(id: '', name: 'Tunai', type: 'CASH', sortOrder: 0),
-        const PaymentMethodModel(id: '', name: 'Transfer Bank', type: 'BANK_TRANSFER', sortOrder: 1),
-        const PaymentMethodModel(id: '', name: 'QRIS', type: 'QRIS', sortOrder: 2),
-        const PaymentMethodModel(id: '', name: 'E-Wallet', type: 'EWALLET', sortOrder: 3),
+        const PaymentMethodModel(
+            id: 'pm_cash', name: 'Tunai', type: 'CASH', sortOrder: 0),
+        const PaymentMethodModel(
+            id: 'pm_transfer',
+            name: 'Transfer Bank',
+            type: 'BANK_TRANSFER',
+            sortOrder: 1),
+        const PaymentMethodModel(
+            id: 'pm_qris', name: 'QRIS', type: 'QRIS', sortOrder: 2),
+        const PaymentMethodModel(
+            id: 'pm_ewallet', name: 'E-Wallet', type: 'EWALLET', sortOrder: 3),
       ];
 }

@@ -86,7 +86,15 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
           _methods = methods;
         }
         _selectedMethod = _methods.firstWhere(
-          (m) => m.type == 'CASH' || m.name.toLowerCase().contains('tunai'),
+          (m) =>
+              (_selectedMethod != null &&
+                  ((_selectedMethod!.id.isNotEmpty &&
+                          m.id.isNotEmpty &&
+                          _selectedMethod!.id == m.id) ||
+                      (_selectedMethod!.name.toLowerCase().trim() ==
+                          m.name.toLowerCase().trim()))) ||
+              m.type == 'CASH' ||
+              m.name.toLowerCase().contains('tunai'),
           orElse: () => _methods.first,
         );
       });
@@ -165,15 +173,25 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
     return list;
   }
 
-  Widget _buildPaymentMethodChip(PaymentMethodModel m) {
-    final isSelected = _selectedMethod?.id == m.id ||
-        (_selectedMethod?.name == m.name) ||
-        (_selectedMethod == null &&
-            (m.type == 'CASH' || m.name.toLowerCase() == 'tunai'));
+  Widget _buildPaymentMethodChip(PaymentMethodModel m, int grandTotal) {
+    final isSelected = _selectedMethod != null &&
+        ((_selectedMethod!.id.isNotEmpty &&
+                m.id.isNotEmpty &&
+                _selectedMethod!.id == m.id) ||
+            (_selectedMethod!.name.toLowerCase().trim() ==
+                m.name.toLowerCase().trim()));
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => setState(() => _selectedMethod = m),
+        onTap: () {
+          setState(() {
+            _selectedMethod = m;
+            // Jika memilih pembayaran non-tunai (QRIS / Transfer Bank / E-Wallet / Debit), otomatis isi uang pas
+            if (m.type != 'CASH' && !m.name.toLowerCase().contains('tunai')) {
+              _paidController.text = number(grandTotal);
+            }
+          });
+        },
         borderRadius: BorderRadius.circular(10),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
@@ -621,7 +639,7 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                           for (final m in _methods)
                             Padding(
                               padding: const EdgeInsets.only(right: 8),
-                              child: _buildPaymentMethodChip(m),
+                              child: _buildPaymentMethodChip(m, grandTotal),
                             ),
                         ],
                       ),
