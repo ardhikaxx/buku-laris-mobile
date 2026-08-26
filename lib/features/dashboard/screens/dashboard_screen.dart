@@ -986,7 +986,7 @@ class _MainNotchStatsCard extends StatelessWidget {
     required this.workspaceName,
   });
 
-  static const double _notchWidth = 143.0;
+  static const double _notchWidth = 154.0;
   static const double _notchHeight = 53.0;
 
   @override
@@ -995,7 +995,7 @@ class _MainNotchStatsCard extends StatelessWidget {
       notchWidth: _notchWidth,
       notchHeight: _notchHeight,
       cornerRadius: 24,
-      filletRadius: 20,
+      filletRadius: 22,
     );
 
     return SizedBox(
