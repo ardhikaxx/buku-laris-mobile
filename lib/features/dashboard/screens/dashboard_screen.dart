@@ -986,7 +986,7 @@ class _MainNotchStatsCard extends StatelessWidget {
     required this.workspaceName,
   });
 
-  static const double _notchWidth = 135.0;
+  static const double _notchWidth = 151.0;
   static const double _notchHeight = 58.0;
 
   @override
@@ -995,7 +995,7 @@ class _MainNotchStatsCard extends StatelessWidget {
       notchWidth: _notchWidth,
       notchHeight: _notchHeight,
       cornerRadius: 24,
-      filletRadius: 16,
+      filletRadius: 18,
     );
 
     return SizedBox(
@@ -1208,8 +1208,8 @@ class _MainNotchStatsCard extends StatelessWidget {
                 onTap: () => context.go('/sales'),
                 borderRadius: BorderRadius.circular(28),
                 child: Container(
-                  height: 50,
-                  padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
+                  height: 52,
+                  padding: const EdgeInsets.fromLTRB(6, 6, 18, 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A),
                     borderRadius: BorderRadius.circular(28),
@@ -1226,8 +1226,8 @@ class _MainNotchStatsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        width: 38,
-                        height: 38,
+                        width: 40,
+                        height: 40,
                         decoration: const BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -1235,14 +1235,14 @@ class _MainNotchStatsCard extends StatelessWidget {
                         child: const Icon(
                           Icons.add_rounded,
                           color: Color(0xFF0F172A),
-                          size: 22,
+                          size: 23,
                         ),
                       ),
-                      const SizedBox(width: 7),
+                      const SizedBox(width: 9),
                       const Text(
                         'Penjualan',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                           letterSpacing: 0.2,
