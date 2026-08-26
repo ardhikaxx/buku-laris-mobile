@@ -12,6 +12,7 @@ import '../../../models/cash_transaction_model.dart';
 import '../../../models/enums.dart';
 import '../../shared/widgets/navigation.dart';
 import '../widgets/cash_form_sheet.dart';
+import '../widgets/cash_transfer_sheet.dart';
 
 enum _CashTab { income, expense }
 
@@ -122,6 +123,18 @@ class _CashflowScreenState extends ConsumerState<CashflowScreen> {
         titleText: 'Keuangan & Arus Kas',
         subtitleText: 'Rekap mutasi kas masuk & keluar',
         actions: [
+          if (canManage)
+            IconButton(
+              tooltip: 'Pindah Dana / Transfer Kas',
+              icon: const Icon(Icons.swap_horiz_rounded, size: 20),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.18),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.all(7),
+                minimumSize: const Size(36, 36),
+              ),
+              onPressed: () => CashTransferSheet.show(context),
+            ),
           IconButton(
             tooltip: 'Filter Tanggal',
             icon: const Icon(Icons.date_range_rounded, size: 19),
@@ -932,6 +945,7 @@ class _CashTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isIncome = txnModel.type == CashTransactionType.income;
     final isSaleLinked = txnModel.sourceSaleId.isNotEmpty;
+    final isTransfer = txnModel.sourceType == 'TRANSFER';
     final isRefundEntry = txnModel.sourceType == 'REFUND' ||
         txnModel.category.toLowerCase().contains('refund') ||
         txnModel.category.toLowerCase().contains('batal');
@@ -943,9 +957,11 @@ class _CashTile extends ConsumerWidget {
         side: BorderSide(
           color: isRefundedOrVoided
               ? Colors.grey.shade300
-              : (isIncome
-                  ? AppColors.income.withValues(alpha: 0.2)
-                  : AppColors.expense.withValues(alpha: 0.2)),
+              : (isTransfer
+                  ? AppColors.primary.withValues(alpha: 0.2)
+                  : (isIncome
+                      ? AppColors.income.withValues(alpha: 0.2)
+                      : AppColors.expense.withValues(alpha: 0.2))),
         ),
       ),
       child: ListTile(
@@ -960,18 +976,24 @@ class _CashTile extends ConsumerWidget {
           radius: 18,
           backgroundColor: isRefundedOrVoided
               ? Colors.grey.shade200
-              : (isIncome
-                  ? AppColors.income.withValues(alpha: 0.12)
-                  : AppColors.expense.withValues(alpha: 0.12)),
+              : (isTransfer
+                  ? AppColors.primary.withValues(alpha: 0.12)
+                  : (isIncome
+                      ? AppColors.income.withValues(alpha: 0.12)
+                      : AppColors.expense.withValues(alpha: 0.12))),
           child: Icon(
             isRefundedOrVoided
                 ? (isRefundEntry ? Icons.replay_rounded : Icons.cancel_outlined)
-                : (isIncome
-                    ? Icons.south_west_rounded
-                    : Icons.north_east_rounded),
+                : (isTransfer
+                    ? Icons.swap_horiz_rounded
+                    : (isIncome
+                        ? Icons.south_west_rounded
+                        : Icons.north_east_rounded)),
             color: isRefundedOrVoided
                 ? Colors.grey.shade600
-                : (isIncome ? AppColors.income : AppColors.expense),
+                : (isTransfer
+                    ? AppColors.primary
+                    : (isIncome ? AppColors.income : AppColors.expense)),
             size: 18,
           ),
         ),
@@ -1015,6 +1037,24 @@ class _CashTile extends ConsumerWidget {
                         ),
                       ),
                     ),
+                  ] else if (isTransfer) ...[
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'PINDAH DANA',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
                   ] else if (isSaleLinked) ...[
                     const SizedBox(width: 5),
                     Container(
@@ -1045,7 +1085,9 @@ class _CashTile extends ConsumerWidget {
                 fontWeight: FontWeight.w800,
                 color: isRefundedOrVoided
                     ? Colors.grey[500]
-                    : (isIncome ? AppColors.income : AppColors.expense),
+                    : (isTransfer
+                        ? AppColors.primary
+                        : (isIncome ? AppColors.income : AppColors.expense)),
                 decoration: isRefundedOrVoided && !isRefundEntry
                     ? TextDecoration.lineThrough
                     : null,

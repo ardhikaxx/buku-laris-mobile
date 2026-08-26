@@ -132,16 +132,35 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
   List<int> _getQuickAmounts(int total) {
     if (total <= 0) return [10000, 20000, 50000, 100000];
     final set = <int>{};
-    set.add(total);
-    final roundUp10k = ((total / 10000).ceil()) * 10000;
-    if (roundUp10k > total) set.add(roundUp10k);
-    final roundUp50k = ((total / 50000).ceil()) * 50000;
-    if (roundUp50k > total) set.add(roundUp50k);
-    final roundUp100k = ((total / 100000).ceil()) * 100000;
-    if (roundUp100k > total) set.add(roundUp100k);
-    for (final nom in [10000, 20000, 50000, 100000, 200000, 500000]) {
-      if (nom > total && set.length < 5) set.add(nom);
+    set.add(total); // Uang Pas
+
+    // Next nearest roundups
+    if (total % 5000 != 0) {
+      final round5k = ((total / 5000).ceil()) * 5000;
+      if (round5k > total) set.add(round5k);
     }
+    if (total % 10000 != 0) {
+      final round10k = ((total / 10000).ceil()) * 10000;
+      if (round10k > total) set.add(round10k);
+    }
+    if (total % 20000 != 0) {
+      final round20k = ((total / 20000).ceil()) * 20000;
+      if (round20k > total) set.add(round20k);
+    }
+    if (total % 50000 != 0) {
+      final round50k = ((total / 50000).ceil()) * 50000;
+      if (round50k > total) set.add(round50k);
+    }
+    if (total % 100000 != 0) {
+      final round100k = ((total / 100000).ceil()) * 100000;
+      if (round100k > total) set.add(round100k);
+    }
+
+    // Standard Indonesian Banknotes
+    for (final nom in [10000, 20000, 50000, 100000, 200000, 500000]) {
+      if (nom > total && set.length < 6) set.add(nom);
+    }
+
     final list = set.toList()..sort();
     return list;
   }
@@ -618,58 +637,119 @@ class _PosCartSheetState extends ConsumerState<PosCartSheet> {
                             : 'Nominal Pembayaran / Uang Diterima',
                         prefixText: 'Rp ',
                         hintText: number(grandTotal),
-                        suffixIcon: TextButton(
-                          onPressed: () => setState(
-                              () => _paidController.text = number(grandTotal)),
-                          child: const Text('Uang Pas',
-                              style: TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w700)),
-                        ),
+                        suffixIcon: _paidController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 18),
+                                onPressed: () =>
+                                    setState(() => _paidController.clear()),
+                              )
+                            : TextButton(
+                                onPressed: () => setState(() =>
+                                    _paidController.text = number(grandTotal)),
+                                child: const Text('Uang Pas',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700)),
+                              ),
                       ),
                       onChanged: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 8),
+
+                    // Quick Cash Preset Buttons
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       child: Row(
                         children: [
                           for (final amount in _getQuickAmounts(grandTotal))
-                            Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: ActionChip(
-                                label: Text(
-                                  amount == grandTotal
-                                      ? 'Uang Pas (${compactMoney(amount)})'
-                                      : compactMoney(amount),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: amount == grandTotal
-                                        ? FontWeight.w700
-                                        : FontWeight.w600,
-                                    color: amount == grandTotal
-                                        ? AppColors.primaryDark
-                                        : const Color(0xFF334155),
+                            Builder(builder: (context) {
+                              final currentPaid =
+                                  Validators.parseAmount(_paidController.text);
+                              final isUangPas = amount == grandTotal;
+                              final isSelected = currentPaid == amount;
+
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _paidController.text = number(amount);
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: AnimatedContainer(
+                                    duration:
+                                        const Duration(milliseconds: 150),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? (isUangPas
+                                              ? const Color(0xFF16A34A)
+                                              : AppColors.primary)
+                                          : (isUangPas
+                                              ? const Color(0xFFF0FDF4)
+                                              : const Color(0xFFF8FAFC)),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? (isUangPas
+                                                ? const Color(0xFF16A34A)
+                                                : AppColors.primary)
+                                            : (isUangPas
+                                                ? const Color(0xFF86EFAC)
+                                                : const Color(0xFFCBD5E1)),
+                                        width: isSelected ? 1.5 : 1.0,
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: (isUangPas
+                                                        ? const Color(0xFF16A34A)
+                                                        : AppColors.primary)
+                                                    .withValues(alpha: 0.25),
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 1),
+                                              )
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (isUangPas) ...[
+                                          Icon(
+                                            Icons.check_circle_rounded,
+                                            size: 13,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : const Color(0xFF16A34A),
+                                          ),
+                                          const SizedBox(width: 4),
+                                        ],
+                                        Text(
+                                          isUangPas
+                                              ? 'Uang Pas (${compactMoney(amount)})'
+                                              : compactMoney(amount),
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: isSelected || isUangPas
+                                                ? FontWeight.w700
+                                                : FontWeight.w600,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : (isUangPas
+                                                    ? const Color(0xFF166534)
+                                                    : const Color(0xFF334155)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                backgroundColor: amount == grandTotal
-                                    ? const Color(0xFFF0FDF4)
-                                    : const Color(0xFFF8FAFC),
-                                side: BorderSide(
-                                  color: amount == grandTotal
-                                      ? const Color(0xFF86EFAC)
-                                      : const Color(0xFFE2E8F0),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 0),
-                                visualDensity: VisualDensity.compact,
-                                onPressed: () {
-                                  setState(() {
-                                    _paidController.text = number(amount);
-                                  });
-                                },
-                              ),
-                            ),
+                              );
+                            }),
                         ],
                       ),
                     ),

@@ -26,6 +26,66 @@ class CashflowRepository extends BaseRepository {
     return ref;
   }
 
+  Future<void> transfer({
+    required String wsId,
+    required String fromMethodId,
+    required String fromMethodName,
+    required String toMethodId,
+    required String toMethodName,
+    required int amount,
+    required DateTime occurredAt,
+    required String notes,
+    required String createdBy,
+  }) async {
+    if (amount <= 0) {
+      throw RepoException('Nominal transfer harus lebih besar dari 0.');
+    }
+    if (fromMethodName.toLowerCase().trim() ==
+        toMethodName.toLowerCase().trim()) {
+      throw RepoException(
+          'Akun asal dan akun tujuan transfer tidak boleh sama.');
+    }
+
+    final batch = fs.batch();
+    final col = sub(wsId, Collections.cashTransactions);
+
+    // 1. Catatan Uang Keluar dari Akun Asal
+    final outRef = col.doc();
+    final outTxn = CashTransaction(
+      workspaceId: wsId,
+      type: CashTransactionType.expense,
+      category: 'Transfer Kas Keluar',
+      amount: amount,
+      occurredAt: occurredAt,
+      paymentMethodId: fromMethodId,
+      paymentMethodName: fromMethodName,
+      sourceType: 'TRANSFER',
+      description: 'Pindah dana ke $toMethodName',
+      notes: notes,
+      createdBy: createdBy,
+    );
+    batch.set(outRef, outTxn.toCreateMap(occurredAt: occurredAt));
+
+    // 2. Catatan Uang Masuk ke Akun Tujuan
+    final inRef = col.doc();
+    final inTxn = CashTransaction(
+      workspaceId: wsId,
+      type: CashTransactionType.income,
+      category: 'Transfer Kas Masuk',
+      amount: amount,
+      occurredAt: occurredAt,
+      paymentMethodId: toMethodId,
+      paymentMethodName: toMethodName,
+      sourceType: 'TRANSFER',
+      description: 'Pindah dana dari $fromMethodName',
+      notes: notes,
+      createdBy: createdBy,
+    );
+    batch.set(inRef, inTxn.toCreateMap(occurredAt: occurredAt));
+
+    await batch.commit();
+  }
+
   Future<void> update(
       CashTransaction txnModel, DateTime occurredAt) async {
     if (txnModel.sourceSaleId.isNotEmpty) {
