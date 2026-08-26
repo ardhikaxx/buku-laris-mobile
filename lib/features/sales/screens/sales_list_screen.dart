@@ -117,7 +117,7 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
                       if (_hasActiveFilters) ...[
                         const SizedBox(width: 8),
                         ActionChip(
-                          avatar: const Icon(Icons.clear_all_rounded,
+                          avatar: const Icon(Icons.restart_alt_rounded,
                               size: 15, color: AppColors.expense),
                           label: const Text('Reset Filter',
                               style: TextStyle(

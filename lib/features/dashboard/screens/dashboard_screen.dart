@@ -329,7 +329,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.clear_all_rounded,
+                        Icon(Icons.restart_alt_rounded,
                             size: 16, color: AppColors.expense),
                         SizedBox(width: 5),
                         Text(
