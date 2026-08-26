@@ -256,8 +256,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       children: [
-        _buildPeriodFilter(context),
-        const SizedBox(height: 14),
+        if (!isOwner) ...[
+          _buildPeriodFilter(context),
+          const SizedBox(height: 14),
+        ],
         if (_error != null)
           ErrorStateView(error: _error!, onRetry: () => _load(force: true))
         else if (_future == null)
@@ -281,7 +283,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 isEmployee: isEmployee,
                 canManageProducts:
                     ref.read(activeWorkspaceProvider).can(Permission.productsManage),
-                periodLabel: _period.label,
+                period: _period,
+                onSelectPeriod: (period) => _selectPeriod(period),
                 workspaceName:
                     ref.watch(activeWorkspaceProvider).workspace?.name ??
                         'Buku Laris',
@@ -538,7 +541,8 @@ class _DashboardContent extends StatelessWidget {
   final bool isOwner;
   final bool isEmployee;
   final bool canManageProducts;
-  final String periodLabel;
+  final DashboardPeriod period;
+  final ValueChanged<DashboardPeriod> onSelectPeriod;
   final String workspaceName;
 
   const _DashboardContent({
@@ -546,7 +550,8 @@ class _DashboardContent extends StatelessWidget {
     required this.isOwner,
     required this.isEmployee,
     required this.canManageProducts,
-    required this.periodLabel,
+    required this.period,
+    required this.onSelectPeriod,
     required this.workspaceName,
   });
 
@@ -558,7 +563,8 @@ class _DashboardContent extends StatelessWidget {
         if (isOwner) ...[
           _MainNotchStatsCard(
             data: data,
-            periodLabel: periodLabel,
+            period: period,
+            onSelectPeriod: onSelectPeriod,
             workspaceName: workspaceName,
           ),
           const SizedBox(height: 14),
@@ -744,7 +750,7 @@ class _DashboardContent extends StatelessWidget {
           ),
           const SizedBox(height: 14),
         ],
-        SectionHeader('Grafik Penjualan ($periodLabel)'),
+        SectionHeader('Grafik Penjualan (${period.label})'),
         Card(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8, 16, 12, 8),
@@ -977,12 +983,14 @@ class _DashboardSkeleton extends StatelessWidget {
 
 class _MainNotchStatsCard extends StatelessWidget {
   final DashboardData data;
-  final String periodLabel;
+  final DashboardPeriod period;
+  final ValueChanged<DashboardPeriod> onSelectPeriod;
   final String workspaceName;
 
   const _MainNotchStatsCard({
     required this.data,
-    required this.periodLabel,
+    required this.period,
+    required this.onSelectPeriod,
     required this.workspaceName,
   });
 
@@ -1067,7 +1075,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Top Row: Store Icon + Masked Number
+                          // Top Row: Store Icon (Left) + Period Filter Dropdown (Right)
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -1089,19 +1097,150 @@ class _MainNotchStatsCard extends StatelessWidget {
                                   size: 20,
                                 ),
                               ),
-                              Text(
-                                '•••• •••• •••• ${data.periodOrders.toString().padLeft(4, '0')}',
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 2.2,
-                                  color: Colors.white.withValues(alpha: 0.85),
+                              // Proportional Glassmorphic Period Filter Dropdown
+                              PopupMenuButton<DashboardPeriod>(
+                                tooltip: 'Pilih Periode',
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                offset: const Offset(0, 36),
+                                onSelected: onSelectPeriod,
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem<DashboardPeriod>(
+                                    enabled: false,
+                                    child: Text(
+                                      'PILIH PERIODE',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF94A3B8),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const PopupMenuDivider(),
+                                  PopupMenuItem<DashboardPeriod>(
+                                    value: DashboardPeriod.today,
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.today_rounded,
+                                            size: 18, color: AppColors.primary),
+                                        const SizedBox(width: 10),
+                                        const Expanded(
+                                          child: Text('Hari Ini',
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700)),
+                                        ),
+                                        if (period == DashboardPeriod.today)
+                                          const Icon(Icons.check_rounded,
+                                              size: 18, color: AppColors.primary),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem<DashboardPeriod>(
+                                    value: DashboardPeriod.week,
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.date_range_rounded,
+                                            size: 18, color: AppColors.primary),
+                                        const SizedBox(width: 10),
+                                        const Expanded(
+                                          child: Text('Minggu Ini',
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700)),
+                                        ),
+                                        if (period == DashboardPeriod.week)
+                                          const Icon(Icons.check_rounded,
+                                              size: 18, color: AppColors.primary),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem<DashboardPeriod>(
+                                    value: DashboardPeriod.month,
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.calendar_month_rounded,
+                                            size: 18, color: AppColors.primary),
+                                        const SizedBox(width: 10),
+                                        const Expanded(
+                                          child: Text('Bulan Ini',
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700)),
+                                        ),
+                                        if (period == DashboardPeriod.month)
+                                          const Icon(Icons.check_rounded,
+                                              size: 18, color: AppColors.primary),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem<DashboardPeriod>(
+                                    value: DashboardPeriod.custom,
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.tune_rounded,
+                                            size: 18, color: AppColors.primary),
+                                        const SizedBox(width: 10),
+                                        const Expanded(
+                                          child: Text('Kustom (Pilih Rentang)',
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w700)),
+                                        ),
+                                        if (period == DashboardPeriod.custom)
+                                          const Icon(Icons.check_rounded,
+                                              size: 18, color: AppColors.primary),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.28),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        period.icon,
+                                        color: Colors.white,
+                                        size: 13.5,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        period.label,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                          letterSpacing: 0.1,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
-                          // Middle Row: Balance Label & Amount + Period on Right
+                          // Middle Row: Balance Label & Amount + Transaksi on Right
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
@@ -1140,7 +1279,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Text(
-                                      'Periode',
+                                      'Transaksi',
                                       style: TextStyle(
                                         fontSize: 11.5,
                                         fontWeight: FontWeight.w500,
@@ -1149,7 +1288,7 @@ class _MainNotchStatsCard extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      periodLabel,
+                                      '${data.periodOrders} Order',
                                       style: const TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.w800,
