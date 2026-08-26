@@ -986,8 +986,8 @@ class _MainNotchStatsCard extends StatelessWidget {
     required this.workspaceName,
   });
 
-  static const double _notchWidth = 147.0;
-  static const double _notchHeight = 54.0;
+  static const double _notchWidth = 145.5;
+  static const double _notchHeight = 53.5;
 
   @override
   Widget build(BuildContext context) {
@@ -995,7 +995,7 @@ class _MainNotchStatsCard extends StatelessWidget {
       notchWidth: _notchWidth,
       notchHeight: _notchHeight,
       cornerRadius: 24,
-      filletRadius: 28,
+      filletRadius: 27.5,
     );
 
     return SizedBox(
@@ -1206,13 +1206,14 @@ class _MainNotchStatsCard extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () => context.go('/sales'),
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(26),
                 child: Container(
+                  width: 144,
                   height: 52,
-                  padding: const EdgeInsets.fromLTRB(6, 6, 18, 6),
+                  padding: const EdgeInsets.fromLTRB(6, 6, 14, 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(26),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.35),
@@ -1238,14 +1239,16 @@ class _MainNotchStatsCard extends StatelessWidget {
                           size: 23,
                         ),
                       ),
-                      const SizedBox(width: 9),
-                      const Text(
-                        'Penjualan',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 0.2,
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Penjualan',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
+                          ),
                         ),
                       ),
                     ],
