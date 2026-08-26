@@ -290,7 +290,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildPeriodFilter(BuildContext context) {
-    final isCustomOrNotDefault = _period != DashboardPeriod.month;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -305,50 +304,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ],
       ),
       padding: const EdgeInsets.all(10),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: _buildPeriodDropdown()),
-            if (isCustomOrNotDefault) ...[
-              const SizedBox(width: 8),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _selectPeriod(DashboardPeriod.month),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: const Color(0xFFFECACA), width: 1.2),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.restart_alt_rounded,
-                            size: 16, color: AppColors.expense),
-                        SizedBox(width: 5),
-                        Text(
-                          'Reset',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.expense,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+      child: _buildPeriodDropdown(),
     );
   }
 

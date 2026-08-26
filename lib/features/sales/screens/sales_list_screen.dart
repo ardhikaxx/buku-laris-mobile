@@ -31,22 +31,6 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
     super.dispose();
   }
 
-  bool get _hasActiveFilters =>
-      _statusFilter != null ||
-      _orderTypeFilter != null ||
-      _paymentStatusFilter != null ||
-      _searchQuery.trim().isNotEmpty;
-
-  void _resetAllFilters() {
-    setState(() {
-      _searchController.clear();
-      _searchQuery = '';
-      _statusFilter = null;
-      _orderTypeFilter = null;
-      _paymentStatusFilter = null;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final ws = ref.watch(activeWorkspaceProvider);
@@ -114,24 +98,6 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
                       _buildOrderTypeDropdown(),
                       const SizedBox(width: 8),
                       _buildPaymentStatusDropdown(),
-                      if (_hasActiveFilters) ...[
-                        const SizedBox(width: 8),
-                        ActionChip(
-                          avatar: const Icon(Icons.restart_alt_rounded,
-                              size: 15, color: AppColors.expense),
-                          label: const Text('Reset Filter',
-                              style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: AppColors.expense,
-                                  fontWeight: FontWeight.w700)),
-                          backgroundColor: const Color(0xFFFEF2F2),
-                          side: const BorderSide(color: Color(0xFFFECACA)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 0),
-                          visualDensity: VisualDensity.compact,
-                          onPressed: _resetAllFilters,
-                        ),
-                      ],
                     ],
                   ),
                 ),
