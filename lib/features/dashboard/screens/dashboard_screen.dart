@@ -986,20 +986,20 @@ class _MainNotchStatsCard extends StatelessWidget {
     required this.workspaceName,
   });
 
-  static const double _notchWidth = 162.0;
-  static const double _notchHeight = 62.0;
+  static const double _notchWidth = 146.0;
+  static const double _notchHeight = 56.0;
 
   @override
   Widget build(BuildContext context) {
     const clipper = _CardNotchClipper(
       notchWidth: _notchWidth,
       notchHeight: _notchHeight,
-      cornerRadius: 26,
-      filletRadius: 32,
+      cornerRadius: 24,
+      filletRadius: 24,
     );
 
     return SizedBox(
-      height: 205,
+      height: 200,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -1208,15 +1208,15 @@ class _MainNotchStatsCard extends StatelessWidget {
                 onTap: () => context.go('/sales'),
                 borderRadius: BorderRadius.circular(28),
                 child: Container(
-                  height: 52,
-                  padding: const EdgeInsets.fromLTRB(6, 6, 16, 6),
+                  height: 50,
+                  padding: const EdgeInsets.fromLTRB(5, 5, 14, 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F172A),
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 12,
+                        blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
@@ -1235,10 +1235,10 @@ class _MainNotchStatsCard extends StatelessWidget {
                         child: const Icon(
                           Icons.add_rounded,
                           color: Color(0xFF0F172A),
-                          size: 24,
+                          size: 22,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       const Text(
                         'Penjualan',
                         style: TextStyle(
