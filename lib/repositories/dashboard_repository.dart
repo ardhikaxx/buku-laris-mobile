@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/utils/formatters.dart';
 import '../models/daily_summary_model.dart';
 import '../models/enums.dart';
+import '../models/firestore_helpers.dart';
 import '../models/product_model.dart';
 import '../models/sale_model.dart';
 import '../services/logger.dart';
@@ -19,17 +20,28 @@ class AppDateRange {
 
   factory AppDateRange.today() {
     final now = DateTime.now();
-    return AppDateRange(start: startOfDay(now), end: now);
+    return AppDateRange(
+      start: DateTime(now.year, now.month, now.day, 0, 0, 0),
+      end: DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
   }
 
   factory AppDateRange.thisWeek() {
     final now = DateTime.now();
-    return AppDateRange(start: startOfWeek(now), end: now);
+    final start = startOfWeek(now);
+    return AppDateRange(
+      start: DateTime(start.year, start.month, start.day, 0, 0, 0),
+      end: DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
   }
 
   factory AppDateRange.thisMonth() {
     final now = DateTime.now();
-    return AppDateRange(start: startOfMonth(now), end: now);
+    final start = startOfMonth(now);
+    return AppDateRange(
+      start: DateTime(start.year, start.month, start.day, 0, 0, 0),
+      end: DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
   }
 
   int get dayCount => end.difference(DateTime(start.year, start.month, start.day)).inDays + 1;
@@ -96,13 +108,16 @@ class DashboardRepository extends BaseRepository {
   }) async {
     final now = DateTime.now().add(const Duration(minutes: 1));
     final results = await Future.wait([
-      _revenueAndOrders(wsId, range.start, now),
+      _guard(() => _revenueAndOrders(wsId, range.start, range.end),
+          fallback: const _RevOrd(revenue: 0, orders: 0)),
       if (includeFinance)
-        _revenueAndOrders(wsId, startOfDay(DateTime.now()), now)
+        _guard(() => _revenueAndOrders(wsId, startOfDay(DateTime.now()), now),
+            fallback: const _RevOrd(revenue: 0, orders: 0))
       else
         Future.value(const _RevOrd(revenue: 0, orders: 0)),
       if (includeFinance)
-        _revenueAndOrders(wsId, startOfMonth(DateTime.now()), now)
+        _guard(() => _revenueAndOrders(wsId, startOfMonth(DateTime.now()), now),
+            fallback: const _RevOrd(revenue: 0, orders: 0))
       else
         Future.value(const _RevOrd(revenue: 0, orders: 0)),
       if (includeFinance)
@@ -113,17 +128,20 @@ class DashboardRepository extends BaseRepository {
         )
       else
         Future.value(const CashTotals(income: 0, expense: 0)),
-      _productCount(wsId),
+      _guard(() => _productCount(wsId), fallback: 0),
       if (includeFinance)
         _guard(() => _products.listLowStock(wsId, limit: 6),
             fallback: <Product>[])
       else
         Future.value(<Product>[]),
-      _activeOrdersCounts(wsId),
+      _guard(() => _activeOrdersCounts(wsId), fallback: (0, 0)),
       _guard(() => _chart(wsId, range), fallback: <DailyPoint>[]),
-      if (includeFinance) _hasUnknownCostSales(wsId) else Future.value(false),
       if (includeFinance)
-        _monthProfit(wsId, now)
+        _guard(() => _hasUnknownCostSales(wsId), fallback: false)
+      else
+        Future.value(false),
+      if (includeFinance)
+        _guard(() => _monthProfit(wsId, now), fallback: (0, false))
       else
         Future.value((0, false)),
     ]);
@@ -168,15 +186,18 @@ class DashboardRepository extends BaseRepository {
   }
 
   bool _isValidSaleForRevenue(Map<String, dynamic> d) {
-    final status = d['status'] as String?;
+    final statusStr = d['status'] as String?;
     final paymentStatus = d['paymentStatus'] as String?;
-    if (status == SaleStatus.cancelled.name ||
-        status == SaleStatus.refunded.name ||
-        status == SaleStatus.draft.name ||
+    if (statusStr == SaleStatus.cancelled.name ||
+        statusStr == SaleStatus.refunded.name ||
+        statusStr == SaleStatus.draft.name ||
         paymentStatus == PaymentStatus.refunded.name) {
       return false;
     }
-    return d['countsRevenue'] == true;
+    final countsRev = d['countsRevenue'];
+    if (countsRev is bool) return countsRev;
+    final status = enumFromName(SaleStatus.values, statusStr, SaleStatus.pending);
+    return status.countsRevenue;
   }
 
   Future<_RevOrd> _revenueAndOrders(
@@ -240,10 +261,12 @@ class DashboardRepository extends BaseRepository {
       final snap = await sub(wsId, Collections.sales).get();
       final dailyMap = <String, DailyPoint>{};
       var day = DateTime(range.start.year, range.start.month, range.start.day);
-      while (!day.isAfter(range.end)) {
+      final endDay = DateTime(range.end.year, range.end.month, range.end.day);
+
+      while (!day.isAfter(endDay)) {
         final key = DailySummary.dayKey(day);
         dailyMap[key] = DailyPoint(day: day, revenue: 0, orders: 0, profit: 0);
-        day = day.add(const Duration(days: 1));
+        day = DateTime(day.year, day.month, day.day + 1);
       }
 
       for (final doc in snap.docs) {
@@ -255,18 +278,29 @@ class DashboardRepository extends BaseRepository {
         final key = DailySummary.dayKey(dt);
         if (dailyMap.containsKey(key)) {
           final existing = dailyMap[key]!;
-          final sale = Sale.fromDoc(doc);
-          dailyMap[key] = DailyPoint(
-            day: existing.day,
-            revenue: existing.revenue + sale.grandTotal,
-            orders: existing.orders + 1,
-            profit: existing.profit + sale.estimatedProfit,
-          );
+          try {
+            final sale = Sale.fromDoc(doc);
+            dailyMap[key] = DailyPoint(
+              day: existing.day,
+              revenue: existing.revenue + sale.grandTotal,
+              orders: existing.orders + 1,
+              profit: existing.profit + sale.estimatedProfit,
+            );
+          } catch (_) {
+            final grandTotal = (d['grandTotal'] as num?)?.toInt() ?? 0;
+            dailyMap[key] = DailyPoint(
+              day: existing.day,
+              revenue: existing.revenue + grandTotal,
+              orders: existing.orders + 1,
+              profit: existing.profit,
+            );
+          }
         }
       }
       return dailyMap.values.toList()
         ..sort((a, b) => a.day.compareTo(b.day));
-    } catch (_) {
+    } catch (e) {
+      Logger.e('dashboard _chart failed', e);
       return <DailyPoint>[];
     }
   }
@@ -277,8 +311,10 @@ class DashboardRepository extends BaseRepository {
       for (final doc in snap.docs) {
         final d = doc.data();
         if (!_isValidSaleForRevenue(d)) continue;
-        final sale = Sale.fromDoc(doc);
-        if (sale.hasUnknownCosts) return true;
+        try {
+          final sale = Sale.fromDoc(doc);
+          if (sale.hasUnknownCosts) return true;
+        } catch (_) {}
       }
       return false;
     } catch (_) {
@@ -302,11 +338,13 @@ class DashboardRepository extends BaseRepository {
           final ms = ts.millisecondsSinceEpoch;
           if (ms < fromMs || ms > toMs) continue;
         }
-        final sale = Sale.fromDoc(doc);
-        profit += sale.estimatedProfit;
-        if (sale.hasUnknownCosts) {
-          hasUnknown = true;
-        }
+        try {
+          final sale = Sale.fromDoc(doc);
+          profit += sale.estimatedProfit;
+          if (sale.hasUnknownCosts) {
+            hasUnknown = true;
+          }
+        } catch (_) {}
       }
       return (profit, hasUnknown);
     } catch (_) {

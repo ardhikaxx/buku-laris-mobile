@@ -8,14 +8,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../config/gate.dart';
 import '../../../config/providers.dart';
-import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
 import '../../../models/enums.dart';
 import '../../../repositories/dashboard_repository.dart';
 import '../../../services/connectivity_service.dart';
-import '../../../services/logger.dart';
 import '../../shared/widgets/navigation.dart';
 
 enum DashboardPeriod { today, week, month, custom }
@@ -91,11 +89,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       _error = null;
       _future = ref
           .read(dashboardRepositoryProvider)
-          .load(wsId: wsId, includeFinance: includeFinance, range: _range)
-          .catchError((e) {
-        Logger.e('dashboard load failed', e);
-        throw e is AppException ? e : mapToAppException(e);
-      });
+          .load(wsId: wsId, includeFinance: includeFinance, range: _range);
     });
   }
 
@@ -766,10 +760,15 @@ class _RevenueChart extends StatelessWidget {
       );
     }
     final maxY = points.map((p) => p.revenue).fold<int>(0, max) * 1.15;
+    final step = points.length > 10 ? (points.length ~/ 5).clamp(1, 100) : 1;
+
     return BarChart(
+      key: ValueKey(
+          'rev_chart_${points.length}_${points.isNotEmpty ? points.first.day.millisecondsSinceEpoch : 0}'),
       BarChartData(
         gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
+        alignment: BarChartAlignment.spaceAround,
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -784,7 +783,9 @@ class _RevenueChart extends StatelessWidget {
                   return const SizedBox.shrink();
                 }
                 final day = points[index].day;
-                if (points.length > 10 && index % 5 != 0) {
+                if (points.length > 10 &&
+                    index % step != 0 &&
+                    index != points.length - 1) {
                   return const SizedBox.shrink();
                 }
                 return Padding(
@@ -800,7 +801,9 @@ class _RevenueChart extends StatelessWidget {
         barTouchData: BarTouchData(
           touchTooltipData: BarTouchTooltipData(
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final point = points[group.x.toInt()];
+              final idx = group.x.toInt();
+              if (idx < 0 || idx >= points.length) return null;
+              final point = points[idx];
               return BarTooltipItem(
                 '${compactMoney(point.revenue)}\n${dateShort(point.day)}',
                 const TextStyle(
@@ -818,8 +821,13 @@ class _RevenueChart extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: points[i].revenue.toDouble(),
-                  width: points.length > 20 ? 6 : 14,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                  width: points.length > 20
+                      ? 6
+                      : (points.length == 1
+                          ? 28
+                          : (points.length < 8 ? 18 : 12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(3)),
                   color: points[i].revenue > 0
                       ? AppColors.primary
                       : Colors.grey[300],
