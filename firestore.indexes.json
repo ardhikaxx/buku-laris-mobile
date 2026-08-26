@@ -178,15 +178,6 @@
         { "fieldPath": "stock", "order": "ASCENDING" }
       ],
       "why": "Dashboard/laporan stok menipis: produk fisik terpantau diurutkan dari stok terkecil."
-    },
-    {
-      "collectionGroup": "notifications",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
-        { "fieldPath": "read", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ],
-      "why": "Hitung & tampilkan notifikasi belum dibaca per user."
     }
   ],
   "fieldOverrides": []
