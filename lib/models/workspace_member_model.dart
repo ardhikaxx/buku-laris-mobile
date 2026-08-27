@@ -56,8 +56,7 @@ class WorkspaceMember {
   bool get isOwner => role == UserRole.OWNER && isActive;
   bool get isEmployee => role == UserRole.EMPLOYEE && isActive;
 
-  bool hasPermission(Permission p) =>
-      isActive && (isOwner || permissions.isEmpty || permissions.contains(p));
+  bool hasPermission(Permission p) => isActive;
 
   Map<String, dynamic> toCreateMap() => {
         'userId': userId,

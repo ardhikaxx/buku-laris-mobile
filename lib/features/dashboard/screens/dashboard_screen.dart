@@ -157,18 +157,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _load(force: true);
   }
 
-  String _getRangeLabel() {
-    switch (_period) {
-      case DashboardPeriod.today:
-        return 'Hari ini • ${dateShort(_range.start)}';
-      case DashboardPeriod.week:
-        return '${dateShort(_range.start)} \u2013 ${dateShort(_range.end)}';
-      case DashboardPeriod.month:
-        return monthYear(_range.start);
-      case DashboardPeriod.custom:
-        return '${dateShort(_range.start)} \u2013 ${dateShort(_range.end)}';
-    }
-  }
 
   static DateTime endOfDay(DateTime dt) =>
       DateTime(dt.year, dt.month, dt.day, 23, 59, 59);
@@ -201,17 +189,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         subtitleText:
             '${member?.role.label ?? ''} \u2022 ${gate.profile?.displayName ?? ''}',
         actions: [
-          if (isOwner)
-            IconButton(
-              icon: const Icon(Icons.settings_outlined, size: 20),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: 0.18),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.all(7),
-                minimumSize: const Size(36, 36),
-              ),
-              onPressed: () => context.push('/settings'),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined, size: 20),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.all(7),
+              minimumSize: const Size(36, 36),
             ),
+            onPressed: () => context.push('/settings'),
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -235,10 +222,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       children: [
-        if (!isOwner) ...[
-          _buildPeriodFilter(context),
-          const SizedBox(height: 14),
-        ],
         if (_error != null)
           ErrorStateView(error: _error!, onRetry: () => _load(force: true))
         else if (_future == null)
@@ -273,248 +256,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ],
     );
   }
-
-  Widget _buildPeriodFilter(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(10),
-      child: _buildPeriodDropdown(),
-    );
-  }
-
-  Widget _buildPeriodDropdown() {
-    final isCustomOrNotDefault = _period != DashboardPeriod.month;
-    return PopupMenuButton<DashboardPeriod>(
-      tooltip: 'Pilih Periode Dashboard',
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      offset: const Offset(0, 48),
-      onSelected: (period) => _selectPeriod(period),
-      itemBuilder: (context) => [
-        const PopupMenuItem<DashboardPeriod>(
-          enabled: false,
-          height: 28,
-          padding: EdgeInsets.fromLTRB(16, 6, 16, 2),
-          child: Text(
-            'PILIH PERIODE DASHBOARD',
-            style: TextStyle(
-              fontSize: 10.5,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF94A3B8),
-              letterSpacing: 0.6,
-            ),
-          ),
-        ),
-        const PopupMenuDivider(height: 1),
-        PopupMenuItem<DashboardPeriod>(
-          value: DashboardPeriod.today,
-          child: Row(
-            children: [
-              const Icon(Icons.today_rounded,
-                  size: 18, color: AppColors.primary),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Hari Ini',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w700)),
-                    Text('Menampilkan penjualan & transaksi hari ini',
-                        style:
-                            TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-              if (_period == DashboardPeriod.today)
-                const Icon(Icons.check_rounded,
-                    size: 18, color: AppColors.primary),
-            ],
-          ),
-        ),
-        PopupMenuItem<DashboardPeriod>(
-          value: DashboardPeriod.week,
-          child: Row(
-            children: [
-              const Icon(Icons.date_range_rounded,
-                  size: 18, color: AppColors.primary),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Minggu Ini',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w700)),
-                    Text('Akumulasi dari awal minggu hingga hari ini',
-                        style:
-                            TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-              if (_period == DashboardPeriod.week)
-                const Icon(Icons.check_rounded,
-                    size: 18, color: AppColors.primary),
-            ],
-          ),
-        ),
-        PopupMenuItem<DashboardPeriod>(
-          value: DashboardPeriod.month,
-          child: Row(
-            children: [
-              const Icon(Icons.calendar_month_rounded,
-                  size: 18, color: AppColors.primary),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Bulan Ini',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w700)),
-                    Text('Total ringkasan selama bulan berjalan',
-                        style:
-                            TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-              if (_period == DashboardPeriod.month)
-                const Icon(Icons.check_rounded,
-                    size: 18, color: AppColors.primary),
-            ],
-          ),
-        ),
-        PopupMenuItem<DashboardPeriod>(
-          value: DashboardPeriod.custom,
-          child: Row(
-            children: [
-              const Icon(Icons.tune_rounded,
-                  size: 18, color: AppColors.primary),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Kustom (Pilih Rentang)',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w700)),
-                    Text('Tentukan sendiri tanggal awal & akhir',
-                        style:
-                            TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-              if (_period == DashboardPeriod.custom)
-                const Icon(Icons.check_rounded,
-                    size: 18, color: AppColors.primary),
-            ],
-          ),
-        ),
-      ],
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isCustomOrNotDefault
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isCustomOrNotDefault
-                ? AppColors.primary
-                : const Color(0xFFE2E8F0),
-            width: isCustomOrNotDefault ? 1.5 : 1.0,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: isCustomOrNotDefault
-                    ? AppColors.primary.withValues(alpha: 0.15)
-                    : Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _period.icon,
-                size: 16,
-                color: isCustomOrNotDefault
-                    ? AppColors.primary
-                    : const Color(0xFF64748B),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Periode: ${_period.label}',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: isCustomOrNotDefault
-                          ? FontWeight.w800
-                          : FontWeight.w700,
-                      color: isCustomOrNotDefault
-                          ? AppColors.primaryDark
-                          : const Color(0xFF1E293B),
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    _getRangeLabel(),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isCustomOrNotDefault
-                          ? AppColors.primary
-                          : const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isCustomOrNotDefault)
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => _selectPeriod(DashboardPeriod.month),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  margin: const EdgeInsets.only(left: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.22),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.close_rounded,
-                    size: 13,
-                    color: AppColors.primary,
-                  ),
-                ),
-              )
-            else
-              const Icon(
-                Icons.arrow_drop_down_rounded,
-                size: 22,
-                color: Color(0xFF94A3B8),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _DashboardContent extends StatelessWidget {
@@ -541,156 +282,64 @@ class _DashboardContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (isOwner) ...[
-          _MainNotchStatsCard(
-            data: data,
-            period: period,
-            onSelectPeriod: onSelectPeriod,
-            workspaceName: workspaceName,
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: StatCard(
-                  label: 'Uang Masuk (bulan ini)',
-                  value: compactMoney(data.monthCashIn),
-                  icon: Icons.south_west_rounded,
-                  color: AppColors.income,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: StatCard(
-                  label: 'Uang Keluar (bulan ini)',
-                  value: compactMoney(data.monthCashOut),
-                  icon: Icons.north_east_rounded,
-                  color: AppColors.expense,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: StatCard(
-                  label: 'Arus Kas Bersih (bulan ini)',
-                  value: compactMoney(data.monthCashIn - data.monthCashOut),
-                  icon: Icons.account_balance_wallet_outlined,
-                  color: (data.monthCashIn - data.monthCashOut) >= 0
-                      ? AppColors.primary
-                      : AppColors.expense,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: StatCard(
-                  label: data.profitHasUnknownCosts
-                      ? 'Estimasi Keuntungan*'
-                      : 'Estimasi Keuntungan',
-                  value: compactMoney(data.monthProfitEstimate),
-                  icon: Icons.savings_outlined,
-                  color: AppColors.accent,
-                  sublabel: data.profitHasUnknownCosts
-                      ? '*modal belum lengkap'
-                      : null,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-        ] else ...[
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFFB45309),
-                  Color(0xFFD97706),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD97706).withValues(alpha: 0.28),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Stack(
-                children: [
-                  Positioned(
-                    right: -20,
-                    top: -20,
-                    child: Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 9, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  'Pesanan Berjalan',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                '${data.activeOrders} Pesanan',
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(Icons.pending_actions_rounded,
-                              color: Colors.white, size: 24),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        _MainNotchStatsCard(
+          data: data,
+          period: period,
+          onSelectPeriod: onSelectPeriod,
+          workspaceName: workspaceName,
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                label: 'Uang Masuk (bulan ini)',
+                value: compactMoney(data.monthCashIn),
+                icon: Icons.south_west_rounded,
+                color: AppColors.income,
               ),
             ),
-          ),
-          const SizedBox(height: 14),
-        ],
+            const SizedBox(width: 10),
+            Expanded(
+              child: StatCard(
+                label: 'Uang Keluar (bulan ini)',
+                value: compactMoney(data.monthCashOut),
+                icon: Icons.north_east_rounded,
+                color: AppColors.expense,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                label: 'Arus Kas Bersih (bulan ini)',
+                value: compactMoney(data.monthCashIn - data.monthCashOut),
+                icon: Icons.account_balance_wallet_outlined,
+                color: (data.monthCashIn - data.monthCashOut) >= 0
+                    ? AppColors.primary
+                    : AppColors.expense,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: StatCard(
+                label: data.profitHasUnknownCosts
+                    ? 'Estimasi Keuntungan*'
+                    : 'Estimasi Keuntungan',
+                value: compactMoney(data.monthProfitEstimate),
+                icon: Icons.savings_outlined,
+                color: AppColors.accent,
+                sublabel: data.profitHasUnknownCosts
+                    ? '*modal belum lengkap'
+                    : null,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
         if (data.periodOrders == 0 && data.productCount == 0) ...[
           Card(
             color: const Color(0xFFFFFBEB),
@@ -741,8 +390,8 @@ class _DashboardContent extends StatelessWidget {
         const SizedBox(height: 18),
         SectionHeader(
           'Pesanan & Stok',
-          actionLabel: isOwner ? 'Kelola' : null,
-          onAction: isOwner ? () => context.push('/inventory/low-stock') : null,
+          actionLabel: 'Kelola',
+          onAction: () => context.push('/inventory/low-stock'),
         ),
         Row(
           children: [
